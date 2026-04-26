@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environment folders in this workspace
+bin/
+Scripts/
+Lib/
+lib/
+lib64
+lib64/
+Include/
+include/
+pyvenv.cfg
+
+# Tooling
+.vscode/
