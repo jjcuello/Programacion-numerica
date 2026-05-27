@@ -1,0 +1,75 @@
+GUIA DE PRUEBAS - METODO DE BISECCION
+=====================================
+
+Instrucciones de uso:
+- Marca [ ] pendiente, [x] probada, [!] revisar.
+- Completa la columna "Resultado" con raiz, iteraciones y observaciones.
+- Si falla, anota el error para corregir intervalo o funcion.
+
+---------------------------------------------------------------
+| # | Estado | Funcion f(x)                       | Intervalo |
+---------------------------------------------------------------
+| 1 | [ ]    | x**3 - x - 2                       | [1, 2]    |
+| 2 | [ ]    | x**2 + 2x - 9                      | [2, 3]    |
+| 3 | [ ]    | 2x**2 + 5x - 5                     | [0, 1]    |
+| 4 | [ ]    | x**4 + 2x**3 - 4x**2 - 14         | [-4, -3]  |
+| 5 | [ ]    | cos(x) - x                         | [0, 1]    |
+| 6 | [ ]    | exp(-x) - x                        | [0, 1]    |
+| 7 | [ ]    | log(x) - 1                         | [2, 3]    |
+| 8 | [ ]    | x*sin(x) - 1                       | [1, 2]    |
+| 9 | [ ]    | x**3 - 7                           | [1, 2]    |
+|10 | [ ]    | sqrt(x) - 2                        | [3, 5]    |
+---------------------------------------------------------------
+
+REGISTRO DE RESULTADOS
+======================
+
+1) Funcion: x**3 - x - 2
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+2) Funcion: x**2 + 2x - 9
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+3) Funcion: 2x**2 + 5x - 5
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+4) Funcion: x**4 + 2x**3 - 4x**2 - 14
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+5) Funcion: cos(x) - x
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+6) Funcion: exp(-x) - x
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+7) Funcion: log(x) - 1
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+8) Funcion: x*sin(x) - 1
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+9) Funcion: x**3 - 7
+   Estado: [ ]
+   Resultado:
+   Notas:
+
+10) Funcion: sqrt(x) - 2
+    Estado: [ ]
+    Resultado:
+    Notas:
