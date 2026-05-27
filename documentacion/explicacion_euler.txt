@@ -1,0 +1,655 @@
+PROGRAMA: euler.py
+
+1. PROPOSITO GENERAL DEL PROGRAMA
+El archivo euler.py es un programa educativo de metodos numericos cuyo objetivo es aproximar el numero de Euler, representado por la letra e, usando varias tecnicas distintas. El enfoque del programa no es solo obtener el valor numerico, sino comparar como se comportan diferentes metodos en terminos de:
+
+- precision,
+- numero de iteraciones,
+- error absoluto,
+- tiempo de ejecucion,
+- cantidad de decimales correctos.
+
+Ademas, el programa esta organizado con Programacion Orientada a Objetos. La idea central es que exista un analizador que concentre la logica comun y que desde el menu el usuario pueda ejecutar comparaciones, elegir un metodo individual y configurar parametros.
+
+Si tuvieras que explicarlo en una defensa, una frase clara seria esta:
+
+"El programa calcula el numero e por diferentes caminos numericos, compara su eficiencia y adapta el tipo de precision segun la cantidad de decimales solicitados. Todo esto se organiza mediante una clase principal y varias funciones auxiliares de entrada, salida y analisis."
+
+2. QUE ES EL NUMERO DE EULER Y POR QUE TIENE SENTIDO ESTUDIARLO
+El numero de Euler es una constante matematica fundamental:
+
+e = 2.718281828459045...
+
+Aparece en:
+- crecimiento exponencial,
+- interes compuesto,
+- ecuaciones diferenciales,
+- logaritmos naturales,
+- probabilidad y estadistica,
+- analisis numerico.
+
+Tiene sentido estudiarlo con metodos numericos porque:
+- puede definirse por series,
+- puede definirse por limites,
+- aparece como solucion de ecuaciones,
+- tiene una fraccion continua notable,
+- permite comparar convergencia rapida y lenta.
+
+Por eso e es una excelente constante para construir un programa de comparacion de algoritmos.
+
+3. IDEA GENERAL DEL DISENO DEL PROGRAMA
+El programa esta dividido en dos niveles:
+
+3.1 Nivel orientado a objetos
+La clase AnalizadorEuler encapsula los parametros y la logica numerica. Dentro de esa clase viven:
+- la tolerancia,
+- el maximo de iteraciones,
+- el tipo de precision,
+- la cantidad de decimales,
+- los metodos que generan e.
+
+3.2 Nivel procedural e interactivo
+Fuera de la clase hay funciones para:
+- mostrar el titulo,
+- mostrar el menu,
+- leer opciones,
+- formatear la salida,
+- pedir decimales,
+- seleccionar precision,
+- imprimir tablas,
+- ejecutar el flujo principal.
+
+Esto da una combinacion util entre POO y programa interactivo por consola.
+
+4. LIBRERIAS UTILIZADAS Y SU PAPEL
+El programa usa estas librerias:
+
+- math:
+  Se usa para operaciones matematicas en precision flotante tradicional. Por ejemplo, math.e y math.log().
+
+- time:
+  Se usa para medir tiempos de ejecucion mediante time.perf_counter(). Esto permite comparar eficiencia real entre metodos.
+
+- decimal:
+  Se importa Decimal y localcontext. Esta es una pieza clave del programa porque permite trabajar con precision alta cuando se piden muchos decimales.
+
+- numpy:
+  Se usa para soportar float32. Esto permite comparar entre precision simple y doble precision.
+
+5. ESTRUCTURA ORIENTADA A OBJETOS
+La clase principal del modulo es:
+
+AnalizadorEuler
+
+Esta clase representa un objeto configurado para estudiar el numero e bajo ciertas condiciones.
+
+5.1 Atributos principales
+Cuando se crea un objeto de la clase, se guardan estos datos:
+
+- tolerancia:
+  Controla cuando se considera que un metodo ya convergio.
+
+- max_iteraciones:
+  Es un limite de seguridad para evitar bucles demasiado largos.
+
+- precision:
+  Puede ser:
+  - float64,
+  - float32,
+  - decimal.
+
+- decimales:
+  Es la cantidad de decimales que el usuario quiere calcular o comparar.
+
+5.2 Encapsulamiento
+La clase guarda internamente toda la configuracion del analisis. Las funciones externas no necesitan saber como se calcula cada metodo paso a paso, solo crean el objeto y llaman a sus metodos.
+
+5.3 Ventaja de esta estructura
+Si mañana quieres agregar un quinto metodo, bastaria con:
+- definir un nuevo metodo dentro de la clase,
+- incluirlo en ejecutar_todos(),
+- agregarlo al menu si quieres poder ejecutarlo individualmente.
+
+Eso demuestra que el codigo tiene una organizacion escalable.
+
+6. EXPLICACION DE LOS METODOS PRIVADOS Y DE APOYO DENTRO DE LA CLASE
+
+6.1 _usar_decimal()
+Esta funcion devuelve True cuando la precision configurada es "decimal".
+
+Su objetivo es decidir si el programa debe usar aritmetica de alta precision o aritmetica flotante normal.
+
+Importancia:
+Es una funcion de control interno. Muchas partes del programa cambian su comportamiento dependiendo de este resultado.
+
+6.2 _cast(valor)
+Convierte un valor al tipo numerico apropiado.
+
+Comportamiento:
+- si la precision es decimal, convierte a Decimal,
+- si la precision es float32, convierte a np.float32,
+- si no, usa float normal de Python, que internamente es doble precision.
+
+Importancia:
+Centraliza el cambio de tipo. Esto evita repetir conversiones en todo el programa.
+
+6.3 _referencia_euler()
+Devuelve el valor de referencia de e contra el cual se comparan las aproximaciones.
+
+Comportamiento:
+- en precision decimal, usa Decimal(1).exp() dentro de un contexto de precision amplia,
+- en precision flotante, usa math.e convertido a Decimal para poder comparar de forma uniforme.
+
+Importancia:
+Es la base de la columna de error absoluto y de la columna de decimales correctos.
+
+6.4 _error_absoluto(aproximacion)
+Calcula:
+
+error absoluto = |aproximacion - referencia|
+
+Internamente convierte la aproximacion a Decimal para comparar de forma consistente.
+
+Importancia:
+Permite medir que tan cerca esta cada metodo del valor de referencia.
+
+6.5 _tolerancia_efectiva()
+Esta funcion es muy importante. No usa solo la tolerancia del usuario, sino que tambien construye una tolerancia compatible con la cantidad de decimales deseados.
+
+Idea:
+Si el usuario pide muchos decimales, detenerse con una tolerancia grande no tendria sentido.
+
+Entonces la funcion calcula una tolerancia mas exigente basada en los decimales y toma la mas pequena entre:
+- la tolerancia del usuario,
+- la tolerancia derivada de los decimales.
+
+En modo decimal usa Decimal.
+En modo float usa float.
+
+Importancia:
+Hace que los metodos se adapten mejor al nivel de precision solicitado.
+
+7. LOS CUATRO METODOS NUMERICOS PARA CALCULAR e
+
+7.1 Metodo de Taylor
+Formula matematica:
+
+ e = sumatoria desde k = 0 hasta infinito de 1 / k!
+
+Es decir:
+
+ e = 1 + 1 + 1/2! + 1/3! + 1/4! + ...
+
+Como se implementa:
+- se inicia con suma = 1,
+- se inicia con termino = 1,
+- en cada iteracion se actualiza el termino dividiendo por k,
+- se suma ese termino a la suma acumulada,
+- se verifica si la diferencia entre la suma nueva y la anterior es menor que la tolerancia.
+
+Ventaja numerica:
+Este metodo converge muy rapido.
+
+Ventaja de implementacion:
+No recalcula factoriales completos. Usa recurrencia:
+
+termino_k = termino_(k-1) / k
+
+Eso lo hace mucho mas eficiente.
+
+Interpretacion de resultados:
+Normalmente es uno de los mejores metodos del programa, tanto por precision como por velocidad.
+
+7.2 Metodo del limite clasico
+Formula matematica:
+
+ e = limite cuando n tiende a infinito de (1 + 1/n)^n
+
+Como se implementa:
+- se recorre n desde 1 hasta max_iteraciones,
+- en cada paso se calcula (1 + 1/n)^n,
+- se compara con la aproximacion anterior,
+- si la diferencia es menor que la tolerancia, se detiene.
+
+Ventaja:
+Es un metodo muy conocido y muy didactico.
+
+Desventaja:
+Converge lentamente.
+
+Importancia educativa:
+Aunque no es eficiente para alta precision, es excelente para mostrar que no todos los metodos numericos tienen la misma rapidez de convergencia.
+
+Interpretacion de resultados:
+Suele necesitar muchisimas iteraciones y aun asi dar pocos decimales correctos en comparacion con Taylor o Newton.
+
+7.3 Metodo de fraccion continua
+La expansion en fraccion continua de e comienza asi:
+
+ e = [2; 1, 2, 1, 1, 4, 1, 1, 6, 1, ...]
+
+Esto significa que sus coeficientes siguen un patron.
+
+En el programa:
+- _coeficiente_fraccion_continua(indice) devuelve el coeficiente correspondiente,
+- _aproximacion_fraccion_continua(profundidad) construye la aproximacion desde abajo hacia arriba,
+- metodo_fraccion_continua() prueba profundidades crecientes hasta converger.
+
+Importancia matematica:
+La fraccion continua es una via elegante y clasica para aproximar constantes.
+
+Importancia numerica:
+Da resultados muy buenos y suele converger bien, aunque su implementacion es menos intuitiva que Taylor.
+
+7.4 Metodo de Newton sobre ln(x) - 1 = 0
+Aqui no se calcula e como serie ni como limite, sino como solucion de una ecuacion.
+
+Sabemos que:
+
+ ln(e) = 1
+
+Entonces e es la raiz de:
+
+ f(x) = ln(x) - 1
+
+Y su derivada es:
+
+ f'(x) = 1/x
+
+Newton usa la formula:
+
+ x_(n+1) = x_n - f(x_n) / f'(x_n)
+
+Sustituyendo:
+
+ x_(n+1) = x_n - (ln(x_n) - 1) / (1/x_n)
+
+Como se implementa:
+- se arranca con x = 2.5,
+- se calcula f(x),
+- se calcula f'(x),
+- se actualiza x,
+- se verifica si el cambio fue menor que la tolerancia.
+
+Ventaja:
+Converge extremadamente rapido cerca de la solucion.
+
+Desventaja conceptual:
+No "genera" e de forma directa como serie o limite, sino que lo encuentra como raiz de una ecuacion equivalente.
+
+Aun asi, desde metodos numericos es totalmente valido y muy interesante para comparar.
+
+8. EJECUTAR TODOS LOS METODOS
+Metodo:
+
+ ejecutar_todos()
+
+Lo unico que hace es llamar en orden a los cuatro metodos y devolver una lista con sus resultados.
+
+Esto permite que la opcion de comparacion muestre una tabla unica con todos los datos.
+
+9. FUNCIONES DE INTERFAZ Y SALIDA
+
+9.1 mostrar_titulo()
+Imprime el encabezado principal del modulo.
+
+Su funcion es identificar claramente el programa cuando inicia.
+
+9.2 mostrar_menu()
+Presenta cuatro opciones:
+- comparar los cuatro metodos,
+- ejecutar uno individualmente,
+- configurar parametros,
+- salir.
+
+Esto mantiene la misma logica general de tus otros programas del proyecto.
+
+9.3 leer_opcion()
+Lee la opcion ingresada por el usuario y elimina espacios sobrantes.
+
+10. FUNCIONES DE FORMATEO DE RESULTADOS
+Estas funciones no calculan e. Su trabajo es hacer que la salida sea entendible y util.
+
+10.1 formatear_decimal(valor, decimales, precision)
+Convierte un valor numerico a texto con la cantidad apropiada de decimales.
+
+Si la precision es decimal:
+- usa el contexto Decimal,
+- respeta muchos mas decimales.
+
+Si la precision es float:
+- limita la visualizacion a 16 decimales, porque float64 no da mas precision real util.
+
+10.2 vista_corta_decimal(valor, decimales, precision, prefijo=18, sufijo=18)
+Se creo para mejorar la legibilidad cuando hay 100 o 200 decimales.
+
+Idea:
+En lugar de imprimir todo el numero en una tabla horizontal, muestra:
+- el inicio,
+- puntos suspensivos,
+- el final.
+
+Ejemplo conceptual:
+2.718281828459045235...988075319525101901
+
+Esto evita que la tabla se rompa visualmente.
+
+10.3 formatear_por_bloques(texto_decimal, tam_bloque=10, bloques_por_linea=5)
+Toma un numero ya convertido a texto y lo separa por bloques.
+
+Ejemplo:
+- grupos de 10 decimales,
+- 5 grupos por linea.
+
+Importancia:
+Sirve para estudiar muchos decimales sin perder la lectura. Es muy util cuando el usuario pide 100 o 200 decimales.
+
+11. IMPRESION DE RESULTADOS
+
+11.1 imprimir_resultado(resultado)
+Muestra el resultado de un solo metodo.
+
+Contenido que imprime:
+- nombre del metodo,
+- valor de referencia de e,
+- aproximacion calculada,
+- si hay muchos decimales, la referencia completa por bloques,
+- la aproximacion completa por bloques,
+- decimales solicitados,
+- decimales correctos,
+- iteraciones,
+- error absoluto,
+- tiempo.
+
+Este formato es ideal para estudiar un metodo de forma individual.
+
+11.2 imprimir_tabla(resultados)
+Muestra una tabla comparativa cuando se ejecutan los cuatro metodos.
+
+Columnas:
+- Metodo
+- Aproximacion (vista corta)
+- Iteraciones
+- Error abs
+- Dec. ok
+- Tiempo (s)
+
+Interpretacion de columnas:
+- Metodo: nombre del algoritmo.
+- Aproximacion: resultado numerico obtenido.
+- Iteraciones: cuantas repeticiones uso.
+- Error abs: distancia al valor de referencia.
+- Dec. ok: cantidad de decimales correctos consecutivos.
+- Tiempo (s): duracion medida con perf_counter.
+
+12. ENRIQUECIMIENTO Y ANALISIS DEL RESULTADO
+
+12.1 enriquecer_resultado(resultado, decimales, precision, referencia_euler)
+Esta funcion recibe el diccionario crudo de un metodo y le agrega informacion extra.
+
+Agrega:
+- decimales solicitados,
+- precision usada,
+- valor de referencia,
+- decimales correctos,
+- si coincide exactamente con el objetivo formateado.
+
+Es decir, transforma un resultado numerico simple en un resultado listo para mostrarse y analizarse.
+
+12.2 contar_decimales_correctos(aproximacion_txt, referencia_txt)
+Compara los decimales del texto de la aproximacion con los del texto de referencia, de izquierda a derecha.
+
+Se detiene en el primer decimal distinto.
+
+Importancia:
+La columna "Dec. ok" no se basa en intuicion, sino en una comparacion concreta caracter por caracter.
+
+13. FUNCIONES DE INTERACCION CON EL USUARIO
+
+13.1 seleccionar_precision()
+Permite escoger entre:
+- float64,
+- float32,
+- Decimal.
+
+Interpretacion:
+- float64: doble precision, util para calculos normales,
+- float32: menor precision,
+- Decimal: precision alta para muchos decimales.
+
+13.2 solicitar_decimales(decimales_actuales)
+Pregunta cuantos decimales desea calcular el usuario.
+
+Reglas actuales:
+- minimo 1,
+- maximo 200,
+- si el usuario presiona Enter, conserva el valor anterior.
+
+Importancia:
+Hace que el programa sea interactivo y adaptable.
+
+13.3 ajustar_precision_para_decimales(precision, decimales)
+Si el usuario pide mas de 16 decimales y todavia esta usando float32 o float64, el programa cambia automaticamente a Decimal.
+
+Esto es una decision numericamente correcta porque:
+- float64 no puede garantizar 100 o 200 decimales reales,
+- float32 mucho menos.
+
+Ventaja:
+Protege al usuario de pedir una precision imposible para el tipo de dato elegido.
+
+14. EJECUCION DE UN METODO INDIVIDUAL
+Funcion:
+
+ ejecutar_metodo_individual(analizador, decimales)
+
+Flujo:
+- muestra un sub-menu con los 4 metodos,
+- lee la opcion,
+- calcula la referencia de e,
+- llama al metodo seleccionado,
+- enriquece el resultado,
+- imprime el detalle completo.
+
+Importancia:
+Esta opcion es util cuando quieres estudiar un solo algoritmo sin ver toda la comparacion.
+
+15. FLUJO GENERAL DEL main()
+La funcion main() controla todo el programa.
+
+15.1 Valores iniciales
+Al inicio se fijan valores por defecto:
+- tolerancia = 1e-10
+- max_iteraciones = 50000
+- precision = float64
+- decimales = 12
+
+15.2 Bucle principal
+Luego se ejecuta un while True con el menu.
+
+15.3 Opcion 1: comparar los 4 metodos
+Secuencia:
+- pedir cantidad de decimales,
+- ajustar precision si es necesario,
+- crear AnalizadorEuler,
+- calcular la referencia,
+- ejecutar los 4 metodos,
+- enriquecer cada resultado,
+- imprimir tabla.
+
+15.4 Opcion 2: ejecutar un metodo individual
+Secuencia:
+- pedir decimales,
+- ajustar precision,
+- crear AnalizadorEuler,
+- mostrar sub-menu de metodos,
+- ejecutar uno,
+- imprimir resultado.
+
+15.5 Opcion 3: configurar parametros
+Permite cambiar:
+- tolerancia,
+- maximo de iteraciones,
+- precision,
+- decimales.
+
+15.6 Opcion 4: salir
+Finaliza el modulo.
+
+16. QUE FORMA TIENEN LOS RESULTADOS INTERNAMENTE
+Cada metodo devuelve un diccionario con esta estructura base:
+
+- metodo
+- aproximacion
+- iteraciones
+- tiempo
+- error
+
+Despues enriquecer_resultado() agrega mas campos.
+
+Ventaja:
+Usar diccionarios hace facil construir tablas, comparar datos y agregar nuevos indicadores mas adelante.
+
+17. INTERPRETACION NUMERICA DE LOS RESULTADOS
+Cuando ves una salida como esta:
+
+- Taylor con 122 iteraciones y 200 decimales correctos,
+- Limite con 50000 iteraciones y solo 4 decimales correctos,
+- Fraccion continua con 158 iteraciones y 200 decimales correctos,
+- Newton con 9 iteraciones y 200 decimales correctos,
+
+la lectura correcta es:
+
+- Taylor es muy eficiente y muy preciso,
+- el metodo del limite converge muy lento,
+- la fraccion continua es potente pero requiere una construccion mas compleja,
+- Newton converge muy rapido cuando la funcion y el punto inicial son adecuados.
+
+18. DIFERENCIA ENTRE PRECISION Y EFICIENCIA
+Este programa permite explicar una idea importante:
+
+Un metodo puede ser correcto pero poco eficiente.
+
+Por ejemplo:
+- el limite clasico es matematicamente valido,
+- pero para precision alta es muy lento.
+
+Entonces, en una comparacion de metodos numericos no basta con preguntar:
+- "funciona o no funciona"
+
+Tambien hay que preguntar:
+- cuanto tarda,
+- cuantas iteraciones necesita,
+- cuantos decimales correctos logra.
+
+19. RELACION ENTRE float32, float64 Y Decimal
+
+19.1 float32
+- usa menos memoria,
+- tiene menor precision,
+- no sirve para muchos decimales.
+
+19.2 float64
+- es el float normal de Python,
+- ofrece alrededor de 15 a 16 cifras significativas,
+- es suficiente para muchos ejercicios normales.
+
+19.3 Decimal
+- permite precision arbitraria controlada,
+- es mas lento,
+- pero es necesario para 100 o 200 decimales.
+
+La leccion clave es esta:
+No tiene sentido pedir 100 decimales con float64 porque el tipo de dato no puede representarlos fielmente.
+
+20. POR QUE EL PROGRAMA CAMBIA A DECIMAL SI PIDES MAS DE 16 DECIMALES
+Porque la precision interna debe ser coherente con la salida solicitada.
+
+Si el programa no hiciera este cambio:
+- podria imprimir muchos digitos,
+- pero esos digitos no serian confiables.
+
+Entonces el ajuste automatico protege la validez numerica del experimento.
+
+21. DETALLES INTERESANTES DE IMPLEMENTACION QUE PUEDES MENCIONAR EN UNA DEFENSA
+- El programa no recalcula factoriales completos en Taylor; actualiza el termino en forma recursiva.
+- El metodo de fraccion continua construye la expresion desde el fondo hacia arriba.
+- Newton se formula sobre ln(x) - 1 = 0 para transformar el problema en busqueda de raices.
+- El programa mide tiempo real de ejecucion.
+- El programa calcula decimales correctos, no solo error absoluto.
+- La precision se adapta automaticamente al numero de decimales pedido.
+- La salida cambia de formato si hay demasiados decimales, para no perder legibilidad.
+
+22. POSIBLES VENTAJAS DEL DISENO
+- Codigo organizado y extensible.
+- Comparacion clara entre metodos.
+- Combina teoria matematica y programacion.
+- Permite estudiar precision numerica real.
+- Tiene interfaz por consola simple.
+- Mantiene una estructura coherente con el resto del proyecto.
+
+23. LIMITACIONES ACTUALES DEL PROGRAMA
+Es importante conocer tambien sus limites.
+
+- El metodo del limite puede tardar mucho para alta precision.
+- La medicion de tiempo puede variar ligeramente entre ejecuciones.
+- Newton depende de una buena formulacion y un valor inicial razonable.
+- El programa no guarda aun los resultados en archivo externo automaticamente.
+- La columna de decimales correctos depende del formato y de la referencia elegida.
+
+Conocer estas limitaciones te ayuda a defender mejor el programa, porque muestra criterio tecnico.
+
+24. COMO EXPLICAR EL PROGRAMA EN POCAS PALABRAS
+Respuesta corta para exposicion:
+
+"El programa aproxima el numero de Euler con cuatro metodos numericos diferentes: serie de Taylor, limite clasico, fraccion continua y Newton aplicado a ln(x)-1=0. Luego compara precision, tiempo, error e iteraciones. Si el usuario pide muchos decimales, el sistema cambia a aritmetica Decimal para mantener validez numerica."
+
+25. POSIBLES PREGUNTAS DE DEFENSA Y RESPUESTAS CORTAS
+
+25.1 Por que usar varios metodos para calcular el mismo numero?
+Porque asi se puede comparar eficiencia, precision y velocidad de convergencia.
+
+25.2 Cual metodo suele ser mejor?
+Depende del criterio, pero en este programa Newton y Taylor suelen dar muy buen rendimiento.
+
+25.3 Por que el metodo del limite es tan lento?
+Porque su convergencia hacia e es mucho mas lenta que la de Taylor o Newton.
+
+25.4 Por que usar Decimal?
+Porque float64 no puede representar de forma confiable 100 o 200 decimales.
+
+25.5 Que significa "Dec. ok"?
+Es la cantidad de decimales consecutivos que coinciden con la referencia de e.
+
+25.6 Por que medir tiempo si ya medimos iteraciones?
+Porque dos metodos con pocas iteraciones pueden tener distinto costo computacional por iteracion.
+
+25.7 Donde se ve la POO en este programa?
+En la clase AnalizadorEuler, que encapsula configuracion y comportamiento de los algoritmos.
+
+26. GUIA RAPIDA PARA ESTUDIAR EL CODIGO EN ORDEN
+Si quieres estudiar el archivo paso a paso, este es un buen orden:
+
+1. Lee la clase AnalizadorEuler.
+2. Entiende sus atributos del constructor.
+3. Revisa _usar_decimal(), _cast(), _referencia_euler() y _tolerancia_efectiva().
+4. Estudia los 4 metodos numericos uno por uno.
+5. Revisa ejecutar_todos().
+6. Pasa a las funciones de formato: formatear_decimal(), vista_corta_decimal(), formatear_por_bloques().
+7. Estudia imprimir_resultado() e imprimir_tabla().
+8. Revisa enriquecer_resultado() y contar_decimales_correctos().
+9. Observa las funciones de interaccion: seleccionar_precision(), solicitar_decimales(), ajustar_precision_para_decimales().
+10. Termina con main(), porque ahi se integra todo el flujo.
+
+27. CONCLUSION GENERAL
+El archivo euler.py es un muy buen ejemplo de programa de metodos numericos porque une varios aspectos importantes en una sola practica:
+
+- comparacion de algoritmos,
+- precision numerica,
+- analisis de error,
+- medicion de eficiencia,
+- presentacion clara de resultados,
+- uso de Programacion Orientada a Objetos,
+- adaptacion automatica del tipo numerico.
+
+En resumen, no es solo un programa para "sacar e". Es un laboratorio pequeno de analisis numerico que permite estudiar como distintos enfoques matematicos llegan al mismo numero, pero con comportamientos computacionales muy distintos.

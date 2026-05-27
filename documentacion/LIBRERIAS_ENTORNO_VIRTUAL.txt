@@ -1,0 +1,101 @@
+LIBRERIAS INSTALADAS EN EL ENTORNO VIRTUAL
+=========================================
+
+Este proyecto usa un entorno virtual de Python para mantener aisladas las dependencias.
+Las librerias instaladas en este entorno virtual se utilizaran para ampliar el proyecto
+de metodos numericos, especialmente el metodo de biseccion.
+
+Entorno virtual usado:
+- Carpeta: virtual/
+- Activacion en Linux:
+  source /run/media/jcuello/USB/Python/virtual/bin/activate
+
+Librerias instaladas
+--------------------
+
+1. NumPy
+   Uso principal:
+   - Trabajar con arreglos y vectores numericos.
+   - Generar muchos valores de x de manera eficiente.
+   - Evaluar funciones en varios puntos para apoyar la grafica.
+
+   Por que la usamos:
+   - Facilita crear un conjunto de puntos dentro de un intervalo [a, b].
+   - Es la base numerica mas comun en Python para calculo cientifico.
+
+   Para que la vamos a utilizar en este proyecto:
+   - Crear puntos para visualizar la funcion ingresada por el usuario.
+   - Preparar futuras ampliaciones con mas metodos numericos.
+
+2. Matplotlib
+   Uso principal:
+   - Graficar funciones matematicas.
+   - Mostrar ejes, curvas, puntos y marcas visuales.
+
+   Por que la usamos:
+   - Permite ver si la funcion cruza el eje x dentro del intervalo elegido.
+   - Ayuda a interpretar visualmente la raiz aproximada calculada por biseccion.
+
+   Para que la vamos a utilizar en este proyecto:
+   - Dibujar la funcion que el usuario escriba.
+   - Marcar el intervalo de trabajo.
+   - Resaltar la raiz aproximada encontrada por el algoritmo.
+
+3. SymPy
+   Uso principal:
+   - Manejo simbolico de expresiones matematicas.
+   - Interpretacion de funciones escritas como texto.
+
+   Por que la usamos:
+   - Es una opcion mas robusta que evaluar expresiones solo con eval.
+   - Permite procesar entradas como sin(x), x^2 + 2*x - 9, sqrt(x), etc.
+
+   Para que la vamos a utilizar en este proyecto:
+   - Mejorar la lectura y validacion de funciones ingresadas por el usuario.
+   - Convertir expresiones simbolicas en funciones numericas utilizables por el programa.
+   - Dejar una base mas segura y extensible para futuros metodos.
+
+4. SciPy
+   Uso principal:
+   - Biblioteca avanzada para metodos numericos y calculo cientifico.
+
+   Por que la usamos:
+   - Complementa a NumPy con algoritmos listos para usar.
+   - Incluye herramientas para raices, integracion, interpolacion y optimizacion.
+
+   Para que la vamos a utilizar en este proyecto:
+   - Comparar el metodo de biseccion con otros metodos numericos.
+   - Ampliar el proyecto a temas mas avanzados de programacion numerica.
+
+Notas importantes
+-----------------
+
+- Las librerias math y re no se instalan con pip porque ya vienen incluidas en Python.
+- NumPy, Matplotlib, SymPy y SciPy si son librerias externas y por eso se instalan dentro del entorno virtual.
+- Mantener estas dependencias dentro de virtual/ evita conflictos con otros proyectos del sistema.
+
+Instalacion de referencia
+-------------------------
+
+Comandos usados dentro del entorno virtual:
+
+pip install numpy matplotlib sympy scipy
+
+Resumen practico
+----------------
+
+- NumPy: calculo numerico y generacion de puntos.
+- Matplotlib: graficas de funciones y visualizacion de resultados.
+- SymPy: interpretacion y manejo simbolico de funciones matematicas.
+- SciPy: herramientas numericas avanzadas para ampliar el proyecto.
+
+Objetivo final dentro del proyecto
+----------------------------------
+
+Estas librerias se instalaron para que el proyecto no solo calcule la raiz de una funcion,
+sino que tambien pueda:
+
+- visualizar la funcion en un intervalo,
+- mostrar la raiz aproximada encontrada,
+- validar mejor las expresiones matematicas del usuario,
+- y crecer hacia otros metodos numericos en el futuro.

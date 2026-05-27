@@ -1,0 +1,282 @@
+PROGRAMA: graficas_3d.py
+
+1. PROPOSITO DEL PROGRAMA
+El archivo graficas_3d.py es un programa educativo para generar figuras en tres dimensiones con Matplotlib. Su objetivo no es solamente dibujar objetos geometricos, sino tambien mostrar una aplicacion clara de Programacion Orientada a Objetos. Por eso cada figura se implementa como una clase independiente y todas comparten una estructura comun.
+
+En una defensa, el punto principal que debes explicar es este: el programa convierte formulas matematicas en graficas 3D, y al mismo tiempo organiza esa logica con clases, herencia, encapsulamiento y polimorfismo.
+
+2. FLUJO GENERAL DE EJECUCION
+El programa funciona de manera interactiva por consola.
+
+Primero se imprime un encabezado con el nombre del proyecto. Despues se muestran conceptos basicos de POO y un menu principal con las figuras disponibles. El usuario elige una opcion, ingresa los valores necesarios y el programa crea el objeto correspondiente. Luego se genera la grafica, se guarda como imagen PNG y se intenta abrir automaticamente.
+
+La secuencia completa es:
+- Mostrar titulo.
+- Mostrar conceptos de POO.
+- Presentar menu.
+- Leer la opcion del usuario.
+- Pedir datos segun la figura elegida.
+- Crear el objeto de la clase correspondiente.
+- Dibujar la figura en Matplotlib.
+- Guardar la imagen en la carpeta graficas/.
+- Intentar abrir el archivo generado.
+
+3. LIBRERIAS Y COMPONENTES UTILIZADOS
+El programa usa varias herramientas de Python:
+
+- os: se utiliza para abrir archivos con el sistema operativo.
+- abc: permite definir una clase abstracta y un metodo abstracto.
+- pathlib: se usa para construir rutas de archivo de forma segura.
+- textwrap: ayuda a imprimir texto multilinea con mejor formato.
+- matplotlib: se usa para crear las graficas 2D y 3D.
+- matplotlib.pyplot: permite crear figuras, ejes y guardar imagenes.
+- numpy: se utiliza para generar valores numericos y superficies parametricas.
+
+Tambien se intenta importar Axes3D desde mpl_toolkits.mplot3d para asegurar el soporte de graficas en tres dimensiones. En versiones modernas de Matplotlib esto suele funcionar sin problemas adicionales, pero la importacion ayuda a dejar claro que se trata de una grafica 3D.
+
+4. ESTRUCTURA ORIENTADA A OBJETOS
+El diseno esta centrado en una clase base y varias clases derivadas.
+
+4.1 Encapsulamiento
+Las figuras guardan sus datos internos en atributos privados o protegidos, por ejemplo:
+- _radio
+- _altura
+- _centro
+- _punto_inicial
+- _punto_final
+
+Esto significa que los detalles de construccion de cada figura quedan dentro de su propia clase. El resto del programa no necesita saber como se calcula cada superficie, solo necesita crear el objeto y pedirle que se muestre.
+
+4.2 Herencia
+La clase Figura3D funciona como clase base. De ella heredan:
+- Recta3D
+- Esfera
+- Cilindro
+- Cono
+- ParaboloideEliptico
+
+Todas comparten el mismo comportamiento general: crear una figura, dibujar en un eje 3D, configurar etiquetas y guardar la imagen. Cada subclase solo agrega la logica matematica de su propia figura.
+
+4.3 Polimorfismo
+El metodo mostrar() se usa igual para todas las figuras. Sin embargo, cada clase implementa su propio metodo dibujar(). Eso hace posible llamar al mismo proceso general para objetos distintos y obtener resultados diferentes segun la figura.
+
+En la defensa puedes decirlo asi: el programa trata todas las figuras como objetos de Figura3D, pero cada una responde de manera distinta al momento de dibujarse.
+
+5. CLASE BASE Figura3D
+Esta es la pieza central del programa.
+
+Responsabilidades:
+- Guardar el nombre visible de la figura.
+- Guardar el nombre base del archivo PNG.
+- Guardar el color de dibujo.
+- Crear la figura principal de Matplotlib.
+- Agregar un eje 3D.
+- Llamar al metodo dibujar(), que cada subclase define.
+- Configurar la presentacion visual de la grafica.
+- Guardar el archivo en la carpeta graficas/.
+
+El metodo dibujar() se define como abstracto. Esto obliga a que cada figura concreta implemente su propia forma de construccion. Esa es una buena practica de diseno porque evita objetos incompletos y deja claro que la clase base solo define una estructura general.
+
+El metodo mostrar() hace el trabajo comun para todas las figuras. Dentro de ese metodo se crea una figura de 8 por 6 pulgadas, se agrega un eje 3D, se llama a dibujar(), se ajusta el formato y despues se guarda el PNG.
+
+6. EXPLICACION DE LAS FIGURAS IMPLEMENTADAS
+
+6.1 Recta en 3D
+Clase: Recta3D
+
+Esta figura representa una recta entre dos puntos en el espacio.
+
+Como funciona:
+- Recibe un punto inicial y un punto final.
+- Genera 100 valores intermedios entre ambos puntos con np.linspace.
+- Traza una linea con eje.plot().
+- Marca el punto inicial en rojo y el final en verde.
+
+Importancia matematica:
+La recta se obtiene interpolando coordenadas X, Y y Z de forma simultanea. Eso permite mostrar que una linea espacial no es solo una curva en el plano, sino una trayectoria definida por tres coordenadas.
+
+Importancia para la defensa:
+Es la figura mas sencilla del programa y sirve como introduccion al manejo de coordenadas tridimensionales.
+
+6.2 Esfera
+Clase: Esfera
+
+Esta figura genera la superficie de una esfera a partir de un radio y un centro.
+
+Como funciona:
+- Usa dos parametros angulares, u y v.
+- Calcula X, Y y Z con funciones trigonometricas.
+- Construye la superficie con una parametrizacion esferica.
+- Dibuja la figura con plot_surface().
+
+Importancia matematica:
+La esfera es un ejemplo clasico de superficie parametrica. La ecuacion no se escribe directamente como una sola curva, sino como una combinacion de angulos y radio.
+
+Importancia para la defensa:
+Muestra como una formula matematica puede convertirse en una representacion visual suave y completa en 3D.
+
+6.3 Cilindro
+Clase: Cilindro
+
+Esta figura representa un cilindro vertical.
+
+Como funciona:
+- Recibe radio y altura.
+- Define valores angulares con theta.
+- Define valores de altura con z.
+- Construye una malla con np.meshgrid().
+- Calcula X e Y usando coseno y seno.
+- Dibuja la superficie lateral con plot_surface().
+
+Importancia matematica:
+El cilindro mantiene radio constante mientras cambia la coordenada Z. Eso lo convierte en una figura ideal para mostrar simetria circular y extraccion vertical.
+
+Importancia para la defensa:
+Es un ejemplo facil para explicar la idea de una superficie generada por repeticion de una seccion circular.
+
+6.4 Cono
+Clase: Cono
+
+Esta figura representa un cono con base circular y vertice superior.
+
+Como funciona:
+- Recibe radio de base y altura.
+- Genera valores angulares y valores de altura.
+- Calcula un factor de reduccion que disminuye con la altura.
+- Ese factor hace que el radio sea grande en la base y pequeño en la parte superior.
+- La superficie final se dibuja con plot_surface().
+
+Importancia matematica:
+El cono muestra una variacion lineal del radio respecto a la altura. A diferencia del cilindro, aqui el radio no se mantiene constante.
+
+Importancia para la defensa:
+Permite explicar claramente la diferencia entre una superficie constante y una superficie que se estrecha progresivamente.
+
+6.5 Paraboloide Eliptico
+Clase: ParaboloideEliptico
+
+Esta figura representa una superficie cuadratica curva que se abre hacia arriba.
+
+Como funciona:
+- Recibe dos escalas horizontales, a y b.
+- Recibe una escala vertical, escala_z.
+- Crea mallas de valores para x e y.
+- Calcula z usando una expresion cuadratica:
+  z = escala_z * ((x**2) / (a**2) + (y**2) / (b**2))
+- Dibuja la superficie con plot_surface().
+
+Importancia matematica:
+El paraboloide eliptico es una superficie cuadratica muy util para estudiar formas mas avanzadas de visualizacion 3D.
+
+Importancia para la defensa:
+Es la figura mas matematica del programa y demuestra que el proyecto no solo grafica formas basicas, sino tambien superficies generadas por ecuaciones.
+
+7. FUNCIONES DE APOYO
+
+7.1 mostrar_titulo()
+Imprime el encabezado del programa. Su funcion es presentar el proyecto de manera clara al iniciar.
+
+7.2 mostrar_conceptos_poo()
+Explica de forma breve los tres conceptos clave de POO que se aplican en el programa:
+- Encapsulamiento
+- Herencia
+- Polimorfismo
+
+Esta funcion existe para reforzar la parte teorica de la defensa.
+
+7.3 mostrar_menu()
+Muestra las opciones disponibles para el usuario. El menu esta pensado para que el programa sea sencillo de usar sin necesidad de memorizar comandos.
+
+7.4 leer_opcion()
+Lee la opcion elegida por el usuario y elimina espacios en blanco.
+
+7.5 leer_float()
+Pide un dato numerico. Si el usuario presiona Enter sin escribir nada, se toma un valor por defecto.
+
+Esta funcion mejora la experiencia del usuario porque evita que tenga que escribir todos los valores manualmente.
+
+7.6 abrir_grafica()
+Intenta abrir automaticamente la imagen generada.
+
+Comportamiento:
+- En Windows usa os.startfile().
+- En sistemas tipo Unix intenta usar xdg-open.
+- Si no puede abrirse, lanza un error explicando la situacion.
+
+7.7 mostrar_figura()
+Recibe un objeto de tipo figura, llama a su metodo mostrar() y muestra la ruta donde se guardo el PNG.
+
+8. TRATAMIENTO DE ERRORES
+Cada opcion del menu esta envuelta en un bloque try/except. Eso significa que si el usuario ingresa un valor incorrecto o si ocurre un problema al dibujar, el programa no se cierra de golpe. En su lugar, muestra un mensaje especifico para esa figura.
+
+Esto es importante porque hace que el programa sea mas robusto y mas amigable para uso escolar o de demostracion.
+
+9. ALMACENAMIENTO DE LAS GRAFICAS
+Cuando una figura se genera correctamente, se guarda como imagen PNG dentro de la carpeta graficas/.
+
+La ruta se construye automaticamente a partir de la ubicacion del archivo actual. Eso tiene una ventaja importante: el programa no depende de una ruta escrita manualmente, sino que busca la carpeta graficas/ relativa al proyecto.
+
+Cada figura guarda un nombre de archivo distinto:
+- recta_3d.png
+- esfera_3d.png
+- cilindro_3d.png
+- cono_3d.png
+- paraboloide_eliptico_3d.png
+
+10. VENTAJAS DEL DISENNO
+El programa tiene varias ventajas pedagogicas y tecnicas:
+
+- Es facil de entender por partes.
+- Cada figura esta separada en su propia clase.
+- La clase base evita repetir codigo comun.
+- Se pueden agregar nuevas figuras sin modificar la logica principal.
+- El uso de menus hace que la experiencia sea simple para el usuario.
+- La salida en PNG permite conservar evidencia visual de cada figura.
+
+11. COMO EXPLICARLO EN UNA DEFENSA
+Si te preguntan por el funcionamiento general, puedes responder de esta forma:
+
+"El programa permite generar figuras 3D desde consola. El usuario elige una figura, ingresa los datos y el sistema crea un objeto de una clase especifica. Esa clase calcula la forma matematica de la superficie, Matplotlib la dibuja y el programa guarda la imagen en un archivo PNG. Ademas, el diseno utiliza Programacion Orientada a Objetos para organizar el codigo en una clase base y varias clases derivadas."
+
+Si te preguntan por la POO, puedes decir:
+
+"Se usa encapsulamiento porque cada figura guarda sus propios datos; herencia porque todas las figuras derivan de Figura3D; y polimorfismo porque todas responden al mismo metodo mostrar(), aunque cada una dibuja una forma distinta."
+
+12. POSIBLES PREGUNTAS DE DEFENSA Y RESPUESTAS CORTAS
+
+12.1. Por que usar clases?
+Porque permiten organizar el codigo por figura, reutilizar comportamiento comun y facilitar mantenimiento.
+
+12.2. Por que usar una clase abstracta?
+Porque obliga a que cada figura implemente su propio dibujo, evitando objetos incompletos.
+
+12.3. Por que guardar imagenes en PNG?
+Porque es un formato ligero, portable y facil de abrir en casi cualquier sistema.
+
+12.4. Que aporta NumPy al programa?
+Permite generar vectores, mallas y calculos numericos necesarios para las superficies 3D.
+
+12.5. Que aporta Matplotlib?
+Permite visualizar las figuras y renderizarlas como imagen.
+
+12.6. Que diferencia hay entre la esfera y el paraboloide?
+La esfera usa una parametrizacion cerrada y simetrica, mientras que el paraboloide se calcula con una ecuacion cuadratica que crece hacia arriba.
+
+13. POSIBLES MEJORAS FUTURAS
+Si el proyecto sigue creciendo, se podrian agregar las siguientes mejoras:
+
+- Agregar mas figuras 3D.
+- Permitir elegir colores desde el menu.
+- Permitir guardar las imagenes con nombre personalizado.
+- Incluir descripciones matematicas mas detalladas en pantalla.
+- Crear una interfaz grafica en lugar de usar solo consola.
+
+14. RESUMEN FINAL
+graficas_3d.py es un programa educativo de visualizacion 3D que usa Matplotlib y NumPy para construir figuras geometricas desde consola. Su valor principal esta en que combina matematica, programacion y POO en un solo ejemplo.
+
+En una defensa, conviene destacar tres ideas centrales:
+- El programa transforma formulas en graficas.
+- La estructura del codigo esta basada en clases.
+- Cada figura se maneja de forma independiente, pero con una base comun compartida.
+
+Eso demuestra orden, reutilizacion de codigo y buena separacion de responsabilidades.
