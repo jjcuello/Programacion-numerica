@@ -74,6 +74,18 @@ def resolver_ejemplo_fijo():
     print(f"Iteraciones: {iteraciones}")
     print(f"Comprobacion f(raiz): {funcion(raiz):.6e}")
 
+    try:
+        ruta_grafica = graficar_funcion(funcion, "x**3 - x - 2", a, b, raiz=raiz)
+        print(f"Grafica guardada en: {ruta_grafica}")
+
+        try:
+            abrir_grafica(ruta_grafica)
+            print("Se intento abrir la grafica en el visor del sistema.")
+        except Exception as error_apertura:
+            print(f"No se pudo abrir la grafica en pantalla: {error_apertura}")
+    except Exception as error_grafica:
+        print(f"No se pudo generar la grafica: {error_grafica}")
+
 
 def sugerir_intervalos(func, inicio=-10, fin=10, puntos=400, limite=5):
     valores_x = np.linspace(inicio, fin, puntos)
