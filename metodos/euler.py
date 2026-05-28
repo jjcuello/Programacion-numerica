@@ -507,6 +507,136 @@ def ejecutar_metodo_individual(analizador, decimales):
     imprimir_resultado(resultado)
 
 
+class DemostracionEuler:
+    def __init__(self, max_iteraciones=10000, decimales=15):
+        self.max_iteraciones = max_iteraciones
+        self.decimales = decimales
+        self.referencia = math.e
+
+    def aproximacion(self, n):
+        return (1.0 + 1.0 / n) ** n
+
+    def generar_iteraciones(self):
+        for n in range(1, self.max_iteraciones + 1):
+            aproximacion_actual = self.aproximacion(n)
+            error_actual = abs(aproximacion_actual - self.referencia)
+            yield n, aproximacion_actual, error_actual
+
+    def imprimir_formula_objetivo(self):
+        with localcontext() as contexto:
+            contexto.prec = 40
+            valor_e_20 = format(Decimal(1).exp(), ".20f")
+        print("\nFormula objetivo fija:")
+        print(f"lim_{{x->inf}} (1 + 1/x)^x = e = {valor_e_20}")
+
+    def ejecutar(self, mostrar_cada=1, delay_ms=0):
+        print("\nDemostracion incremental de e")
+        self.imprimir_formula_objetivo()
+        print("\nn        | (1 + 1/n)^n        | Error absoluto")
+        print("-" * 60)
+
+        ultimo_n = 0
+        ultima_aproximacion = 0.0
+        ultimo_error = 0.0
+
+        for n, aproximacion_actual, error_actual in self.generar_iteraciones():
+            ultimo_n = n
+            ultima_aproximacion = aproximacion_actual
+            ultimo_error = error_actual
+
+            if mostrar_cada == 1 or n % mostrar_cada == 0 or n == self.max_iteraciones:
+                print(
+                    f"{n:<8d} | {aproximacion_actual:<20.{self.decimales}f} | "
+                    f"{error_actual:.3E}"
+                )
+                if delay_ms > 0:
+                    time.sleep(delay_ms / 1000.0)
+
+        print("\nResumen final:")
+        print(f"Iteraciones ejecutadas: {ultimo_n}")
+        print(f"Ultima aproximacion:    {ultima_aproximacion:.{self.decimales}f}")
+        print(f"Error final:            {ultimo_error:.3E}")
+
+    def ejecutar_en_vivo(self, mostrar_cada=1, delay_ms=80):
+        print("\nDemostracion incremental de e (vista en vivo)")
+        self.imprimir_formula_objetivo()
+        print("\nLa linea de resultado se actualiza sobre si misma:")
+
+        ultimo_n = 0
+        ultima_aproximacion = 0.0
+        ultimo_error = 0.0
+
+        for n, aproximacion_actual, error_actual in self.generar_iteraciones():
+            ultimo_n = n
+            ultima_aproximacion = aproximacion_actual
+            ultimo_error = error_actual
+
+            if mostrar_cada == 1 or n % mostrar_cada == 0 or n == self.max_iteraciones:
+                linea = (
+                    f"n={n:<8d} | (1 + 1/n)^n = {aproximacion_actual:.{self.decimales}f} | "
+                    f"error = {error_actual:.3E}"
+                )
+                print(f"\r{linea}", end="", flush=True)
+                if delay_ms > 0:
+                    time.sleep(delay_ms / 1000.0)
+
+        print()
+        print("\nResumen final:")
+        print(f"Iteraciones ejecutadas: {ultimo_n}")
+        print(f"Ultima aproximacion:    {ultima_aproximacion:.{self.decimales}f}")
+        print(f"Error final:            {ultimo_error:.3E}")
+
+
+def demostracion_euler():
+    print("\nDemostracion Euler")
+    print("Se calcula incrementalmente (1 + 1/n)^n desde n=1 hasta n grande.")
+
+    print("\nModo de ejecucion:")
+    print("1. Demo (con delay para visualizar cambios)")
+    print("2. Rapido (sin delay)")
+    print("3. En vivo (resultado sobre el resultado)")
+    modo = input("Elige una opcion (1-3, Enter para 1): ").strip()
+    modo = modo if modo in {"1", "2", "3"} else "1"
+
+    max_iter_txt = input("Maximo de iteraciones (Enter para 10000): ").strip()
+    if modo == "1":
+        mostrar_default = 1
+    elif modo == "2":
+        mostrar_default = 100
+    else:
+        mostrar_default = 1
+    mostrar_cada_txt = input(
+        f"Mostrar cada cuantas iteraciones (Enter para {mostrar_default}): "
+    ).strip()
+
+    if modo == "1":
+        delay_default = 80
+    elif modo == "2":
+        delay_default = 0
+    else:
+        delay_default = 50
+    delay_txt = input(
+        f"Delay en milisegundos por fila mostrada (Enter para {delay_default}): "
+    ).strip()
+
+    max_iteraciones = int(max_iter_txt) if max_iter_txt else 10000
+    mostrar_cada = int(mostrar_cada_txt) if mostrar_cada_txt else mostrar_default
+    delay_ms = int(delay_txt) if delay_txt else delay_default
+
+    if max_iteraciones < 1:
+        raise ValueError("El maximo de iteraciones debe ser mayor o igual a 1.")
+    if mostrar_cada < 1:
+        raise ValueError("El valor de muestreo debe ser mayor o igual a 1.")
+    if delay_ms < 0:
+        raise ValueError("El delay no puede ser negativo.")
+
+    demostrador = DemostracionEuler(max_iteraciones=max_iteraciones, decimales=15)
+    if modo == "3":
+        demostrador.ejecutar_en_vivo(mostrar_cada=mostrar_cada, delay_ms=delay_ms)
+    else:
+        demostrador.ejecutar(mostrar_cada=mostrar_cada, delay_ms=delay_ms)
+
+
 def main():
     mostrar_titulo()
 
