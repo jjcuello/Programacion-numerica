@@ -71,7 +71,7 @@ Menu principal actual en [run.py](run.py):
 
 - 1: Metodo de biseccion
 - 2: Metodo de interpolacion lineal secante
-- 3: Proximamente (Newton/Raphson)
+- 3: Metodo Newton / Raphson
 - 4: Proximamente (Punto Fijo)
 - 5: Proximamente (Blasr-Tron)
 - 6: Proximamente (Division Sintetica)
@@ -100,6 +100,12 @@ Submenu de Pi en [run.py](run.py):
 
 - [metodos/secante.py](metodos/secante.py):
   Metodo de la secante con soporte de graficacion y evaluacion de funciones del usuario.
+
+- [metodos/newton_raphson.py](metodos/newton_raphson.py):
+  Metodo de Newton / Raphson con estructura POO. Construye la funcion y su derivada desde expresiones de SymPy, ejecuta iteraciones con tabla de convergencia y soporta caso fijo + funcion del usuario.
+
+  Formula principal:
+  - x_{n+1} = x_n - f(x_n)/f'(x_n)
 
 - [metodos/euler.py](metodos/euler.py):
   Analisis de e con metodos numericos y demostracion incremental orientada a objetos.
@@ -167,6 +173,12 @@ $$
 
 $$
 x_{n+1} = x_n - f(x_n)\frac{x_n - x_{n-1}}{f(x_n)-f(x_{n-1})}
+$$
+
+- Metodo de Newton / Raphson:
+
+$$
+x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}
 $$
 
 ### 2) Numero de Euler $e$

@@ -1,4 +1,12 @@
-from metodos import biseccion, euler, evasion_singularidad, graficas_3d, pi as modulo_pi, secante
+from metodos import (
+    biseccion,
+    euler,
+    evasion_singularidad,
+    graficas_3d,
+    newton_raphson,
+    pi as modulo_pi,
+    secante,
+)
 
 def mostrar_titulo():
     print("==================================================================================")
@@ -86,7 +94,10 @@ def main():
             except Exception as e:
                 print(f"Error en metodo de la secante: {e}")
         elif opcion == "3":
-            print("Proximamente: Newton / Raphson")
+            try:
+                newton_raphson.main()
+            except Exception as e:
+                print(f"Error en metodo de Newton / Raphson: {e}")
         elif opcion == "4":
             print("Proximamente: Punto Fijo")
         elif opcion == "5":
