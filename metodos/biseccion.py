@@ -124,14 +124,21 @@ def formatear_valor_para_archivo(valor):
 
 
 def abrir_grafica(ruta_grafica):
-    if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
-        raise ValueError("No hay una sesion grafica disponible para abrir ventanas.")
+    if hasattr(os, "startfile"):
+        os.startfile(ruta_grafica)
+        return
 
-    programa = shutil.which("xdg-open")
-    if not programa:
-        raise ValueError("No se encontro el comando xdg-open para abrir la imagen.")
+    for programa in ("open", "xdg-open"):
+        ruta_programa = shutil.which(programa)
+        if ruta_programa:
+            subprocess.Popen(
+                [ruta_programa, str(ruta_grafica)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return
 
-    subprocess.Popen([programa, str(ruta_grafica)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    raise ValueError("No se pudo abrir la grafica automaticamente en este sistema.")
 
 
 def graficar_funcion(func, expresion, a, b, raiz=None, puntos=300):

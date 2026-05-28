@@ -59,13 +59,17 @@ def abrir_grafica(ruta_grafica):
         os.startfile(ruta_grafica)
         return
 
-    if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
-        import shutil
-        import subprocess
+    import shutil
+    import subprocess
 
-        programa = shutil.which("xdg-open")
-        if programa:
-            subprocess.Popen([programa, str(ruta_grafica)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for programa in ("open", "xdg-open"):
+        ruta_programa = shutil.which(programa)
+        if ruta_programa:
+            subprocess.Popen(
+                [ruta_programa, str(ruta_grafica)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
             return
 
     raise ValueError("No se pudo abrir la grafica automaticamente en este sistema.")
