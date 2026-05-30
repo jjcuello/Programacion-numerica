@@ -1,10 +1,12 @@
 from metodos import (
+    animaciones_trigonometricas,
     biseccion,
     euler,
     evasion_singularidad,
     graficas_3d,
     newton_raphson,
     pi as modulo_pi,
+    punto_fijo,
     secante,
 )
 
@@ -25,10 +27,11 @@ def mostrar_menu():
     print("8. Analisis del numero de Euler (e)")
     print("9. Evaluacion con evasion de singularidad")
     print("10. Analisis del numero Pi")
-    print("11. Salir")
+    print("11. Animaciones trigonometricas")
+    print("12. Salir")
 
 def leer_opcion():
-    opcion = input("Elige una opcion (1-11): ").strip()
+    opcion = input("Elige una opcion (1-12): ").strip()
     return opcion
 
 
@@ -99,7 +102,10 @@ def main():
             except Exception as e:
                 print(f"Error en metodo de Newton / Raphson: {e}")
         elif opcion == "4":
-            print("Proximamente: Punto Fijo")
+            try:
+                punto_fijo.main()
+            except Exception as e:
+                print(f"Error en metodo de Punto Fijo: {e}")
         elif opcion == "5":
             print("Proximamente: Blasr-Tron")
         elif opcion == "6":
@@ -125,6 +131,11 @@ def main():
             except Exception as e:
                 print(f"Error en modulo Pi: {e}")
         elif opcion == "11":
+            try:
+                animaciones_trigonometricas.main()
+            except Exception as e:
+                print(f"Error en modulo de animaciones trigonometricas: {e}")
+        elif opcion == "12":
             print("Cerrando programa. Hasta luego.")
             break
         else:

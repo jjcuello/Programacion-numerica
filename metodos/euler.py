@@ -352,7 +352,7 @@ def formatear_por_bloques(texto_decimal, tam_bloque=10, bloques_por_linea=5):
     for i in range(0, len(bloques), bloques_por_linea):
         grupo = " ".join(bloques[i : i + bloques_por_linea])
         if i == 0:
-            lineas.append(f"{parte_entera}.{grupo}")
+            lineas.append(f" {parte_entera}.{grupo}")
         else:
             lineas.append(f"   {grupo}")
 
@@ -396,10 +396,16 @@ def imprimir_tabla(resultados):
 
     decimales = resultados[0]["decimales"]
     precision = resultados[0]["precision"]
+    referencia_txt_completa = formatear_decimal(
+        resultados[0]["referencia_euler"], decimales, precision
+    )
     referencia_txt = vista_corta_decimal(
         resultados[0]["referencia_euler"], decimales, precision
     )
     print(f"\nValor de referencia de e ({decimales} decimales, vista corta): {referencia_txt}")
+    if decimales > 16:
+        print("\n\nValor de referencia de e completo (50 decimales por linea):")
+        print(formatear_por_bloques(referencia_txt_completa))
     print("\nComparacion de metodos:")
     print("Metodo                      | Aproximacion (vista corta) | Iteraciones | Error abs      | Dec. ok | Tiempo (s)")
     print("-" * 117)

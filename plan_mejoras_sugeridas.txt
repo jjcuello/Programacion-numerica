@@ -1,0 +1,33 @@
+Plan de mejoras sugeridas para el proyecto (2026-05-30)
+
+1. Experiencia de usuario y didáctica
+- Agregar ejemplos guiados y comentarios automáticos en cada método, explicando el “por qué” de cada paso.
+- Incluir preguntas de autoevaluación o mini-quizzes al final de cada módulo.
+- Permitir guardar y cargar sesiones de trabajo para retomar ejercicios o comparar resultados.
+
+2. Visualización y análisis
+- Agregar gráficos de convergencia para todos los métodos iterativos.
+- Permitir comparar visualmente dos métodos en la misma gráfica.
+- Incluir histogramas de error o gráficos de estabilidad para métodos sensibles.
+
+3. Modularidad y extensibilidad
+- Unificar la interfaz de entrada de funciones del usuario en todos los métodos.
+- Permitir que el usuario defina y guarde sus propias funciones y casos de prueba.
+- Agregar soporte para scripts de prueba automatizados (test unitarios simples).
+
+4. Cobertura matemática
+- Agregar métodos para ecuaciones diferenciales ordinarias (Euler, RK4, sistemas).
+- Incluir interpolación y ajuste de curvas (Lagrange, spline, mínimos cuadrados).
+- Sumar análisis de estabilidad y condición numérica en todos los métodos relevantes.
+
+5. Accesibilidad y portabilidad
+- Agregar mensajes y menú en inglés/español (soporte multilenguaje).
+- Mejorar la detección automática de entorno y dependencias.
+- Permitir exportar resultados y gráficas en formatos estándar (CSV, PDF, SVG).
+
+6. Documentación y comunidad
+- Agregar ejemplos de uso en el README para cada módulo.
+- Incluir una sección de “Preguntas frecuentes” y “Errores comunes”.
+- Preparar una guía rápida para contribuir (cómo agregar un método nuevo siguiendo el estilo del proyecto).
+
+Este plan puede ser revisado y priorizado según necesidades del equipo y feedback de usuarios.

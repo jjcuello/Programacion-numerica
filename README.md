@@ -72,14 +72,15 @@ Menu principal actual en [run.py](run.py):
 - 1: Metodo de biseccion
 - 2: Metodo de interpolacion lineal secante
 - 3: Metodo Newton / Raphson
-- 4: Proximamente (Punto Fijo)
+- 4: Metodo Punto Fijo
 - 5: Proximamente (Blasr-Tron)
 - 6: Proximamente (Division Sintetica)
 - 7: Graficas 3D con POO
 - 8: Analisis del numero de Euler (e)
 - 9: Evaluacion con evasion de singularidad
 - 10: Analisis del numero Pi
-- 11: Salir
+- 11: Animaciones trigonometricas
+- 12: Salir
 
 Submenu de Euler en [run.py](run.py):
 
@@ -106,6 +107,12 @@ Submenu de Pi en [run.py](run.py):
 
   Formula principal:
   - x_{n+1} = x_n - f(x_n)/f'(x_n)
+
+- [metodos/punto_fijo.py](metodos/punto_fijo.py):
+  Metodo de Punto Fijo con estructura POO para iteraciones de la forma x(i+1)=g(x(i)). Incluye ejemplo guiado, modo con funcion del usuario y verificacion del resultado por residual.
+
+  Formula principal:
+  - x_{n+1} = g(x_n)
 
 - [metodos/euler.py](metodos/euler.py):
   Analisis de e con metodos numericos y demostracion incremental orientada a objetos.
@@ -148,6 +155,18 @@ Submenu de Pi en [run.py](run.py):
 - [metodos/graficas_3d.py](metodos/graficas_3d.py):
   Modulo POO de figuras 3D con clase base abstracta y clases concretas.
 
+- [metodos/animaciones_trigonometricas.py](metodos/animaciones_trigonometricas.py):
+  Modulo POO para animaciones didacticas de funciones trigonometricas en 2D y 3D.
+
+  Incluye actualmente:
+  - Seno dinamica con variacion de amplitud, frecuencia y fase.
+  - Interferencia de ondas con visualizacion de senales individuales y su suma.
+  - Superficie trigonometrica 3D en movimiento.
+  - Exportacion a GIF (con fallback automatico a PNG cuando el entorno no permite GIF).
+
+  Proximamente:
+  - Ingreso de funciones personalizadas del usuario para animarlas en 2D y 3D.
+
 - [metodos/run_graficas_3d.py](metodos/run_graficas_3d.py):
   Lanzador directo del modulo de graficas 3D.
 
@@ -156,6 +175,10 @@ Submenu de Pi en [run.py](run.py):
 
 - [metodos/sistemas_no_lineales_basico.py](metodos/sistemas_no_lineales_basico.py):
   Variante simplificada del modulo anterior.
+
+## Proximas actualizaciones sugeridas
+
+- Agregar un modulo educativo de matrices, manteniendo POO y simplicidad, que incluya operaciones basicas (suma, producto, transpuesta), resolucion de sistemas lineales $Ax=b$ (Gauss, Gauss-Jordan y LU), metodos iterativos (Jacobi y Gauss-Seidel), determinante e inversa, y visualizaciones didacticas de convergencia (residual $||Ax-b||$, error por iteracion y mapas de calor), con modos Demo, Rapido y En vivo para reforzar la interpretacion matematica.
 
 ## Formulas matematicas implementadas
 
