@@ -1,0 +1,1 @@
+"""Shared result objects for numerical executions."""

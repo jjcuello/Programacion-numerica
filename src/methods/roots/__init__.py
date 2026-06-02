@@ -1,0 +1,1 @@
+"""Root-finding methods migrated to the v0.2 architecture."""

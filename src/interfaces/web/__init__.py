@@ -1,0 +1,1 @@
+"""Web adapters reserved for future v0.2 work."""

@@ -10,6 +10,234 @@ El sistema centraliza practicas de metodos numericos en un menu interactivo con 
 - Codigo orientado a objetos en modulos clave.
 - Comparacion didactica entre metodos lentos y metodos de alta precision.
 
+## Utilidad actual y proyeccion academica
+
+En su estado actual, el proyecto ya es util como laboratorio academico de metodos numericos. No se limita a calcular resultados: tambien permite observar convergencia, comparar precision entre algoritmos, visualizar funciones y reforzar conceptos matematicos con ejemplos guiados.
+
+Su utilidad actual se concentra en cinco frentes:
+
+- Practica de resolucion de ecuaciones no lineales con metodos clasicos.
+- Comparacion didactica de velocidad, error y estabilidad entre algoritmos.
+- Analisis numerico de constantes matematicas como e y pi.
+- Evaluacion segura de funciones con singularidades o puntos problematicos.
+- Visualizacion matematica con graficas 2D, figuras 3D y animaciones.
+
+La direccion de crecimiento recomendada no es convertir el repositorio en una coleccion mas grande de scripts aislados, sino en una plataforma de aprendizaje y analisis numerico. En esa linea, el proyecto puede escalar hacia:
+
+- Plataforma docente para cursos de metodos numericos.
+- Banco reproducible de experimentos numericos.
+- Herramienta de apoyo para tutorias, estudio autonomo y clases practicas.
+- Base de un trabajo de investigacion de pregrado orientado a aprendizaje asistido por software.
+
+## Vision v0.2
+
+La version v0.2 propone evolucionar desde una aplicacion CLI monolitica hacia una arquitectura modular centrada en reutilizacion, trazabilidad de experimentos y escalabilidad academica.
+
+Objetivo central de v0.2:
+
+- Separar el motor numerico de la interfaz de usuario para que el proyecto pueda crecer hacia CLI avanzada, interfaz web, exportacion de reportes y evaluacion formal en contexto academico.
+
+Preguntas que v0.2 busca responder:
+
+- Que metodo conviene segun el tipo de problema y las condiciones iniciales.
+- Como cambia la convergencia cuando varian tolerancia, semilla o precision.
+- Que errores o patrones de uso cometen con mas frecuencia los estudiantes.
+- Como transformar ejecuciones sueltas en experimentos comparables y reproducibles.
+
+## Arquitectura objetivo v0.2
+
+La arquitectura propuesta para v0.2 se organiza por capas y responsabilidades.
+
+```mermaid
+flowchart TD
+    UI[Interfaces de usuario\nCLI / Web / Reportes] --> APP[Casos de uso y orquestacion]
+    APP --> CORE[Core numerico]
+    APP --> ANALYSIS[Analisis y metricas]
+    APP --> TUTOR[Tutor didactico y recomendador]
+    CORE --> METHODS[Metodos numericos]
+    CORE --> MODELS[Modelos de problema]
+    ANALYSIS --> STORE[Persistencia de sesiones y experimentos]
+    TUTOR --> STORE
+    UI --> STORE
+```
+
+### 1) Capa de interfaces
+
+Responsabilidad:
+
+- Recibir entradas del usuario y presentar resultados sin mezclar la logica numerica con `input()` y `print()`.
+
+Versiones previstas:
+
+- CLI mejorada para uso rapido en clase o laboratorio.
+- Interfaz web para comparaciones visuales, historiales y dashboards.
+- Exportacion de resultados a JSON, CSV y PDF.
+
+### 2) Capa de aplicacion u orquestacion
+
+Responsabilidad:
+
+- Convertir una accion de usuario en un flujo reproducible: construir el problema, ejecutar el metodo, capturar iteraciones, medir error y devolver un reporte.
+
+Casos de uso esperados:
+
+- Resolver un problema con un metodo.
+- Comparar varios metodos sobre el mismo problema.
+- Repetir un experimento con diferentes tolerancias o semillas.
+- Guardar y recuperar sesiones.
+
+### 3) Core numerico
+
+Responsabilidad:
+
+- Definir contratos estables para funciones, problemas, resultados e iteraciones.
+
+Elementos clave:
+
+- Parser seguro de expresiones matematicas.
+- Modelo comun para problemas escalares, sistemas no lineales y evaluaciones seguras.
+- Estructura comun de salida para todos los metodos: estado, raiz o aproximacion, residual, iteraciones, tiempo, error y metadatos.
+
+### 4) Capa de metodos numericos
+
+Responsabilidad:
+
+- Implementar los algoritmos como componentes reutilizables, independientes de la interfaz.
+
+Familias de metodos objetivo:
+
+- Raices de ecuaciones: biseccion, secante, Newton-Raphson, punto fijo.
+- Sistemas no lineales.
+- Analisis de constantes: e y pi.
+- Evaluacion segura con evasion de singularidades.
+- Futuro v0.2+: matrices, sistemas lineales, interpolacion y EDO.
+
+### 5) Capa de analisis y metricas
+
+Responsabilidad:
+
+- Convertir una ejecucion en evidencia numerica interpretable.
+
+Indicadores recomendados:
+
+- Error absoluto y error relativo.
+- Residual por iteracion.
+- Tiempo de ejecucion.
+- Tasa de convergencia observada.
+- Sensibilidad a semilla inicial.
+- Estabilidad ante cambios de precision y tolerancia.
+
+### 6) Capa didactica y recomendador
+
+Responsabilidad:
+
+- Agregar valor pedagogico, no solo computacional.
+
+Funciones objetivo:
+
+- Sugerir el metodo mas conveniente segun propiedades del problema.
+- Advertir por que un metodo puede fallar.
+- Explicar la interpretacion de una tabla de iteraciones.
+- Proponer ejercicios, preguntas de autoevaluacion y retroalimentacion.
+
+### 7) Persistencia y trazabilidad
+
+Responsabilidad:
+
+- Guardar sesiones y experimentos para comparacion posterior.
+
+Datos a persistir:
+
+- Funcion o sistema evaluado.
+- Parametros de entrada.
+- Metodo usado.
+- Historial de iteraciones.
+- Resultados finales y metricas.
+- Fecha, version y entorno de ejecucion.
+
+## Estructura propuesta del proyecto para v0.2
+
+La siguiente estructura no reemplaza de inmediato la organizacion actual; funciona como objetivo de refactor progresivo.
+
+```text
+src/
+  app/
+    use_cases/
+    services/
+  core/
+    expressions/
+    models/
+    results/
+    validation/
+  methods/
+    roots/
+    systems/
+    constants/
+    safe_eval/
+    linear_algebra/
+  analysis/
+    convergence/
+    benchmarking/
+    reports/
+  tutoring/
+    recommendations/
+    explanations/
+    quizzes/
+  infrastructure/
+    storage/
+    exporters/
+    plotting/
+  interfaces/
+    cli/
+    web/
+tests/
+docs/
+examples/
+```
+
+## Ruta de migracion hacia v0.2
+
+La evolucion propuesta puede hacerse por etapas, sin romper el valor actual del proyecto.
+
+### Etapa 1: desacople del nucleo
+
+- Extraer la logica numerica de los modulos actuales a funciones y clases sin dependencias de consola.
+- Estandarizar un formato comun de resultado.
+- Agregar pruebas unitarias para los metodos principales.
+
+### Etapa 2: comparacion y trazabilidad
+
+- Registrar iteraciones, errores y tiempos de todos los metodos.
+- Implementar comparacion de varios metodos sobre una misma funcion.
+- Guardar sesiones de experimentos en JSON o SQLite.
+
+### Etapa 3: capa didactica
+
+- Incorporar recomendaciones automaticas por reglas.
+- Agregar explicaciones contextuales y alertas de convergencia.
+- Construir ejercicios guiados y mini evaluaciones.
+
+### Etapa 4: interfaz escalable
+
+- Mantener la CLI como modo base.
+- Incorporar una interfaz web para analisis visual y seguimiento de sesiones.
+- Preparar exportacion de reportes para uso docente y academico.
+
+## Potencial como tesis de pregrado
+
+La linea mas prometedora para investigacion no es solo ampliar el numero de metodos, sino estudiar como una plataforma de analisis numerico guiado mejora el aprendizaje.
+
+Una formulacion posible del proyecto de tesis seria:
+
+- Diseno e implementacion de una plataforma didactica para el aprendizaje de metodos numericos con analisis de convergencia, recomendacion automatica y trazabilidad de experimentos.
+
+El aporte academico de v0.2 puede sostenerse sobre cuatro ejes:
+
+- Ingenieria de software: arquitectura modular y extensible.
+- Analisis numerico: comparacion rigurosa de metodos y metricas.
+- Visualizacion: interpretacion grafica de convergencia y error.
+- Innovacion educativa: apoyo al aprendizaje, autoevaluacion y seguimiento.
+
 ## Estructura del proyecto
 
 - [run.py](run.py): punto de entrada principal y navegacion por menus/submenus.

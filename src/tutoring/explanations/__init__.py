@@ -1,0 +1,1 @@
+"""Contextual explanations for convergence and numerical behavior."""
