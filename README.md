@@ -35,11 +35,11 @@ Actualmente integra:
 
 La direccion recomendada para el proyecto no es convertirse en una coleccion cada vez mayor de scripts, sino evolucionar hacia una plataforma de aprendizaje y analisis numerico.
 
-La ruta principal recomendada es:
+La ruta principal de desarrollo es:
 
 - Plataforma web educativa con nucleo matematico desacoplado, persistencia de sesiones, comparacion de metodos, reportes y apoyo didactico.
 
-Rutas secundarias posibles:
+Rutas secundarias posibles propuestas:
 
 - CLI avanzada para uso tecnico y validacion rapida.
 - Libreria distribuible para reutilizacion programatica.
@@ -48,10 +48,10 @@ Rutas secundarias posibles:
 
 Este proyecto no busca competir con SciPy, MATLAB u otras herramientas cientificas maduras en rendimiento industrial. Su nicho es otro:
 
-- mostrar el paso a paso,
-- explicar por que un metodo converge o falla,
-- permitir comparacion reproducible,
-- apoyar el aprendizaje numerico con evidencia y visualizacion.
+- Mostrar el paso a paso.
+- Explicar por que un metodo converge o falla.
+- Permitir comparacion reproducible.
+- Apoyar el aprendizaje numerico con evidencia y visualizacion.
 
 Si una evolucion futura aumenta demasiado la complejidad para el estudiante o desplaza el enfoque didactico, entonces esa evolucion no estaria alineada con la identidad del proyecto.
 
