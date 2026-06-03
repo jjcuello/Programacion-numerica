@@ -847,6 +847,6 @@ $$
 
 ## Creditos
 
-- Autor: José Javier Cuello
+- Autores: José Javier Cuello, Leonardo González
 - Profesor: Yancelis Noguera
 - Institucion: I.U. Santiago Mariño
