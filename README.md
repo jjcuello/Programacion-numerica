@@ -1,4 +1,4 @@
-# Proyecto de Programacion Numerica
+# Programación Numerica
 
 Aplicacion de consola en Python para practicar metodos numericos, comparar convergencia de algoritmos y visualizar resultados. El proyecto actualmente cubre ecuaciones no lineales, numero de Euler, numero Pi, evaluacion segura con evasion de singularidades y graficas 3D usando POO.
 
