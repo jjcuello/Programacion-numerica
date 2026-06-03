@@ -2,6 +2,330 @@
 
 Aplicacion de consola en Python para practicar metodos numericos, comparar convergencia de algoritmos y visualizar resultados. El proyecto actualmente cubre ecuaciones no lineales, numero de Euler, numero Pi, evaluacion segura con evasion de singularidades y graficas 3D usando POO.
 
+## Hoja principal del proyecto
+
+Esta es la base de presentacion del proyecto. Su funcion es explicar con claridad que es el sistema, para quien sirve, que valor aporta hoy y hacia donde debe crecer.
+
+### Que es este proyecto
+
+El proyecto nace como un entorno academico para estudiar metodos numericos de forma guiada. Su valor no esta solo en calcular resultados, sino en mostrar el proceso: iteraciones, convergencia, error, comparacion entre metodos y apoyo visual para interpretar el comportamiento matematico.
+
+Actualmente integra:
+
+- Resolucion de ecuaciones no lineales.
+- Comparacion didactica de metodos iterativos.
+- Analisis numerico de constantes como $e$ y $\pi$.
+- Evaluacion segura de funciones con singularidades.
+- Graficas 2D, figuras 3D y animaciones trigonometricas.
+
+### Para quien esta pensado
+
+- Estudiantes: para practicar, observar convergencia y comprender mejor el paso a paso de cada metodo.
+- Profesores: para apoyar clases, demostraciones, ejercicios y futuras exportaciones de resultados o reportes.
+- Desarrolladores del proyecto: para construir una base mantenible, extensible y alineada con objetivos academicos serios.
+
+### Utilidad actual del sistema
+
+- Permite resolver problemas numericos clasicos con enfoque didactico.
+- Muestra diferencias reales entre metodos lentos, rapidos, estables o sensibles.
+- Ayuda a visualizar conceptos que normalmente en clase solo se ven en formulas o tablas.
+- Sirve como laboratorio de practica para estudio autonomo, tutorias y demostraciones.
+
+### Vision de crecimiento
+
+La direccion recomendada para el proyecto no es convertirse en una coleccion cada vez mayor de scripts, sino evolucionar hacia una plataforma de aprendizaje y analisis numerico.
+
+La ruta principal recomendada es:
+
+- Plataforma web educativa con nucleo matematico desacoplado, persistencia de sesiones, comparacion de metodos, reportes y apoyo didactico.
+
+Rutas secundarias posibles:
+
+- CLI avanzada para uso tecnico y validacion rapida.
+- Libreria distribuible para reutilizacion programatica.
+
+### Alcance y limites
+
+Este proyecto no busca competir con SciPy, MATLAB u otras herramientas cientificas maduras en rendimiento industrial. Su nicho es otro:
+
+- mostrar el paso a paso,
+- explicar por que un metodo converge o falla,
+- permitir comparacion reproducible,
+- apoyar el aprendizaje numerico con evidencia y visualizacion.
+
+Si una evolucion futura aumenta demasiado la complejidad para el estudiante o desplaza el enfoque didactico, entonces esa evolucion no estaria alineada con la identidad del proyecto.
+
+## Arbol de trabajo del proyecto
+
+El desarrollo del proyecto puede organizarse como un arbol metodologico de ocho frentes.
+
+```mermaid
+flowchart TD
+  ROOT[Proyecto de Programacion Numerica] --> P1[1. Planificar]
+  ROOT --> P2[2. Analizar]
+  ROOT --> P3[3. Disenar]
+  ROOT --> P4[4. Desarrollar]
+  ROOT --> P5[5. Probar]
+  ROOT --> P6[6. Implementar]
+  ROOT --> P7[7. Mantener]
+  ROOT --> P8[8. Documentar]
+```
+
+### Descripcion del arbol
+
+1. Planificar: definir vision, valor, alcance, prioridades y ruta de evolucion.
+2. Analizar: estudiar necesidades del usuario, limitaciones tecnicas y oportunidades academicas.
+3. Disenar: modelar arquitectura, interfaces, contratos y experiencia de uso.
+4. Desarrollar: implementar el nucleo, los metodos, la interfaz y la persistencia.
+5. Probar: validar correctitud numerica, estabilidad, integracion y experiencia de uso.
+6. Implementar: publicar, desplegar y poner en uso la version correspondiente.
+7. Mantener: corregir, mejorar, ampliar cobertura y sostener compatibilidad.
+8. Documentar: dejar trazabilidad tecnica, didactica y academica del proyecto.
+
+## 1. Planificar
+
+El punto mas importante en esta etapa es evitar crecer sin direccion. Planificar en este proyecto no significa solo hacer una lista de tareas: significa decidir que utilidad adicional queremos generar y cual es la ruta mas coherente para convertir la version actual en una plataforma academica escalable.
+
+### 1.1 Objetivo de la planificacion
+
+La planificacion debe responder estas preguntas centrales:
+
+- Para que queremos escalar el proyecto.
+- A quien beneficia cada mejora.
+- Cual es la ruta principal de evolucion.
+- Que limites debemos respetar para no perder el enfoque.
+- Que hitos deben cumplirse antes de intentar una version mayor.
+
+### 1.2 Valor del escalado por tipo de usuario
+
+#### Estudiantes
+
+El escalado debe reducir friccion y aumentar comprension.
+
+Beneficios buscados:
+
+- Menor barrera de entrada para usar la herramienta.
+- Visualizacion clara de iteraciones, errores y convergencia.
+- Posibilidad de practicar sin depender tanto de configuraciones manuales complejas.
+- Acceso futuro a una interfaz mas amigable que la consola tradicional.
+
+#### Profesores
+
+El escalado debe aumentar el valor pedagogico.
+
+Beneficios buscados:
+
+- Mostrar procesos numericos en clase con mejor apoyo visual.
+- Comparar metodos en tiempo real.
+- Exportar tablas, resultados o reportes para actividades y evaluaciones.
+- Usar el sistema como apoyo en tutorias, demostraciones y laboratorios.
+
+#### Equipo desarrollador
+
+El escalado debe mejorar mantenibilidad y velocidad de evolucion.
+
+Beneficios buscados:
+
+- Agregar nuevos metodos con contratos comunes.
+- Reutilizar el nucleo matematico en CLI, web y reportes.
+- Reducir el costo de incorporar modulos como algebra lineal, interpolacion o EDO.
+- Facilitar pruebas automatizadas y refactor incremental.
+
+### 1.3 Rutas de evolucion evaluadas
+
+En este proyecto se reconocen tres rutas viables de crecimiento.
+
+#### Ruta A. Libreria distribuible
+
+Vision:
+
+- Convertir el proyecto en una libreria reutilizable desde scripts externos.
+
+Valor:
+
+- Permite que otros programadores importen metodos y resultados como componentes.
+
+Utilidad real para este proyecto:
+
+- Es valiosa como ruta secundaria de reutilizacion tecnica.
+- No es la ruta principal para el objetivo pedagogico del proyecto.
+
+#### Ruta B. Plataforma web interactiva
+
+Vision:
+
+- Llevar el sistema a una experiencia visual y accesible desde navegador.
+
+Valor:
+
+- Facilita uso en clase, demostracion, practica y comparacion sin depender de menus de consola.
+
+Utilidad real para este proyecto:
+
+- Es la ruta principal recomendada.
+- Es la que mejor alinea utilidad academica, valor de tesis y accesibilidad.
+
+#### Ruta C. Super-CLI o TUI avanzada
+
+Vision:
+
+- Mantener la consola, pero con una interfaz textual mas profesional.
+
+Valor:
+
+- Mejora el uso tecnico y la experiencia para usuarios comodos con terminal.
+
+Utilidad real para este proyecto:
+
+- Sirve como ruta complementaria.
+- No debe sustituir la apuesta principal por una interfaz educativa mas accesible.
+
+### 1.4 Ruta principal seleccionada
+
+La ruta prioritaria del proyecto es:
+
+- Nucleo desacoplado + persistencia de experimentos + comparador de metodos + reportes + futura interfaz web educativa.
+
+Esta combinacion es la mas conveniente porque integra:
+
+- valor tecnico,
+- valor pedagogico,
+- escalabilidad real,
+- y potencial academico para convertirse en anteproyecto o tesis de pregrado.
+
+### 1.5 Que si debe hacer el proyecto
+
+- Enseñar metodos numericos con foco en comprension.
+- Mostrar convergencia, error, residual y comportamiento iterativo.
+- Comparar metodos sobre un mismo problema.
+- Guardar sesiones y experimentos para reproducibilidad.
+- Exportar resultados para apoyo docente.
+- Crecer hacia algebra lineal, interpolacion, EDO y analisis guiado.
+
+### 1.6 Que no debe intentar hacer el proyecto
+
+- Reemplazar bibliotecas cientificas industriales.
+- Enfocarse en computo masivo o alto rendimiento como objetivo principal.
+- Exigir al estudiante conocimientos avanzados de programacion solo para usar la herramienta.
+- Incorporar modulos nuevos sin integrarlos al modelo didactico y arquitectonico comun.
+
+### 1.7 Riesgos de planificacion a controlar
+
+- Crecimiento sin prioridad clara.
+- Agregar demasiados metodos sin consolidar arquitectura.
+- Perder el enfoque educativo por perseguir complejidad tecnica innecesaria.
+- Saltar a una interfaz web sin antes estabilizar contratos, persistencia y pruebas.
+- Confundir prototipo funcional con producto academico validado.
+
+### 1.8 Hitos estrategicos de planificacion
+
+Los hitos recomendados para la evolucion del proyecto son estos:
+
+1. Desacoplar matematicas de `print()` e `input()`.
+2. Migrar los metodos principales al nucleo comun.
+3. Incorporar comparacion de metodos y trazabilidad de sesiones.
+4. Agregar reportes y exportacion de resultados.
+5. Integrar matrices y algebra lineal como nuevo bloque academico fuerte.
+6. Construir la interfaz web educativa.
+7. Validar el sistema con uso real en contexto academico.
+8. Consolidar una version candidata a 1.0.0.
+
+### 1.9 Vinculo con la proyeccion academica
+
+Una buena planificacion no solo organiza el desarrollo: tambien prepara la base del discurso academico del proyecto.
+
+La pregunta de investigacion de fondo puede formularse asi:
+
+- Como puede una plataforma de analisis numerico guiado mejorar la comprension de metodos numericos en estudiantes de pregrado.
+
+Desde esa perspectiva, planificar bien significa alinear desde ahora:
+
+- arquitectura,
+- experiencia de usuario,
+- trazabilidad de resultados,
+- evaluacion pedagogica,
+- y capacidad de expansion futura.
+
+## 2. Analizar
+
+Analizar significa estudiar el estado real del proyecto, los perfiles de usuario y los limites tecnicos antes de seguir expandiendo funciones. Este punto convierte la vision en requisitos justificados.
+
+### 2.1 Que debemos analizar en este proyecto
+
+- El valor real que ofrece hoy la aplicacion.
+- Los problemas de arquitectura que frenan el escalado.
+- Las necesidades concretas de estudiantes, profesores y equipo desarrollador.
+- Los requisitos funcionales y no funcionales que se desprenden de esas necesidades.
+
+### 2.2 Lectura del estado actual
+
+El proyecto ya ofrece una base academica valiosa porque resuelve, compara y visualiza metodos numericos. Sin embargo, el escalado todavia depende de corregir una limitacion estructural principal:
+
+- la logica matematica historicamente ha estado muy cercana a la interfaz de consola.
+
+Fortalezas principales:
+
+- Existe identidad didactica clara.
+- El contenido matematico ya tiene amplitud suficiente para justificar crecimiento.
+- Hay valor inmediato para estudio, tutorias y demostraciones.
+- La base actual permite refactor progresivo en lugar de una reescritura total.
+
+Debilidades principales:
+
+- Acoplamiento entre calculo e interfaz.
+- Estandarizacion parcial entre modulos.
+- Falta de una capa consolidada de analisis, persistencia y exportacion en la version original.
+- Accesibilidad limitada para usuarios que no se sienten comodos con terminal.
+
+### 2.3 Necesidades por actor
+
+#### Estudiantes
+
+- Menor barrera de entrada.
+- Visualizacion clara del paso a paso.
+- Repeticion de experimentos y comparaciones.
+- Experiencia futura mas accesible desde web.
+
+#### Profesores
+
+- Mejor apoyo visual en clase.
+- Capacidad de comparar metodos rapidamente.
+- Reutilizacion de resultados y reportes.
+- Base para actividades, guias y evaluaciones.
+
+#### Equipo desarrollador
+
+- Contratos comunes.
+- Menor costo de agregar metodos nuevos.
+- Mejor trazabilidad y pruebas.
+- Evolucion ordenada hacia web, reportes y modulos futuros.
+
+### 2.4 Requisitos que nacen del analisis
+
+Requisitos funcionales prioritarios:
+
+- Resolver problemas con salida comun.
+- Comparar metodos sobre un mismo problema.
+- Registrar iteraciones, errores, tiempos y residual.
+- Guardar sesiones y experimentos.
+- Exportar resultados en formatos reutilizables.
+
+Requisitos no funcionales prioritarios:
+
+- Modularidad.
+- Reutilizacion.
+- Testabilidad.
+- Trazabilidad.
+- Claridad pedagogica.
+
+### 2.5 Conclusion del analisis
+
+El analisis confirma que el proyecto si debe escalar, pero no en cualquier direccion. La conclusion correcta es esta:
+
+- primero consolidar el nucleo comun,
+- despues comparacion, persistencia y reportes,
+- y luego llevar esa base a una interfaz web educativa.
+
 ## En que consiste
 
 El sistema centraliza practicas de metodos numericos en un menu interactivo con submenus por tema. El enfoque actual del desarrollo prioriza:
