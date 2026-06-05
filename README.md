@@ -226,7 +226,7 @@ La plataforma objetivo se concibe con diferentes vistas segun el actor academico
 - Visualizacion de tablas de iteraciones, errores y convergencia.
 - Graficas 2D, representaciones 3D y animaciones.
 - Historial de experimentos y comparaciones.
-- Tutor didactico con recomendaciones y quizzes.
+- Tutor didactico con recomendaciones y examenes.
 
 ### 3. Profesor
 
@@ -256,7 +256,7 @@ flowchart LR
         LOGIN[Iniciar sesion y validar rol]
         SIM[Simular metodos numericos]
         GRAF[Visualizar graficas y tablas]
-        QUIZ[Responder quizzes y recomendaciones]
+        EXAMENES[Responder examenes y recomendaciones]
         DOC[Gestionar ejercicios y monitoreo]
         CRUD[Gestionar usuarios y configuracion]
     end
@@ -297,7 +297,7 @@ La version v0.2 no se presenta como ruptura total del proyecto actual, sino como
 
 - Agregar explicaciones de convergencia y advertencias.
 - Recomendar el metodo segun el tipo de problema.
-- Incorporar quizzes y apoyo formativo.
+- Incorporar examenes y apoyo formativo.
 
 ### Fase 5. Interfaz web educativa
 
