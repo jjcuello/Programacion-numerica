@@ -23,9 +23,21 @@ La hoja de ruta del proyecto no consiste en acumular scripts aislados, sino en c
 
 La ensenanza tradicional de metodos numericos suele apoyarse en calculos manuales, hojas de calculo o scripts de consola ejecutados de forma aislada. Ese enfoque presenta limitaciones que afectan tanto el aprendizaje como la supervision docente.
 
+## Interrogantes Específicas
+
+¿Cómo diseñar e implementar la base arquitectónica modular y el núcleo numérico desacoplado (versión v0.2) que sirva como fundamento para la evolución de una herramienta de consola hacia una plataforma web interactiva y educativa de métodos numéricos en el Instituto Universitario Politécnico "Santiago Mariño"?
+
+## Interrogantes Específicas
+
+- ¿Cuáles son los requerimientos pedagógicos, funcionales y arquitectónicos necesarios para lograr el desacoplamiento efectivo del motor matemático original basado en consola?
+- ¿Cómo debe estructurarse el diseño de una arquitectura modular que garantice la escalabilidad, persistencia de datos y visualización interactiva en una posterior fase web?
+- ¿De qué manera se puede desarrollar y optimizar el núcleo numérico para que soporte de forma segura métodos de raíces, análisis de constantes y futuras extensiones algorítmicas?
+- ¿Qué elementos técnicos se requieren para implementar la versión base v0.2 asegurando contratos comunes, comparación de métodos, persistencia de sesiones y una CLI reutilizable?
+- ¿Cuáles son las pautas y componentes críticos necesarios para preparar la transición fluida del proyecto hacia una siguiente fase que incorpore interfaz web, analíticas académicas y un tutor didáctico?
+
 ## Objetivo general
 
-Desarrollar una plataforma funcional, interactiva y educativa que optimice el proceso de creacion, simulacion, analisis comparativo y consulta de experimentos de metodos numericos para estudiantes y docentes del Instituto Universitario Politecnico "Santiago Marino".
+Diseñar e implementar la infraestructura de software modular (v0.2) mediante el desacoplamiento del motor matemático y la persistencia de datos, con el fin de preparar la transición de la herramienta de consola tradicional hacia una plataforma web interactiva para el aprendizaje de métodos numéricos.
 
 ## Objetivos especificos
 
