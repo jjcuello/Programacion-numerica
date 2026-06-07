@@ -2,7 +2,7 @@
 
 Fecha de emision: 2026-06-07
 Fase evaluada: Planificacion
-Decision de avance: Aprobada para pasar a Diseno
+Decision de avance: Aprobada para pasar a Diseño
 
 ## 1) Criterios de salida go/no-go
 
@@ -15,7 +15,7 @@ Decision de avance: Aprobada para pasar a Diseno
 | Requisitos funcionales y no funcionales definidos | GO | documentacion/plan_tecnico_v0_2.md |
 | Riesgos principales identificados y priorizados | GO | Seccion 2 de este documento |
 | Responsables y fechas de corto plazo asignados | GO | Seccion 3 de este documento |
-| Backlog de Diseno priorizado y con DoD minima | GO | Seccion 4 de este documento |
+| Backlog de Diseño priorizado y con DoD minima | GO | Seccion 4 de este documento |
 | Registro de aprobacion del equipo emitido | GO | Seccion 5 de este documento |
 
 Resultado go/no-go: GO.
@@ -118,7 +118,7 @@ Acta corta de aprobacion:
 Responsables que aprueban:
 
 - Jose Javier Cuello - Aprobado.
-- Leonardo Gonzalez - Aprobado.
+- Leonardo Gonzalez - Falta / Aprobación.
 
 ## 6) Arranque de Diseno (artefactos asociados)
 
