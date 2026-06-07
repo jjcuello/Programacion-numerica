@@ -21,7 +21,6 @@ Plan de mejoras sugeridas para el proyecto (2026-05-30)
 - Sumar análisis de estabilidad y condición numérica en todos los métodos relevantes.
 
 5. Accesibilidad y portabilidad
-- Agregar mensajes y menú en inglés/español (soporte multilenguaje).
 - Mejorar la detección automática de entorno y dependencias.
 - Permitir exportar resultados y gráficas en formatos estándar (CSV, PDF, SVG).
 
