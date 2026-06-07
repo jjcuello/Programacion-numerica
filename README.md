@@ -1,6 +1,6 @@
 # Instituto Universitario Politecnico "Santiago Marino"
 
-# Desarrollo de una plataforma web interactiva para el aprendizaje, analisis y optimizacion de metodos numericos
+# Desarrollo de una plataforma web interactiva para el aprendizaje de metodos numericos
 
 Proyecto de la materia Programacion Numerica orientado a evolucionar desde una aplicacion de consola en Python hacia una plataforma web educativa, interactiva y trazable para estudiantes y docentes del Instituto Universitario Politecnico "Santiago Marino".
 
@@ -10,14 +10,18 @@ Proyecto de la materia Programacion Numerica orientado a evolucionar desde una a
 - Carrera: Ingenieria de Sistemas
 - Materia: Programacion Numerica
 - Profesor asesor: Yancelis Noguera
-- Estado actual del repositorio: base funcional en Python con CLI academica y bootstrap arquitectonico v0.2
+- Estado actual del proyecto: base funcional en Python con CLI academica y bootstrap arquitectonico v0.2
 - Direccion principal: plataforma web educativa con nucleo matematico desacoplado
 
 ## Resumen ejecutivo
 
-Este repositorio ya resuelve un problema academico real: permite practicar metodos numericos, observar iteraciones, comparar convergencia, estudiar constantes como `e` y `pi`, evaluar funciones con singularidades y apoyar la comprension matematica mediante graficas, figuras 3D y animaciones.
+Este proyecto ya resuelve un problema academico real: permite practicar metodos numericos, observar iteraciones, comparar convergencia, estudiar constantes como `e` y `pi`, evaluar funciones con singularidades y apoyar la comprension matematica mediante graficas, figuras 3D y animaciones.
 
 La hoja de ruta del proyecto no consiste en acumular scripts aislados, sino en consolidar un sistema didactico mas completo. La base actual en Python sirve como motor numerico y laboratorio academico; la evolucion v0.2 propone desacoplar ese motor, estandarizar resultados, registrar experimentos y preparar una futura plataforma web con trazabilidad, reportes, analiticas y apoyo pedagogico.
+
+## Problematica y necesidad academica
+
+La ensenanza tradicional de metodos numericos suele apoyarse en calculos manuales, hojas de calculo o scripts de consola ejecutados de forma aislada. Ese enfoque presenta limitaciones que afectan tanto el aprendizaje como la supervision docente.
 
 ## Objetivo general
 
@@ -27,13 +31,9 @@ Desarrollar una plataforma funcional, interactiva y educativa que optimice el pr
 
 - Analizar los requerimientos pedagogicos, funcionales y arquitectonicos necesarios para desacoplar el motor matematico original basado en consola.
 - Disenar una arquitectura modular que permita evolucionar hacia una plataforma web con persistencia, trazabilidad y visualizacion interactiva.
-- Desarrollar y refactorizar el nucleo numerico para soportar metodos de raices, analisis de constantes, evaluacion segura y futuras extensiones.
+- Desarrollar el nucleo numerico para soportar metodos de raices, analisis de constantes, evaluacion segura y futuras extensiones.
 - Implementar una base v0.2 con contratos comunes, comparacion de metodos, persistencia de sesiones y CLI reutilizable.
 - Preparar el proyecto para una siguiente fase con interfaz web, analiticas academicas y tutor didactico.
-
-## Problematica y necesidad academica
-
-La ensenanza tradicional de metodos numericos suele apoyarse en calculos manuales, hojas de calculo o scripts de consola ejecutados de forma aislada. Ese enfoque presenta limitaciones que afectan tanto el aprendizaje como la supervision docente.
 
 ### Conflictos y desafios identificados
 
