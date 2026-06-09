@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="520" viewBox="0 0 1400 520">
+  <defs>
+    <style>
+      .title { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #1f2937; }
+      .axis { stroke: #334155; stroke-width: 2; }
+      .label { font: 600 17px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .date { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .bar1 { fill: #0284c7; }
+      .bar2 { fill: #0ea5e9; }
+      .bar3 { fill: #06b6d4; }
+      .bar4 { fill: #14b8a6; }
+      .bar5 { fill: #22c55e; }
+    </style>
+  </defs>
+
+  <text x="40" y="45" class="title">Cronograma del proyecto de Programacion Numerica (05-06-2026 a 02-08-2026)</text>
+
+  <line x1="280" y1="90" x2="1300" y2="90" class="axis" />
+
+  <text x="280" y="75" class="date">05-06</text>
+  <text x="530" y="75" class="date">20-06</text>
+  <text x="770" y="75" class="date">05-07</text>
+  <text x="1020" y="75" class="date">20-07</text>
+  <text x="1260" y="75" class="date">02-08</text>
+
+  <text x="40" y="150" class="label">Fase 1: Analisis y planificacion (9 dias)</text>
+  <rect x="280" y="125" width="155" height="35" rx="6" class="bar1" />
+
+  <text x="40" y="220" class="label">Fase 2: Diseno de arquitectura y contratos (10 dias)</text>
+  <rect x="435" y="195" width="172" height="35" rx="6" class="bar2" />
+
+  <text x="40" y="290" class="label">Fase 3: Implementacion del nucleo y CLI (16 dias)</text>
+  <rect x="607" y="265" width="276" height="35" rx="6" class="bar3" />
+
+  <text x="40" y="360" class="label">Fase 4: Pruebas y optimizacion (10 dias)</text>
+  <rect x="883" y="335" width="172" height="35" rx="6" class="bar4" />
+
+  <text x="40" y="430" class="label">Fase 5: Integracion web inicial y entrega (14 dias)</text>
+  <rect x="1055" y="405" width="245" height="35" rx="6" class="bar5" />
+</svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <defs>
+    <style>
+      .title { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #1f2937; }
+      .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 10; ry: 10; }
+      .label { font: 600 18px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .arrow { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb" />
+    </marker>
+  </defs>
+
+  <text x="40" y="45" class="title">Arquitectura actual del repositorio</text>
+
+  <rect class="box" x="60" y="120" width="250" height="70" />
+  <text class="label" x="85" y="163">CLI actual y CLI v0.2</text>
+
+  <rect class="box" x="390" y="120" width="290" height="70" />
+  <text class="label" x="420" y="163">Casos de uso y orquestacion</text>
+
+  <rect class="box" x="760" y="80" width="220" height="70" />
+  <text class="label" x="810" y="123">Core numerico</text>
+
+  <rect class="box" x="1000" y="80" width="170" height="70" />
+  <text class="label" x="1020" y="123">Metodos numericos</text>
+
+  <rect class="box" x="760" y="180" width="220" height="70" />
+  <text class="label" x="785" y="223">Comparacion y metricas</text>
+
+  <rect class="box" x="760" y="280" width="220" height="70" />
+  <text class="label" x="770" y="323">Persistencia de sesiones</text>
+
+  <rect class="box" x="760" y="380" width="260" height="70" />
+  <text class="label" x="785" y="423">Base para capa didactica</text>
+
+  <path class="arrow" d="M310 155 L390 155" />
+  <path class="arrow" d="M680 155 L760 115" />
+  <path class="arrow" d="M980 115 L1000 115" />
+  <path class="arrow" d="M680 155 L760 215" />
+  <path class="arrow" d="M680 155 L760 315" />
+  <path class="arrow" d="M680 155 L760 415" />
+</svg>

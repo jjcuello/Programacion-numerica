@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980">
+  <defs>
+    <style>
+      .title { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #1f2937; }
+      .entity { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 10; ry: 10; }
+      .entityTitle { font: 700 17px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .field { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .rel { stroke: #7c3aed; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+      .relLabel { font: 600 13px 'Segoe UI', Arial, sans-serif; fill: #6d28d9; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7c3aed" />
+    </marker>
+  </defs>
+
+  <text x="40" y="45" class="title">Modelo de datos propuesto (ER simplificado)</text>
+
+  <rect class="entity" x="60" y="90" width="300" height="190" />
+  <text class="entityTitle" x="80" y="120">usuarios</text>
+  <text class="field" x="80" y="145">id: int</text>
+  <text class="field" x="80" y="165">nombre: string</text>
+  <text class="field" x="80" y="185">apellido: string</text>
+  <text class="field" x="80" y="205">cedula: string</text>
+  <text class="field" x="80" y="225">email: string</text>
+  <text class="field" x="80" y="245">password_hash: string</text>
+  <text class="field" x="80" y="265">rol: string</text>
+
+  <rect class="entity" x="500" y="90" width="300" height="150" />
+  <text class="entityTitle" x="520" y="120">estudiantes</text>
+  <text class="field" x="520" y="145">usuario_id: int</text>
+  <text class="field" x="520" y="165">carrera_id: int</text>
+  <text class="field" x="520" y="185">semestre_actual: int</text>
+  <text class="field" x="520" y="205">estatus: string</text>
+
+  <rect class="entity" x="920" y="90" width="300" height="130" />
+  <text class="entityTitle" x="940" y="120">profesores</text>
+  <text class="field" x="940" y="145">usuario_id: int</text>
+  <text class="field" x="940" y="165">especialidades: string</text>
+  <text class="field" x="940" y="185">horas_maximas: int</text>
+
+  <rect class="entity" x="500" y="330" width="300" height="170" />
+  <text class="entityTitle" x="520" y="360">experimentos</text>
+  <text class="field" x="520" y="385">id: int</text>
+  <text class="field" x="520" y="405">estudiante_id: int</text>
+  <text class="field" x="520" y="425">metodo_id: int</text>
+  <text class="field" x="520" y="445">funcion_objetivo: string</text>
+  <text class="field" x="520" y="465">tolerancia: float</text>
+  <text class="field" x="520" y="485">max_iteraciones: int</text>
+
+  <rect class="entity" x="920" y="330" width="300" height="170" />
+  <text class="entityTitle" x="940" y="360">iteraciones</text>
+  <text class="field" x="940" y="385">id: int</text>
+  <text class="field" x="940" y="405">experimento_id: int</text>
+  <text class="field" x="940" y="425">iteracion: int</text>
+  <text class="field" x="940" y="445">x_n: float</text>
+  <text class="field" x="940" y="465">error_absoluto / relativo</text>
+  <text class="field" x="940" y="485">residual: float</text>
+
+  <rect class="entity" x="60" y="620" width="300" height="130" />
+  <text class="entityTitle" x="80" y="650">metodos_numericos</text>
+  <text class="field" x="80" y="675">id: int</text>
+  <text class="field" x="80" y="695">nombre_metodo: string</text>
+  <text class="field" x="80" y="715">categoria: string</text>
+
+  <rect class="entity" x="500" y="620" width="300" height="130" />
+  <text class="entityTitle" x="520" y="650">carreras</text>
+  <text class="field" x="520" y="675">id: int</text>
+  <text class="field" x="520" y="695">nombre_carrera: string</text>
+  <text class="field" x="520" y="715">codigo_unico: string</text>
+
+  <path class="rel" d="M360 150 L500 150" />
+  <text class="relLabel" x="395" y="140">1 -> 0..1</text>
+
+  <path class="rel" d="M360 180 L920 155" />
+  <text class="relLabel" x="640" y="160">1 -> 0..1</text>
+
+  <path class="rel" d="M650 240 L650 330" />
+  <text class="relLabel" x="665" y="290">1 -> 0..n</text>
+
+  <path class="rel" d="M800 400 L920 400" />
+  <text class="relLabel" x="835" y="390">1 -> 0..n</text>
+
+  <path class="rel" d="M360 675 L500 420" />
+  <text class="relLabel" x="390" y="560">1 -> 0..n</text>
+
+  <path class="rel" d="M650 620 L650 500" />
+  <text class="relLabel" x="665" y="560">1 -> 0..n</text>
+</svg>

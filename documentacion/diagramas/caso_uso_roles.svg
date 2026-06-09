@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <defs>
+    <style>
+      .title { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #1f2937; }
+      .group { fill: #f8fafc; stroke: #475569; stroke-width: 2; rx: 14; ry: 14; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 10; ry: 10; }
+      .label { font: 600 18px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .groupLabel { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #1e293b; }
+      .arrow { stroke: #ea580c; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ea580c" />
+    </marker>
+  </defs>
+
+  <text x="40" y="45" class="title">Caso de uso general por roles</text>
+
+  <rect class="group" x="40" y="80" width="340" height="620" />
+  <text x="60" y="115" class="groupLabel">Actores</text>
+
+  <rect class="box" x="70" y="150" width="280" height="80" />
+  <text class="label" x="155" y="198">Estudiante</text>
+
+  <rect class="box" x="70" y="280" width="280" height="80" />
+  <text class="label" x="170" y="328">Profesor</text>
+
+  <rect class="box" x="70" y="410" width="280" height="80" />
+  <text class="label" x="145" y="458">Administrador</text>
+
+  <rect class="group" x="440" y="80" width="900" height="620" />
+  <text x="460" y="115" class="groupLabel">Plataforma</text>
+
+  <rect class="box" x="480" y="150" width="360" height="80" />
+  <text class="label" x="550" y="198">Iniciar sesion y validar rol</text>
+
+  <rect class="box" x="900" y="150" width="380" height="80" />
+  <text class="label" x="970" y="198">Simular metodos numericos</text>
+
+  <rect class="box" x="480" y="280" width="360" height="80" />
+  <text class="label" x="540" y="328">Visualizar graficas y tablas</text>
+
+  <rect class="box" x="900" y="280" width="380" height="80" />
+  <text class="label" x="930" y="328">Responder examenes y recomendaciones</text>
+
+  <rect class="box" x="480" y="410" width="360" height="80" />
+  <text class="label" x="520" y="458">Gestionar ejercicios y monitoreo</text>
+
+  <rect class="box" x="900" y="410" width="380" height="80" />
+  <text class="label" x="955" y="458">Gestionar usuarios y configuracion</text>
+
+  <path class="arrow" d="M350 190 L480 190" />
+  <path class="arrow" d="M350 190 L900 190" />
+  <path class="arrow" d="M350 190 L480 320" />
+  <path class="arrow" d="M350 190 L900 320" />
+
+  <path class="arrow" d="M350 320 L480 190" />
+  <path class="arrow" d="M350 320 L480 450" />
+
+  <path class="arrow" d="M350 450 L480 190" />
+  <path class="arrow" d="M350 450 L900 450" />
+</svg>

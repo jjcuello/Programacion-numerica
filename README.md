@@ -136,27 +136,11 @@ Ese orden evita construir una interfaz vistosa sobre una base todavia acoplada o
 
 ### Arquitectura actual del repositorio
 
-```mermaid
-flowchart TD
-    CLI[CLI actual y CLI v0.2] --> USE[Casos de uso y orquestacion]
-    USE --> CORE[Core numerico]
-    CORE --> METHODS[Metodos numericos]
-    USE --> ANALYSIS[Comparacion y metricas]
-    USE --> STORE[Persistencia de sesiones]
-    USE --> TUTOR[Base para capa didactica]
-```
+![Arquitectura actual del repositorio](documentacion/diagramas/arquitectura_actual.svg)
 
 ### Arquitectura objetivo de evolucion web
 
-```mermaid
-flowchart LR
-    FE[Frontend web educativo] --> API[API y casos de uso]
-    API --> CORE[Motor numerico desacoplado]
-    CORE --> METHODS[Metodos y evaluadores]
-    API --> ANALYSIS[Analiticas y comparacion]
-    API --> STORE[Persistencia de datos]
-    API --> TUTOR[Tutor didactico y recomendador]
-```
+![Arquitectura objetivo de evolucion web](documentacion/diagramas/arquitectura_objetivo.svg)
 
 ### Principios arquitectonicos
 
@@ -256,32 +240,7 @@ La plataforma objetivo se concibe con diferentes vistas segun el actor academico
 
 ## Caso de uso general por roles
 
-```mermaid
-flowchart LR
-    subgraph Actores
-        EST[Estudiante]
-        PRO[Profesor]
-        ADM[Administrador]
-    end
-
-    subgraph Plataforma
-        LOGIN[Iniciar sesion y validar rol]
-        SIM[Simular metodos numericos]
-        GRAF[Visualizar graficas y tablas]
-        EXAMENES[Responder examenes y recomendaciones]
-        DOC[Gestionar ejercicios y monitoreo]
-        CRUD[Gestionar usuarios y configuracion]
-    end
-
-    EST --> LOGIN
-    EST --> SIM
-    EST --> GRAF
-    EST --> QUIZ
-    PRO --> LOGIN
-    PRO --> DOC
-    ADM --> LOGIN
-    ADM --> CRUD
-```
+![Caso de uso general por roles](documentacion/diagramas/caso_uso_roles.svg)
 
 ## Roadmap tecnico v0.2
 
@@ -321,27 +280,7 @@ La version v0.2 no se presenta como ruptura total del proyecto actual, sino como
 
 En el repositorio no habia un diagrama de Gantt ya construido; lo que existia era un cronograma tabular. A partir de la ventana de trabajo definida, se plantea el siguiente Gantt entre el `05-06-2026` y el `02-08-2026`.
 
-```mermaid
-gantt
-    title Cronograma del proyecto de Programacion Numerica
-    dateFormat  YYYY-MM-DD
-    axisFormat  %d-%m
-
-    section Planificacion
-    Analisis y planificacion           :done, fase1, 2026-06-05, 9d
-
-    section Diseno
-    Diseno de arquitectura y contratos :active, fase2, 2026-06-14, 10d
-
-    section Desarrollo
-    Implementacion del nucleo y CLI    :fase3, 2026-06-24, 16d
-
-    section Validacion
-    Pruebas y optimizacion             :fase4, 2026-07-10, 10d
-
-    section Cierre de materia
-    Integracion web inicial y entrega  :fase5, 2026-07-20, 14d
-```
+![Cronograma del proyecto](documentacion/diagramas/cronograma_gantt.svg)
 
 | Fase | Enfoque | Inicio | Fin | Duracion |
 | --- | --- | --- | --- | --- |
@@ -374,7 +313,7 @@ Nota: este cronograma usa toda la ventana disponible entre el `05 de junio de 20
 - NumPy
 - SciPy
 - Matplotlib
-- Mermaid para documentacion visual
+- Diagramas estaticos SVG para documentacion visual
 - `unittest` para pruebas automatizadas
 
 ### Tecnologias objetivo para la plataforma web
@@ -398,70 +337,7 @@ La evolucion web del sistema debe incorporar seguridad desde la arquitectura, no
 
 ## Modelo de datos propuesto
 
-```mermaid
-erDiagram
-    usuarios ||--o| estudiantes : posee
-    usuarios ||--o| profesores : posee
-    estudiantes ||--o{ experimentos : ejecuta
-    experimentos ||--o{ iteraciones : contiene
-    metodos_numericos ||--o{ experimentos : clasifica
-    carreras ||--o{ estudiantes : organiza
-
-    usuarios {
-        int id
-        string nombre
-        string apellido
-        string cedula
-        string email
-        string password_hash
-        string rol
-    }
-
-    estudiantes {
-        int usuario_id
-        int carrera_id
-        int semestre_actual
-        string estatus
-    }
-
-    profesores {
-        int usuario_id
-        string especialidades
-        int horas_maximas
-    }
-
-    experimentos {
-        int id
-        int estudiante_id
-        int metodo_id
-        string funcion_objetivo
-        float tolerancia
-        int max_iteraciones
-        string fecha_ejecucion
-    }
-
-    iteraciones {
-        int id
-        int experimento_id
-        int iteracion
-        float x_n
-        float error_absoluto
-        float error_relativo
-        float residual
-    }
-
-    metodos_numericos {
-        int id
-        string nombre_metodo
-        string categoria
-    }
-
-    carreras {
-        int id
-        string nombre_carrera
-        string codigo_unico
-    }
-```
+![Modelo de datos propuesto](documentacion/diagramas/modelo_datos.svg)
 
 ## Paradigmas de programacion e ingenieria aplicados
 
