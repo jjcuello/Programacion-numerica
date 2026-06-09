@@ -66,6 +66,6 @@ Se considera terminado si se cumple todo:
 
 ## 7) Evidencia obligatoria al cierre
 
-1. Checklist tecnico completo en documentacion/02_Diseño/checklist_tecnico_revision_contratos.md.
+1. Checklist tecnico completo en documentacion/03_Diseño/checklist_tecnico_revision_contratos.md.
 2. Resultado de pruebas de contratos en tests/test_v0_2_contracts.py.
 3. Minuta de cierre semanal con decisiones de continuidad.

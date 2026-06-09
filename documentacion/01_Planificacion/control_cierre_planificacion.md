@@ -124,7 +124,7 @@ Responsables que aprueban:
 
 Para ejecutar el inicio de Diseno con trazabilidad, se definen los siguientes artefactos:
 
-1. documentacion/02_Diseño/paquete_diseno_semana_1.md
-2. documentacion/02_Diseño/checklist_tecnico_revision_contratos.md
+1. documentacion/03_Diseño/paquete_diseno_semana_1.md
+2. documentacion/03_Diseño/checklist_tecnico_revision_contratos.md
 
 Estos documentos operativizan los entregables inmediatos definidos en la Seccion 3.
