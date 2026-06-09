@@ -21,7 +21,7 @@ La hoja de ruta del proyecto no consiste en acumular scripts aislados, sino en c
 
 ## Problematica y necesidad academica
 
-La ensenanza tradicional de metodos numericos suele apoyarse en calculos manuales, hojas de calculo o scripts de consola ejecutados de forma aislada. Ese enfoque presenta limitaciones que afectan tanto el aprendizaje como la supervision docente.
+La enseñanza tradicional de metodos numericos suele apoyarse en calculos manuales, hojas de calculo o scripts de consola ejecutados de forma aislada. Ese enfoque presenta limitaciones que afectan tanto el aprendizaje como la supervision docente.
 
 ## Interrogante Principal
 
