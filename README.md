@@ -37,7 +37,7 @@ La enseñanza tradicional de metodos numericos suele apoyarse en calculos manual
 
 ## Objetivo general
 
-Diseñar e implementar la infraestructura de software modular (v0.2) mediante el desacoplamiento del motor matemático y la persistencia de datos, con el fin de preparar la transición de la herramienta de consola tradicional hacia una plataforma web interactiva para el aprendizaje de métodos numéricos.
+Diseñar e implementar la transición de la herramienta de consola tradicional hacia una plataforma web interactiva para el aprendizaje de métodos numéricos.
 
 ## Objetivos especificos
 
