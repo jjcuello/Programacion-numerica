@@ -23,7 +23,7 @@ La hoja de ruta del proyecto no consiste en acumular scripts aislados, sino en c
 
 La ensenanza tradicional de metodos numericos suele apoyarse en calculos manuales, hojas de calculo o scripts de consola ejecutados de forma aislada. Ese enfoque presenta limitaciones que afectan tanto el aprendizaje como la supervision docente.
 
-## Interrogantes Específicas
+## Interrogante Principal
 
 ¿Cómo diseñar e implementar la base arquitectónica modular y el núcleo numérico desacoplado (versión v0.2) que sirva como fundamento para la evolución de una herramienta de consola hacia una plataforma web interactiva y educativa de métodos numéricos en el Instituto Universitario Politécnico "Santiago Mariño"?
 
