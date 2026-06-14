@@ -401,11 +401,11 @@ pip install -r requirements.txt
 
 ### Ejecutar pruebas (Suite modular v0.2)
 
-Las pruebas deben ser ejecutadas desde la carpeta `backend/` para asegurar la correcta resolucion de dependencias locales:
+Las pruebas deben ser ejecutadas desde la carpeta `backend/` utilizando el entorno virtual activo para asegurar la correcta resolución de dependencias locales:
 
 ```bash
 cd backend
-venv\Scripts\python -m unittest discover -s tests
+python -m unittest discover -s tests
 ```
 
 ### Ejecutar la base CLI v0.2
@@ -415,12 +415,12 @@ Se ejecuta desde la carpeta `backend/` utilizando el entorno virtual activo:
 ```bash
 cd backend
 # Ejemplo para resolver biseccion
-venv\Scripts\python run_cli.py solve --method bisection --expression "x**3 - x - 2" --interval 1 2
+python run_cli.py solve --method bisection --expression "x**3 - x - 2" --interval 1 2
 ```
 
 ### Ejecutar la version legacy interactiva (v0.1)
 
-El menu legacy interactivo de consola se puede arrancar utilizando el interprete de Python y las dependencias de la nueva arquitectura:
+El menu legacy interactivo de consola se puede arrancar desde la raíz del proyecto utilizando el entorno virtual activo:
 
 ```bash
 python legacy/run.py
