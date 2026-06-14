@@ -154,57 +154,62 @@ Ese orden evita construir una interfaz vistosa sobre una base todavia acoplada o
 
 ```text
 .
-|-- run.py
-|-- run_v0_2.py
-|-- requirements.txt
-|-- documentacion/
-|-- graficas/
-|-- metodos/
-|   |-- animaciones_trigonometricas.py
-|   |-- biseccion.py
-|   |-- euler.py
-|   |-- evasion_singularidad.py
-|   |-- graficas_3d.py
-|   |-- newton_raphson.py
-|   |-- pi.py
-|   |-- punto_fijo.py
-|   |-- secante.py
-|   |-- sistemas_no_lineales.py
-|   `-- sistemas_no_lineales_basico.py
-|-- src/
-|   |-- analysis/
-|   |-- app/
-|   |-- core/
-|   |-- infrastructure/
-|   |-- interfaces/
-|   |-- methods/
-|   `-- tutoring/
-|-- tests/
+|-- backend/
+|   |-- config/
+|   |-- src/              # Motor modular v0.2
+|   |   |-- analysis/
+|   |   |-- core/
+|   |   |-- infrastructure/
+|   |   |-- interfaces/
+|   |   |-- methods/
+|   |   `-- tutoring/
+|   |-- tests/            # Pruebas de v0.2
+|   |-- run_cli.py        # CLI de v0.2
+|   |-- requirements.txt  # Dependencias de Python
+|   `-- venv/             # Entorno virtual local
+|-- frontend/             # Vistas e interfaz de usuario (Estructura base)
+|   |-- assets/
+|   |   |-- css/
+|   |   |-- img/
+|   |   `-- js/
+|   |-- pages/
+|   |   |-- admin.html
+|   |   |-- estudiante.html
+|   |   |-- profesor.html
+|   |   `-- dashboard.html
+|   `-- index.html
+|-- legacy/               # Código interactivo v0.1
+|   |-- metodos/
+|   |-- graficas/
+|   `-- run.py
+|-- documentacion/        # Diagramas y planeación
+|-- .gitignore
+`-- README.md
 ```
 
 ## Modulos y capacidades principales
 
-### Base historica en consola
+### Base historica en consola (Legacy)
 
-- `run.py`: menu principal del laboratorio academico.
-- `metodos/biseccion.py`: metodo de biseccion.
-- `metodos/secante.py`: metodo de la secante.
-- `metodos/newton_raphson.py`: metodo Newton-Raphson.
-- `metodos/punto_fijo.py`: metodo de punto fijo.
-- `metodos/euler.py`: analisis del numero de Euler.
-- `metodos/pi.py`: analisis del numero pi.
-- `metodos/evasion_singularidad.py`: evaluacion segura.
-- `metodos/graficas_3d.py`: visualizacion 3D con POO.
-- `metodos/animaciones_trigonometricas.py`: apoyo visual dinamico.
+- `legacy/run.py`: menu principal del laboratorio academico.
+- `legacy/metodos/biseccion.py`: metodo de biseccion.
+- `legacy/metodos/secante.py`: metodo de la secante.
+- `legacy/metodos/newton_raphson.py`: metodo Newton-Raphson.
+- `legacy/metodos/punto_fijo.py`: metodo de punto fijo.
+- `legacy/metodos/euler.py`: analisis del numero de Euler.
+- `legacy/metodos/pi.py`: analisis del numero pi.
+- `legacy/metodos/evasion_singularidad.py`: evaluacion segura.
+- `legacy/metodos/graficas_3d.py`: visualizacion 3D con POO.
+- `legacy/metodos/animaciones_trigonometricas.py`: apoyo visual dinamico.
 
 ### Base modular v0.2
 
-- `src/core/`: modelos, resultados y parser.
-- `src/methods/`: implementaciones desacopladas por familia.
-- `src/analysis/`: comparacion y benchmarking.
-- `src/infrastructure/storage/`: persistencia de sesiones.
-- `src/interfaces/cli/`: CLI basada en arquitectura modular.
-- `tests/`: validaciones de contratos y flujo CLI.
+- `backend/src/core/`: modelos, resultados y parser.
+- `backend/src/methods/`: implementaciones desacopladas por familia.
+- `backend/src/analysis/`: comparacion y benchmarking.
+- `backend/src/infrastructure/storage/`: persistencia de sesiones.
+- `backend/src/interfaces/cli/`: CLI basada en arquitectura modular.
+- `backend/tests/`: validaciones de contratos y flujo CLI.
 
 ## Estructura de vistas por rol de usuario
 
@@ -373,30 +378,52 @@ La evolucion web del sistema debe incorporar seguridad desde la arquitectura, no
 ### Requisitos
 
 - Python 3.10 o superior recomendado.
-- Entorno virtual activo.
 
-### Instalacion
+### Instalacion y Preparacion
+
+Toda la logica de la version modular v0.2 y sus dependencias se gestiona desde el directorio `backend/`. Para instalar:
 
 ```bash
+cd backend
+python -m venv venv
+
+# Activar entorno virtual
+# En Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# En Windows (CMD):
+.\venv\Scripts\activate.bat
+# En Linux/macOS o Git Bash:
+source venv/bin/activate
+
+# Instalar dependencias
 pip install -r requirements.txt
 ```
 
-### Ejecutar la version actual del laboratorio CLI
+### Ejecutar pruebas (Suite modular v0.2)
+
+Las pruebas deben ser ejecutadas desde la carpeta `backend/` para asegurar la correcta resolucion de dependencias locales:
 
 ```bash
-python run.py
+cd backend
+venv\Scripts\python -m unittest discover -s tests
 ```
 
 ### Ejecutar la base CLI v0.2
 
+Se ejecuta desde la carpeta `backend/` utilizando el entorno virtual activo:
+
 ```bash
-python run_v0_2.py
+cd backend
+# Ejemplo para resolver biseccion
+venv\Scripts\python run_cli.py solve --method bisection --expression "x**3 - x - 2" --interval 1 2
 ```
 
-### Ejecutar pruebas
+### Ejecutar la version legacy interactiva (v0.1)
+
+El menu legacy interactivo de consola se puede arrancar utilizando el interprete de Python y las dependencias de la nueva arquitectura:
 
 ```bash
-python -m unittest discover -s tests
+python legacy/run.py
 ```
 
 ## Valor academico del proyecto
