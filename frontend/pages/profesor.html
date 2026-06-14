@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo del Profesor - Métodos Numéricos</title>
+    <!-- CSS Maestro -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- Iconos (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <style>
+        /* Estilos específicos del Módulo de Profesor */
+        .comparator-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .plot-container-large {
+            width: 100%;
+            height: 400px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .math-preview-prof {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        .comparison-table th {
+            background-color: var(--bg-surface-header);
+            text-align: center;
+        }
+
+        .comparison-table td {
+            text-align: center;
+        }
+
+        /* Analíticas y Sliders */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .analytics-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        @media (max-width: 1100px) {
+            .comparator-grid, .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera Principal -->
+    <header class="main-header">
+        <a href="../index.html" class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="logo-text">Programación Numérica</span>
+        </a>
+        <nav class="main-nav">
+            <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
+            <a href="estudiante.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
+            <a href="profesor.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
+        </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <!-- Título de Sección -->
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-square-poll-vertical" style="color: var(--accent);"></i> Laboratorio de Comparación Docente</h2>
+            <p class="text-secondary" style="font-size: 0.95rem;">Ejecuta múltiples métodos simultáneamente sobre un mismo problema para contrastar velocidad y estabilidad didáctica.</p>
+        </div>
+
+        <!-- Grid de Comparador -->
+        <div class="comparator-grid">
+            
+            <!-- Columna Izquierda: Entradas de Configuración -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem; font-size: 1.15rem;"><i class="fa-solid fa-gears" style="color: var(--primary);"></i> Parámetros de Entrada</h3>
+                
+                <form id="comparator-form">
+                    <!-- Función -->
+                    <div class="form-group">
+                        <label class="form-label">Función f(x)</label>
+                        <input type="text" id="expr-input-prof" class="form-control" value="x**3 - x - 2" required>
+                        <div id="math-preview-prof" class="math-preview-prof"></div>
+                    </div>
+
+                    <!-- Intervalo y punto de comparación -->
+                    <div class="form-group">
+                        <label class="form-label">Intervalo [a, b]</label>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="number" step="any" id="a-input-prof" class="form-control" placeholder="a" value="1">
+                            <input type="number" step="any" id="b-input-prof" class="form-control" placeholder="b" value="2">
+                        </div>
+                        <label class="form-label">Punto Inicial (x₀)</label>
+                        <input type="number" step="any" id="x0-input-prof" class="form-control" placeholder="x0" value="1.5">
+                    </div>
+
+                    <!-- Tolerancia y Max Iter -->
+                    <div class="form-group">
+                        <label class="form-label">Tolerancia</label>
+                        <input type="number" step="any" id="tolerance-input-prof" class="form-control" value="0.000001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Máx. Iteraciones</label>
+                        <input type="number" id="max-iter-input-prof" class="form-control" value="100">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        <i class="fa-solid fa-code-compare"></i> Comparar Algoritmos
+                    </button>
+                </form>
+            </div>
+
+            <!-- Columna Derecha: Gráfica de Convergencia Conjunta -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Contenedor del Gráfico -->
+                <div class="card" style="padding: 1rem;">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Trayectoria de Convergencia</h4>
+                    <div class="plot-container-large" id="plot-container-prof"></div>
+                </div>
+
+                <!-- Tabla Comparativa -->
+                <div class="card">
+                    <h4 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-table"></i> Métricas Comparativas Directas</h4>
+                    <div class="table-responsive">
+                        <table class="table comparison-table" id="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Método</th>
+                                    <th>Estado</th>
+                                    <th>Raíz Encontrada</th>
+                                    <th>Iteraciones</th>
+                                    <th>Último Residual f(x)</th>
+                                    <th>Tiempo Cálculo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-table-body">
+                                <tr>
+                                    <td colspan="6" style="color: var(--text-muted);">Haz clic en "Comparar Algoritmos" para ver los resultados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Analíticas Docentes y Generador -->
+        <div class="analytics-grid">
+            <!-- Gráfica de Rendimiento Grupal -->
+            <div class="analytics-card">
+                <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> Rendimiento General del Grupo
+                </h3>
+                <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 1rem;">Estadísticas del desempeño estudiantil por área temática en los retos autoevaluativos.</p>
+                <div id="radar-chart-prof" style="width: 100%; height: 350px;"></div>
+            </div>
+
+            <!-- Generador de Retos Académicos -->
+            <div class="analytics-card" style="display: flex; flex-direction: column; gap: 1rem;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-clipboard-question" style="color: var(--accent);"></i> Generador de Evaluaciones
+                </h3>
+                <p class="text-secondary" style="font-size: 0.85rem;">Crea cuestionarios y simulaciones personalizadas para tus grupos de clase con ponderaciones preestablecidas.</p>
+                
+                <div class="form-group">
+                    <label class="form-label">Plantilla del Examen</label>
+                    <select id="exam-template" class="form-control">
+                        <option value="none">-- Seleccionar plantilla --</option>
+                        <option value="parcial1">Primer Parcial (Teoría de Errores y Raíces)</option>
+                        <option value="parcial2">Segundo Parcial (Newton y Singularidades)</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+
+                <!-- Barra Ponderación del Parcial -->
+                <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 0.75rem;">
+                    <h5 style="font-weight: 600;">Estructura Ponderada de Dificultad</h5>
+                    <div style="display: flex; gap: 0.5rem; height: 12px; border-radius: 6px; overflow: hidden; background-color: var(--bg-surface-header);" id="weighted-bar">
+                        <div style="background-color: var(--success); width: 40%;" id="bar-easy"></div>
+                        <div style="background-color: var(--warning); width: 40%;" id="bar-med"></div>
+                        <div style="background-color: var(--danger); width: 20%;" id="bar-hard"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+                        <span>Fácil: <strong id="lbl-easy">40%</strong></span>
+                        <span>Medio: <strong id="lbl-med">40%</strong></span>
+                        <span>Difícil: <strong id="lbl-hard">20%</strong></span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button type="button" id="btn-export-exam" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fa-solid fa-file-export"></i> Exportar JSON
+                    </button>
+                    <button type="button" id="btn-generate-key" class="btn btn-primary" style="flex: 1;">
+                        <i class="fa-solid fa-key"></i> Generar Código de Clase
+                    </button>
+                </div>
+
+                <!-- Zona de salida del código de clase -->
+                <div id="class-code-output" style="display: none; background-color: var(--success-bg); border: 1px dashed var(--success); color: var(--success); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center; font-weight: 600; font-family: 'Fira Code', monospace; font-size: 1.1rem; margin-top: 0.5rem;">
+                    CODIGO-CLASE: NUM-2026-X8
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="main-footer">
+        <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Cátedra de Programación Numérica</p>
+    </footer>
+
+    <!-- Plotly JS -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <!-- Script Principal Profesor -->
+    <script src="../assets/js/profesor.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio del Estudiante - Métodos Numéricos</title>
+    <!-- CSS Maestro -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- Iconos (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <style>
+        /* Estilos complementarios para la UI de Estudiante */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .accordion-content {
+            display: none;
+            padding-top: 1rem;
+        }
+
+        .accordion-content.active {
+            display: block;
+        }
+
+        .math-preview {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        /* Singularidades y Alertas */
+        .didactic-alert {
+            display: none;
+            background-color: var(--warning-bg);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .didactic-alert-icon {
+            font-size: 1.5rem;
+            color: var(--warning);
+            margin-top: 2px;
+        }
+
+        .didactic-alert h4 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .didactic-alert p {
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+        }
+
+        /* Historial y Sidebar */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .history-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            border-color: var(--border-hover);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-item-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .history-item-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Gráfica y Resultados */
+        .plot-container {
+            width: 100%;
+            height: 400px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .metric-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-card-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-card-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Tutor Sliders */
+        .slider-group {
+            margin-top: 1rem;
+        }
+
+        .slider-item {
+            margin-bottom: 1rem;
+        }
+
+        .slider-label-wrapper {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .slider-control {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            transition: var(--transition);
+        }
+
+        .slider-control::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .tutor-alert {
+            display: flex;
+            gap: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+        }
+
+        /* Examen Focus Layout */
+        .quiz-container {
+            display: none;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer {
+            font-family: 'Fira Code', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timer.warning {
+            color: var(--danger);
+            animation: pulse 1s infinite alternate;
+        }
+
+        .question-card {
+            margin-bottom: 2rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .option-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .option-item:hover {
+            border-color: var(--border-hover);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .option-item.selected {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .quiz-results {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .insight-card {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; transform: scale(1.05); }
+        }
+
+        @media (max-width: 1100px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera Principal -->
+    <header class="main-header">
+        <a href="../index.html" class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="logo-text">Programación Numérica</span>
+        </a>
+        <nav class="main-nav">
+            <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
+            <a href="estudiante.html" class="nav-link active"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
+            <a href="profesor.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
+        </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <!-- Contenedor Principal del Simulador -->
+        <div class="workspace-grid">
+            
+            <!-- Columna Izquierda: Panel de Control del Simulador -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                
+                <!-- Card del Simulador -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-sliders" style="color: var(--primary);"></i> Configuración
+                    </h3>
+                    
+                    <form id="simulator-form">
+                        <!-- Expresión matemática -->
+                        <div class="form-group">
+                            <label class="form-label">Función f(x)</label>
+                            <input type="text" id="expression-input" class="form-control" placeholder="ej: x**3 - x - 2" value="x**3 - x - 2" required>
+                            <!-- Visor de fórmulas matemáticas con KaTeX -->
+                            <div id="math-preview" class="math-preview"></div>
+                        </div>
+
+                        <!-- Método -->
+                        <div class="form-group">
+                            <label class="form-label">Método Numérico</label>
+                            <select id="method-select" class="form-control">
+                                <option value="bisection">Bisección (Cerrado)</option>
+                                <option value="newton">Newton-Raphson (Abierto)</option>
+                            </select>
+                        </div>
+
+                        <!-- Botón Sugerir Valores -->
+                        <button type="button" id="suggest-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+                            <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> ✨ Sugerir Valores
+                        </button>
+
+                        <!-- Parámetros Avanzados -->
+                        <div class="accordion-header" id="advanced-toggle">
+                            <span>Parámetros Avanzados</span>
+                            <i class="fa-solid fa-chevron-down" id="advanced-arrow"></i>
+                        </div>
+                        
+                        <div class="accordion-content" id="advanced-content">
+                            <!-- Intervalo a y b (para Bisección) -->
+                            <div class="form-group" id="interval-group">
+                                <label class="form-label">Intervalo [a, b]</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="number" step="any" id="a-input" class="form-control" placeholder="a" value="1">
+                                    <input type="number" step="any" id="b-input" class="form-control" placeholder="b" value="2">
+                                </div>
+                            </div>
+
+                            <!-- Punto Inicial x0 (para Newton) -->
+                            <div class="form-group" id="x0-group" style="display: none;">
+                                <label class="form-label">Punto Inicial (x₀)</label>
+                                <input type="number" step="any" id="x0-input" class="form-control" placeholder="x0" value="1.5">
+                            </div>
+
+                            <!-- Tolerancia -->
+                            <div class="form-group">
+                                <label class="form-label">Tolerancia</label>
+                                <input type="number" step="any" id="tolerance-input" class="form-control" value="0.000001">
+                            </div>
+
+                            <!-- Iteraciones Máximas -->
+                            <div class="form-group">
+                                <label class="form-label">Máx. Iteraciones</label>
+                                <input type="number" id="max-iter-input" class="form-control" value="100">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                            <i class="fa-solid fa-play"></i> Resolver Simulación
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Card de Historial -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-history" style="color: var(--accent);"></i> Historial de Prácticas
+                    </h3>
+                    <div id="history-list" class="history-list">
+                        <!-- Se auto-llena con JavaScript -->
+                        <div class="text-muted" style="font-size: 0.9rem; text-align: center; padding: 1rem;">No hay simulaciones en esta sesión.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Panel de Visualización y Gráficas -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                
+                <!-- Alerta Didáctica de Singularidad -->
+                <div id="didactic-alert" class="didactic-alert">
+                    <span class="didactic-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <div>
+                        <h4 id="alert-title">Singularidad Matemática Detectada</h4>
+                        <p id="alert-description">El algoritmo se detuvo debido a una singularidad. Se ha trazado la asíntota de fallo en la gráfica.</p>
+                        <p id="alert-recommendation" style="margin-top: 0.5rem; font-weight: 500; color: var(--text-primary);"></p>
+                    </div>
+                </div>
+
+                <!-- Contenedor del Plot y Gráfica Interactiva -->
+                <div class="card" style="padding: 1rem;">
+                    <div class="plot-container" id="plot-container"></div>
+                </div>
+
+                <!-- Métricas de Salida -->
+                <div class="metric-cards">
+                    <div class="metric-card">
+                        <div class="metric-card-label">Estado</div>
+                        <div class="metric-card-value" id="metric-status">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-label">Raíz Aprox.</div>
+                        <div class="metric-card-value" id="metric-root" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-label">Iteraciones</div>
+                        <div class="metric-card-value" id="metric-iter">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-label">Tiempo (s)</div>
+                        <div class="metric-card-value" id="metric-time">-</div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Iteraciones -->
+                <div class="card" style="padding: 1.5rem 1rem;">
+                    <h3 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-list-ol"></i> Tabla de Iteraciones</h3>
+                    <div class="table-responsive" style="max-height: 300px;">
+                        <table class="table" id="iterations-table">
+                            <thead>
+                                <tr id="table-headers">
+                                    <th>Iteración</th>
+                                    <th>xi (Actual)</th>
+                                    <th>Lím. Sup</th>
+                                    <th>Raíz Aprox.</th>
+                                    <th>Error Rel.</th>
+                                    <th>Residual f(x)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted);">Realiza una simulación para ver la tabla de convergencia.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección del Tutor Didáctico -->
+        <section class="card" style="margin-top: 2rem;">
+            <h2 style="display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Panel del Tutor Didáctico
+            </h2>
+
+            <!-- Configuración del Reto -->
+            <div id="tutor-setup">
+                <p class="text-secondary" style="margin-bottom: 1.5rem;">Genera un reto conceptual y práctico a tu medida utilizando los sliders interactivos de dificultad.</p>
+                
+                <div class="grid-2">
+                    <!-- Configuración visual -->
+                    <div>
+                        <!-- Selector Teórico/Práctico -->
+                        <div class="form-group">
+                            <label class="form-label">Modalidad del Reto</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <span class="text-secondary" style="font-size: 0.9rem;">📚 Teórico</span>
+                                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                                    <input type="checkbox" id="quiz-mode-toggle" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-surface-header); transition: .4s; border-radius: 34px; border: 1px solid var(--border-color);" id="toggle-slider"></span>
+                                </label>
+                                <span class="text-secondary" style="font-size: 0.9rem;">🧮 Práctico</span>
+                            </div>
+                        </div>
+
+                        <!-- Leyenda informativa -->
+                        <div class="tutor-alert">
+                            <span style="font-size: 1.25rem; color: var(--accent);"><i class="fa-solid fa-circle-info"></i></span>
+                            <p>Los sliders se auto-ajustan proporcionalmente en tiempo real para sumar siempre exactamente el 100% de la carga de preguntas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sliders de Dificultad -->
+                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: var(--radius-md);">
+                        <h4 style="margin-bottom: 1rem;">Distribución de Preguntas</h4>
+                        
+                        <!-- Slider Fácil -->
+                        <div class="slider-item">
+                            <div class="slider-label-wrapper">
+                                <span>🟢 Nivel Fácil</span>
+                                <span id="easy-value">50% (5 preguntas)</span>
+                            </div>
+                            <input type="range" id="easy-slider" class="slider-control" min="0" max="100" value="50">
+                        </div>
+
+                        <!-- Slider Medio -->
+                        <div class="slider-item">
+                            <div class="slider-label-wrapper">
+                                <span>🟡 Nivel Medio</span>
+                                <span id="medium-value">30% (3 preguntas)</span>
+                            </div>
+                            <input type="range" id="medium-slider" class="slider-control" min="0" max="100" value="30">
+                        </div>
+
+                        <!-- Slider Difícil -->
+                        <div class="slider-item">
+                            <div class="slider-label-wrapper">
+                                <span>🔴 Nivel Difícil</span>
+                                <span id="hard-value">20% (2 preguntas)</span>
+                            </div>
+                            <input type="range" id="hard-slider" class="slider-control" min="0" max="100" value="20">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button type="button" id="start-quiz-btn" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-graduation-cap"></i> Iniciar Reto Académico
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modo Enfoque del Quiz -->
+            <div id="quiz-focus-container" class="quiz-container">
+                <div class="quiz-header">
+                    <h3 id="quiz-question-counter">Pregunta 1 de 10</h3>
+                    <div class="timer" id="quiz-timer">
+                        <i class="fa-solid fa-stopwatch"></i> <span id="timer-text">10:00</span>
+                    </div>
+                </div>
+
+                <!-- Carta de la pregunta -->
+                <div class="question-card">
+                    <p class="question-text" id="quiz-question-text">¿Qué condición matemática garantiza la existencia de al menos una raíz real de f(x) en el intervalo [a, b] según el Teorema del Valor Intermedio (Bolzano)?</p>
+                    <div class="options-list" id="quiz-options-list">
+                        <!-- Las opciones se inyectan dinámicamente -->
+                        <div class="option-item" data-index="0">
+                            <i class="fa-regular fa-circle"></i>
+                            <span>f(a) y f(b) deben ser mayores que cero.</span>
+                        </div>
+                        <div class="option-item" data-index="1">
+                            <i class="fa-regular fa-circle"></i>
+                            <span>f(a) y f(b) deben tener signos opuestos, es decir, f(a) * f(b) &lt; 0.</span>
+                        </div>
+                        <div class="option-item" data-index="2">
+                            <i class="fa-regular fa-circle"></i>
+                            <span>La función debe ser racional e indefinida en el intervalo.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+                    <button type="button" id="quiz-prev-btn" class="btn btn-secondary" style="display: none;">Atrás</button>
+                    <button type="button" id="quiz-next-btn" class="btn btn-primary">Siguiente Pregunta <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Panel de Resultados del Quiz -->
+            <div id="quiz-results-container" class="quiz-results">
+                <div class="grid-2" style="margin-bottom: 2rem;">
+                    <!-- Gráfico de Radar -->
+                    <div class="card" style="padding: 1rem; display: flex; align-items: center; justify-content: center;">
+                        <div id="radar-chart" style="width: 100%; height: 350px;"></div>
+                    </div>
+
+                    <!-- Resumen del Score -->
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 1rem;">
+                        <h3>Resultado del Reto</h3>
+                        <div style="font-size: 4rem; font-weight: 700; color: var(--accent); line-height: 1;" id="score-text">8 / 10</div>
+                        <p class="text-secondary" id="score-comment">¡Excelente trabajo! Has demostrado una buena comprensión teórica.</p>
+                        <div>
+                            <button type="button" id="reset-quiz-btn" class="btn btn-secondary">
+                                <i class="fa-solid fa-rotate-left"></i> Nuevo Reto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Feedback Didáctico -->
+                <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-lightbulb"></i> Feedback del Tutor Didáctico</h3>
+                <div id="insight-cards-container">
+                    <!-- Se auto-llena con JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="main-footer">
+        <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Cátedra de Programación Numérica</p>
+    </footer>
+
+    <!-- Plotly JS -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <!-- Script Principal Estudiante -->
+    <script src="../assets/js/estudiante.js"></script>
+
+</body>
+</html>

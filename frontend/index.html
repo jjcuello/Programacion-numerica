@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métodos Numéricos - Plataforma Educativa</title>
+    <!-- CSS Maestro -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- Iconos (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos específicos para la Landing Page */
+        .hero {
+            padding: 6rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15) 0%, rgba(8, 12, 20, 0) 60%);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            filter: blur(140px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .university-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--bg-surface-header);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-title span {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 750px;
+            margin: 0 auto 2.5rem auto;
+        }
+
+        .cta-group {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .features-section {
+            padding: 4rem 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .feature-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-sm);
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .feature-card {
+            padding: 2rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .authors-section {
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 4rem 2rem;
+        }
+
+        .authors-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .author-card {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .author-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .author-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .author-info p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .author-role {
+            font-size: 0.8rem !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            .cta-group {
+                flex-direction: column;
+                align-items: stretch;
+                max-width: 300px;
+                margin: 0 auto 2rem auto;
+            }
+            .authors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera Principal -->
+    <header class="main-header">
+        <a href="index.html" class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="logo-text">Programación Numérica</span>
+        </a>
+        <nav class="main-nav">
+            <a href="pages/estudiante.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
+            <a href="pages/profesor.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
+        </nav>
+    </header>
+
+    <!-- Héroe Principal -->
+    <section class="hero">
+        <div class="university-badge">
+            <i class="fa-solid fa-building-columns"></i> Instituto Universitario Politécnico "Santiago Mariño"
+        </div>
+        <h1 class="hero-title">Plataforma Web Interactiva para <span>Métodos Numéricos</span></h1>
+        <p class="hero-description">
+            Evolución del laboratorio de análisis numérico a un motor modular visual con persistencia, trazado didáctico y soporte inteligente de convergencia.
+        </p>
+        <div class="cta-group">
+            <a href="pages/estudiante.html" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-play"></i> Laboratorio de Estudiante
+            </a>
+            <a href="pages/profesor.html" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-chart-line"></i> Módulo del Profesor
+            </a>
+        </div>
+    </section>
+
+    <!-- Características del Sistema -->
+    <section class="features-section main-content">
+        <div class="section-header">
+            <h2 class="section-title">Capacidades de la Plataforma v0.2</h2>
+            <p class="section-subtitle">Diseño por capas para asegurar escalabilidad y aprendizaje interactivo</p>
+        </div>
+
+        <div class="grid-3">
+            <!-- Card 1 -->
+            <div class="card feature-card">
+                <div class="feature-icon-wrapper">
+                    <i class="fa-solid fa-gears"></i>
+                </div>
+                <h3>Motor Matemático Desacoplado</h3>
+                <p>Implementación pura y modular de métodos de raíces (Bisección y Newton-Raphson) aislada de la terminal para alimentar cualquier interfaz.</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="card feature-card">
+                <div class="feature-icon-wrapper" style="background: var(--accent-gradient);">
+                    <i class="fa-solid fa-chart-area"></i>
+                </div>
+                <h3>Gráficas Dinámicas en Cliente</h3>
+                <p>Visualización interactiva de funciones y raíces en tiempo real utilizando Plotly.js, incluyendo el trazado didáctico de singularidades y asíntotas.</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="card feature-card">
+                <div class="feature-icon-wrapper">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h3>Tutor Académico Integrado</h3>
+                <p>Banco de retos conceptuales y evaluador proporcional con retroalimentación inmediata, tarjetas de corrección e historial persistente.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Autores del Proyecto -->
+    <section class="authors-section">
+        <div class="section-header">
+            <h2 class="section-title">Autores y Colaboradores</h2>
+            <p class="section-subtitle">Estudiantes de Ingeniería de Sistemas de la Cátedra de Programación Numérica</p>
+        </div>
+
+        <div class="authors-grid">
+            <!-- Autor 1 -->
+            <div class="author-card">
+                <div class="author-avatar">JC</div>
+                <div class="author-info">
+                    <h4>José Javier Cuello</h4>
+                    <p>C.I. 15.179.918 | Ing. de Sistemas</p>
+                    <p class="author-role"><i class="fa-solid fa-code"></i> Arquitectura & Backend</p>
+                </div>
+            </div>
+            <!-- Autor 2 -->
+            <div class="author-card">
+                <div class="author-avatar" style="background: var(--accent-gradient);">LG</div>
+                <div class="author-info">
+                    <h4>Leonardo González</h4>
+                    <p>C.I. 31.223.011 | Ing. de Sistemas</p>
+                    <p class="author-role"><i class="fa-solid fa-palette"></i> UX/UI & Frontend</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pie de Página -->
+    <footer class="main-footer">
+        <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Cátedra de Programación Numérica</p>
+        <p style="margin-top: 0.5rem;">Desarrollado bajo principios de arquitectura modular y metodologías ágiles de ingeniería de software.</p>
+    </footer>
+
+</body>
+</html>

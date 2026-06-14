@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo Administrativo - Métodos Numéricos</title>
+    <!-- CSS Maestro -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- Iconos (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .settings-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        .log-time {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 900px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera Principal -->
+    <header class="main-header">
+        <a href="../index.html" class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="logo-text">Programación Numérica</span>
+        </a>
+        <nav class="main-nav">
+            <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
+            <a href="estudiante.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
+            <a href="profesor.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
+        </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <!-- Título -->
+        <div style="margin-bottom: 2rem;">
+            <h2><i class="fa-solid fa-user-shield" style="color: var(--danger);"></i> Consola de Administración</h2>
+            <p class="text-secondary" style="font-size: 0.95rem;">Configuración de límites de cómputo, reglas de seguridad de expresiones y auditorías.</p>
+        </div>
+
+        <!-- Grid Administrativa -->
+        <div class="admin-grid">
+            
+            <!-- Columna Izquierda: Parámetros del Servidor -->
+            <div class="settings-card">
+                <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-gears" style="color: var(--primary);"></i> Configuración del Sistema
+                </h3>
+
+                <form onsubmit="event.preventDefault(); alert('Configuraciones guardadas.');">
+                    <!-- Iteraciones límite -->
+                    <div class="form-group">
+                        <label class="form-label">Límite Global de Iteraciones</label>
+                        <input type="number" class="form-control" value="200">
+                        <span class="text-muted" style="font-size: 0.75rem;">Máximo de pasos que el backend procesará por solicitud.</span>
+                    </div>
+
+                    <!-- Límite de Tiempo por Hilo -->
+                    <div class="form-group">
+                        <label class="form-label">Tiempo de Espera Máximo (Timeout)</label>
+                        <input type="number" class="form-control" value="5" placeholder="En segundos">
+                        <span class="text-muted" style="font-size: 0.75rem;">Segundos máximos permitidos para evitar sobrecarga.</span>
+                    </div>
+
+                    <!-- Validación estricta de expresiones -->
+                    <div class="form-group">
+                        <label class="form-label">Control de Seguridad (Parser)</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                            <input type="checkbox" checked style="width: 16px; height: 16px; accent-color: var(--primary);">
+                            <span class="text-secondary" style="font-size: 0.9rem;">Validación estricta de variables (Sólo 'x')</span>
+                        </div>
+                    </div>
+
+                    <!-- Modo de ejecución del backend -->
+                    <div class="form-group">
+                        <label class="form-label">Modo de Ejecución del Backend</label>
+                        <select class="form-control">
+                            <option>Producción (Motor Python Desacoplado)</option>
+                            <option>Desarrollo (Logs de Depuración Activos)</option>
+                            <option selected>Modo Híbrido (Mock / API Auto-detect)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Configuración
+                    </button>
+                </form>
+            </div>
+
+            <!-- Columna Derecha: Logs de Auditoría y Eventos -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-clipboard-list"></i> Logs de Auditoría de Cómputo</h3>
+                <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 1rem;">Registro en tiempo real de ejecuciones y resolución de ecuaciones.</p>
+                
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Marca de Tiempo</th>
+                                <th>Usuario / IP</th>
+                                <th>Acción Realizada</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="log-time">2026-06-14 17:28:10</td>
+                                <td>C.I. 31.223.011 (Estudiante)</td>
+                                <td>Resolución Bisección f(x) = x**3 - x - 2</td>
+                                <td><span class="badge badge-success">success</span></td>
+                            </tr>
+                            <tr>
+                                <td class="log-time">2026-06-14 17:25:42</td>
+                                <td>C.I. 15.179.918 (Profesor)</td>
+                                <td>Comparación Bisección vs Newton</td>
+                                <td><span class="badge badge-success">success</span></td>
+                            </tr>
+                            <tr>
+                                <td class="log-time">2026-06-14 17:10:15</td>
+                                <td>C.I. 31.223.011 (Estudiante)</td>
+                                <td>Resolución Newton f(x) = x**2 - 4</td>
+                                <td><span class="badge badge-danger">singularidad</span></td>
+                            </tr>
+                            <tr>
+                                <td class="log-time">2026-06-14 16:45:08</td>
+                                <td>Sistema (Cron)</td>
+                                <td>Cierre de sesión de tutoría automática</td>
+                                <td><span class="badge badge-warning">timeout</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="main-footer">
+        <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Cátedra de Programación Numérica</p>
+    </footer>
+
+</body>
+</html>
