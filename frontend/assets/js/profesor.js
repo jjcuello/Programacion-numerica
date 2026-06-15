@@ -86,15 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/exp\(/g, "Math.exp(")
             .replace(/log\(/g, "Math.log(")
             .replace(/sqrt\(/g, "Math.sqrt(")
-            .replace(/pi/g, "Math.PI")
-            .replace(/e/g, "Math.E")
+            .replace(/\bpi\b/g, "Math.PI")
+            .replace(/\be\b/g, "Math.E")
             .replace(/\*\*/g, "^");
 
         while (formatted.includes("^")) {
             formatted = formatted.replace(/([0-9x\(\)]+)\^([0-9x\(\)\.]+)/g, "Math.pow($1, $2)");
         }
 
-        let evaluatedExpression = formatted.replace(/x/g, `(${x})`);
+        let evaluatedExpression = formatted.replace(/\bx\b/g, `(${x})`);
         
         try {
             let result = new Function(`return ${evaluatedExpression}`)();

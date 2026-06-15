@@ -251,8 +251,8 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/exp\(/g, "Math.exp(")
             .replace(/log\(/g, "Math.log(")
             .replace(/sqrt\(/g, "Math.sqrt(")
-            .replace(/pi/g, "Math.PI")
-            .replace(/e/g, "Math.E")
+            .replace(/\bpi\b/g, "Math.PI")
+            .replace(/\be\b/g, "Math.E")
             .replace(/\*\*/g, "^");
 
         // Traducir potencias de JS a math
@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Reemplazar la variable x con su valor numérico
-        let evaluatedExpression = formatted.replace(/x/g, `(${x})`);
+        let evaluatedExpression = formatted.replace(/\bx\b/g, `(${x})`);
         
         try {
             // Evaluamos de manera controlada
