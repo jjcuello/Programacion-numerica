@@ -336,294 +336,650 @@
 
     <!-- Contenido Principal -->
     <main class="main-content">
-        <!-- Contenedor Principal del Simulador -->
-        <div class="workspace-grid">
-            
-            <!-- Columna Izquierda: Panel de Control del Simulador -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Selector de Pestañas (Tabs Navigation) -->
+        <div class="tabs-container" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; overflow-x: auto; white-space: nowrap;">
+            <button class="btn btn-secondary tab-btn active" data-tab="tab-roots" style="border-radius: var(--radius-sm);"><i class="fa-solid fa-square-root-variable"></i> Simulador de Raíces</button>
+            <button class="btn btn-secondary tab-btn" data-tab="tab-singularities" style="border-radius: var(--radius-sm);"><i class="fa-solid fa-triangle-exclamation"></i> Evasión de Singularidades</button>
+            <button class="btn btn-secondary tab-btn" data-tab="tab-constants" style="border-radius: var(--radius-sm);"><i class="fa-solid fa-circle-nodes"></i> Análisis de e & π</button>
+            <button class="btn btn-secondary tab-btn" data-tab="tab-3d" style="border-radius: var(--radius-sm);"><i class="fa-solid fa-cube"></i> Figuras 3D</button>
+            <button class="btn btn-secondary tab-btn" data-tab="tab-animations" style="border-radius: var(--radius-sm);"><i class="fa-solid fa-wave-square"></i> Ondas y Animaciones</button>
+            <button class="btn btn-secondary tab-btn" data-tab="tab-tutor" style="border-radius: var(--radius-sm);"><i class="fa-solid fa-brain"></i> Tutor Académico</button>
+        </div>
+
+        <!-- Pestaña 1: Simulador de Raíces -->
+        <div id="tab-roots" class="tab-content active">
+            <div class="workspace-grid">
                 
-                <!-- Card del Simulador -->
-                <div class="card">
-                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-sliders" style="color: var(--primary);"></i> Configuración
-                    </h3>
+                <!-- Columna Izquierda: Panel de Control del Simulador -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                     
-                    <form id="simulator-form">
-                        <!-- Expresión matemática -->
-                        <div class="form-group">
-                            <label class="form-label">Función f(x)</label>
-                            <input type="text" id="expression-input" class="form-control" placeholder="ej: x**3 - x - 2" value="x**3 - x - 2" required>
-                            <!-- Visor de fórmulas matemáticas con KaTeX -->
-                            <div id="math-preview" class="math-preview"></div>
-                        </div>
-
-                        <!-- Método -->
-                        <div class="form-group">
-                            <label class="form-label">Método Numérico</label>
-                            <select id="method-select" class="form-control">
-                                <option value="bisection">Bisección (Cerrado)</option>
-                                <option value="newton">Newton-Raphson (Abierto)</option>
-                            </select>
-                        </div>
-
-                        <!-- Botón Sugerir Valores -->
-                        <button type="button" id="suggest-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 1rem;">
-                            <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> ✨ Sugerir Valores
-                        </button>
-
-                        <!-- Parámetros Avanzados -->
-                        <div class="accordion-header" id="advanced-toggle">
-                            <span>Parámetros Avanzados</span>
-                            <i class="fa-solid fa-chevron-down" id="advanced-arrow"></i>
-                        </div>
+                    <!-- Card del Simulador -->
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-sliders" style="color: var(--primary);"></i> Configuración
+                        </h3>
                         
-                        <div class="accordion-content" id="advanced-content">
-                            <!-- Intervalo a y b (para Bisección) -->
-                            <div class="form-group" id="interval-group">
-                                <label class="form-label">Intervalo [a, b]</label>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <input type="number" step="any" id="a-input" class="form-control" placeholder="a" value="1">
-                                    <input type="number" step="any" id="b-input" class="form-control" placeholder="b" value="2">
+                        <form id="simulator-form">
+                            <!-- Expresión matemática f(x) -->
+                            <div class="form-group">
+                                <label class="form-label" id="expr-label">Función f(x)</label>
+                                <input type="text" id="expression-input" class="form-control" placeholder="ej: x**3 - x - 2" value="x**3 - x - 2" required>
+                                <div id="math-preview" class="math-preview"></div>
+                            </div>
+
+                            <!-- Expresión g(x) (Sólo para Punto Fijo) -->
+                            <div class="form-group" id="g-expression-group" style="display: none;">
+                                <label class="form-label">Función de Iteración g(x)</label>
+                                <input type="text" id="g-expression-input" class="form-control" placeholder="ej: (x + 2)**(1/3)" value="(x + 2)**(1/3)">
+                                <div id="g-math-preview" class="math-preview"></div>
+                            </div>
+
+                            <!-- Método -->
+                            <div class="form-group">
+                                <label class="form-label">Método Numérico</label>
+                                <select id="method-select" class="form-control">
+                                    <option value="bisection">Bisección (Cerrado)</option>
+                                    <option value="secant">Secante (Abierto)</option>
+                                    <option value="newton">Newton-Raphson (Abierto)</option>
+                                    <option value="fixedpoint">Punto Fijo (Abierto)</option>
+                                </select>
+                            </div>
+
+                            <!-- Botón Sugerir Valores -->
+                            <button type="button" id="suggest-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+                                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> ✨ Sugerir Valores
+                            </button>
+
+                            <!-- Parámetros Avanzados -->
+                            <div class="accordion-header" id="advanced-toggle">
+                                <span>Parámetros Avanzados</span>
+                                <i class="fa-solid fa-chevron-down" id="advanced-arrow"></i>
+                            </div>
+                            
+                            <div class="accordion-content" id="advanced-content">
+                                <!-- Intervalo a y b (para Bisección / Secante) -->
+                                <div class="form-group" id="interval-group">
+                                    <label class="form-label" id="interval-label">Intervalo [a, b]</label>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        <input type="number" step="any" id="a-input" class="form-control" placeholder="a (Límite inferior / x₀)" value="1">
+                                        <input type="number" step="any" id="b-input" class="form-control" placeholder="b (Límite superior / x₁)" value="2">
+                                    </div>
+                                </div>
+
+                                <!-- Punto Inicial x0 (para Newton / Punto Fijo) -->
+                                <div class="form-group" id="x0-group" style="display: none;">
+                                    <label class="form-label">Punto Inicial (x₀)</label>
+                                    <input type="number" step="any" id="x0-input" class="form-control" placeholder="x0" value="1.5">
+                                </div>
+
+                                <!-- Tolerancia -->
+                                <div class="form-group">
+                                    <label class="form-label">Tolerancia</label>
+                                    <input type="number" step="any" id="tolerance-input" class="form-control" value="0.000001">
+                                </div>
+
+                                <!-- Iteraciones Máximas -->
+                                <div class="form-group">
+                                    <label class="form-label">Máx. Iteraciones</label>
+                                    <input type="number" id="max-iter-input" class="form-control" value="100">
                                 </div>
                             </div>
 
-                            <!-- Punto Inicial x0 (para Newton) -->
-                            <div class="form-group" id="x0-group" style="display: none;">
-                                <label class="form-label">Punto Inicial (x₀)</label>
-                                <input type="number" step="any" id="x0-input" class="form-control" placeholder="x0" value="1.5">
-                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                                <i class="fa-solid fa-play"></i> Resolver Simulación
+                            </button>
+                        </form>
+                    </div>
 
-                            <!-- Tolerancia -->
-                            <div class="form-group">
-                                <label class="form-label">Tolerancia</label>
-                                <input type="number" step="any" id="tolerance-input" class="form-control" value="0.000001">
-                            </div>
-
-                            <!-- Iteraciones Máximas -->
-                            <div class="form-group">
-                                <label class="form-label">Máx. Iteraciones</label>
-                                <input type="number" id="max-iter-input" class="form-control" value="100">
-                            </div>
+                    <!-- Card de Historial -->
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-history" style="color: var(--accent);"></i> Historial de Prácticas
+                        </h3>
+                        <div id="history-list" class="history-list">
+                            <!-- Se auto-llena con JavaScript -->
+                            <div class="text-muted" style="font-size: 0.9rem; text-align: center; padding: 1rem;">No hay simulaciones en esta sesión.</div>
                         </div>
-
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
-                            <i class="fa-solid fa-play"></i> Resolver Simulación
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Card de Historial -->
-                <div class="card">
-                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-history" style="color: var(--accent);"></i> Historial de Prácticas
-                    </h3>
-                    <div id="history-list" class="history-list">
-                        <!-- Se auto-llena con JavaScript -->
-                        <div class="text-muted" style="font-size: 0.9rem; text-align: center; padding: 1rem;">No hay simulaciones en esta sesión.</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Columna Derecha: Panel de Visualización y Gráficas -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                
-                <!-- Alerta Didáctica de Singularidad -->
-                <div id="didactic-alert" class="didactic-alert">
-                    <span class="didactic-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                    <div>
-                        <h4 id="alert-title">Singularidad Matemática Detectada</h4>
-                        <p id="alert-description">El algoritmo se detuvo debido a una singularidad. Se ha trazado la asíntota de fallo en la gráfica.</p>
-                        <p id="alert-recommendation" style="margin-top: 0.5rem; font-weight: 500; color: var(--text-primary);"></p>
                     </div>
                 </div>
 
-                <!-- Contenedor del Plot y Gráfica Interactiva -->
-                <div class="card" style="padding: 1rem;">
-                    <div class="plot-container" id="plot-container"></div>
-                </div>
+                <!-- Columna Derecha: Panel de Visualización y Gráficas -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    
+                    <!-- Alerta Didáctica de Singularidad -->
+                    <div id="didactic-alert" class="didactic-alert">
+                        <span class="didactic-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                        <div>
+                            <h4 id="alert-title">Singularidad Matemática Detectada</h4>
+                            <p id="alert-description">El algoritmo se detuvo debido a una singularidad. Se ha trazado la asíntota de fallo en la gráfica.</p>
+                            <p id="alert-recommendation" style="margin-top: 0.5rem; font-weight: 500; color: var(--text-primary);"></p>
+                        </div>
+                    </div>
 
-                <!-- Métricas de Salida -->
-                <div class="metric-cards">
-                    <div class="metric-card">
-                        <div class="metric-card-label">Estado</div>
-                        <div class="metric-card-value" id="metric-status">-</div>
+                    <!-- Contenedor del Plot y Gráfica Interactiva -->
+                    <div class="card" style="padding: 1rem;">
+                        <div class="plot-container" id="plot-container"></div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-card-label">Raíz Aprox.</div>
-                        <div class="metric-card-value" id="metric-root" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-card-label">Iteraciones</div>
-                        <div class="metric-card-value" id="metric-iter">-</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-card-label">Tiempo (s)</div>
-                        <div class="metric-card-value" id="metric-time">-</div>
-                    </div>
-                </div>
 
-                <!-- Tabla de Iteraciones -->
-                <div class="card" style="padding: 1.5rem 1rem;">
-                    <h3 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-list-ol"></i> Tabla de Iteraciones</h3>
-                    <div class="table-responsive" style="max-height: 300px;">
-                        <table class="table" id="iterations-table">
-                            <thead>
-                                <tr id="table-headers">
-                                    <th>Iteración</th>
-                                    <th>xi (Actual)</th>
-                                    <th>Lím. Sup</th>
-                                    <th>Raíz Aprox.</th>
-                                    <th>Error Rel.</th>
-                                    <th>Residual f(x)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-body">
-                                <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-muted);">Realiza una simulación para ver la tabla de convergencia.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Métricas de Salida -->
+                    <div class="metric-cards">
+                        <div class="metric-card">
+                            <div class="metric-card-label">Estado</div>
+                            <div class="metric-card-value" id="metric-status">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Raíz Aprox.</div>
+                            <div class="metric-card-value" id="metric-root" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Iteraciones</div>
+                            <div class="metric-card-value" id="metric-iter">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Tiempo (s)</div>
+                            <div class="metric-card-value" id="metric-time">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Iteraciones -->
+                    <div class="card" style="padding: 1.5rem 1rem;">
+                        <h3 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-list-ol"></i> Tabla de Iteraciones</h3>
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table" id="iterations-table">
+                                <thead>
+                                    <tr id="table-headers">
+                                        <th>Iteración</th>
+                                        <th>xi (Actual)</th>
+                                        <th>Lím. Sup</th>
+                                        <th>Raíz Aprox.</th>
+                                        <th>Error Rel.</th>
+                                        <th>Residual f(x)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">Realiza una simulación para ver la tabla de convergencia.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sección del Tutor Didáctico -->
-        <section class="card" style="margin-top: 2rem;">
-            <h2 style="display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-                <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Panel del Tutor Didáctico
-            </h2>
-
-            <!-- Configuración del Reto -->
-            <div id="tutor-setup">
-                <p class="text-secondary" style="margin-bottom: 1.5rem;">Genera un reto conceptual y práctico a tu medida utilizando los sliders interactivos de dificultad.</p>
-                
-                <div class="grid-2">
-                    <!-- Configuración visual -->
-                    <div>
-                        <!-- Selector Teórico/Práctico -->
+        <!-- Pestaña 2: Evasión de Singularidades -->
+        <div id="tab-singularities" class="tab-content" style="display: none;">
+            <div class="workspace-grid">
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning);"></i> Evasión de Singularidades
+                    </h3>
+                    <form id="singularity-form">
                         <div class="form-group">
-                            <label class="form-label">Modalidad del Reto</label>
-                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                <span class="text-secondary" style="font-size: 0.9rem;">📚 Teórico</span>
-                                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
-                                    <input type="checkbox" id="quiz-mode-toggle" style="opacity: 0; width: 0; height: 0;">
-                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-surface-header); transition: .4s; border-radius: 34px; border: 1px solid var(--border-color);" id="toggle-slider"></span>
-                                </label>
-                                <span class="text-secondary" style="font-size: 0.9rem;">🧮 Práctico</span>
-                            </div>
+                            <label class="form-label">Función f(x)</label>
+                            <input type="text" id="sing-expr-input" class="form-control" value="sin(x)/x" required>
+                            <div id="sing-math-preview" class="math-preview"></div>
                         </div>
-
-                        <!-- Leyenda informativa -->
-                        <div class="tutor-alert">
-                            <span style="font-size: 1.25rem; color: var(--accent);"><i class="fa-solid fa-circle-info"></i></span>
-                            <p>Los sliders se auto-ajustan proporcionalmente en tiempo real para sumar siempre exactamente el 100% de la carga de preguntas.</p>
+                        <div class="form-group">
+                            <label class="form-label">Punto de Evaluación (x)</label>
+                            <input type="number" step="any" id="sing-x-input" class="form-control" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tolerancia (Límites)</label>
+                            <input type="number" step="any" id="sing-tol-input" class="form-control" value="0.000001">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            <i class="fa-solid fa-calculator"></i> Evaluar Punto Seguro
+                        </button>
+                    </form>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="card" style="padding: 1rem;">
+                        <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Gráfica en Entorno del Punto</h4>
+                        <div class="plot-container" id="plot-singularities"></div>
+                    </div>
+                    <div class="metric-cards">
+                        <div class="metric-card">
+                            <div class="metric-card-label">Estado</div>
+                            <div class="metric-card-value" id="sing-metric-status">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Valor Aprox.</div>
+                            <div class="metric-card-value" id="sing-metric-value" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Método Usado</div>
+                            <div class="metric-card-value" id="sing-metric-method" style="font-size: 0.95rem;">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Error Est.</div>
+                            <div class="metric-card-value" id="sing-metric-error" style="font-family: 'Fira Code', monospace; font-size: 0.95rem;">-</div>
                         </div>
                     </div>
+                    <div class="card">
+                        <h4 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info"></i> Detalle de Evaluación</h4>
+                        <p id="sing-detail-message" class="text-secondary" style="font-size: 0.95rem;">Ingresa una función y pulsa "Evaluar" para ver el análisis de límites laterales.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Sliders de Dificultad -->
-                    <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: var(--radius-md);">
-                        <h4 style="margin-bottom: 1rem;">Distribución de Preguntas</h4>
+        <!-- Pestaña 3: Análisis de Constantes -->
+        <div id="tab-constants" class="tab-content" style="display: none;">
+            <div class="workspace-grid">
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-nodes" style="color: var(--primary);"></i> Aproximación de Constantes
+                    </h3>
+                    <form id="constants-form">
+                        <div class="form-group">
+                            <label class="form-label">Constante Matemática</label>
+                            <select id="constant-select" class="form-control">
+                                <option value="e">Número de Euler (e)</option>
+                                <option value="pi">Número Pi (π)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Método de Aproximación</label>
+                            <select id="const-method-select" class="form-control">
+                                <!-- Se llena dinámicamente con JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tolerancia</label>
+                            <input type="number" step="any" id="const-tol-input" class="form-control" value="0.0000000001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Máx. Iteraciones</label>
+                            <input type="number" id="const-max-iter" class="form-control" value="10000">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            <i class="fa-solid fa-play"></i> Calcular Aproximación
+                        </button>
+                    </form>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="metric-cards">
+                        <div class="metric-card">
+                            <div class="metric-card-label">Iteraciones</div>
+                            <div class="metric-card-value" id="const-metric-iter">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Aproximación</div>
+                            <div class="metric-card-value" id="const-metric-value" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Error Absoluto</div>
+                            <div class="metric-card-value" id="const-metric-error" style="font-family: 'Fira Code', monospace; font-size: 0.9rem;">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Tiempo (s)</div>
+                            <div class="metric-card-value" id="const-metric-time">-</div>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="card" style="padding: 1rem;">
+                            <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Gráfica de Convergencia</h4>
+                            <div class="plot-container" id="plot-constants" style="height: 300px;"></div>
+                        </div>
+                        <div class="card" style="padding: 1rem;">
+                            <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-list-ol"></i> Historial de Convergencia</h4>
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table" id="const-table" style="font-size: 0.82rem; margin-top: 0;">
+                                    <thead>
+                                        <tr>
+                                            <th>Iter</th>
+                                            <th>Aprox.</th>
+                                            <th>Diferencia</th>
+                                            <th>Error Abs.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="const-table-body">
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; color: var(--text-muted);">Sin simulaciones.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 4: Figuras 3D -->
+        <div id="tab-3d" class="tab-content" style="display: none;">
+            <div class="workspace-grid">
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-cube" style="color: var(--accent);"></i> Geometría 3D Interactiva
+                    </h3>
+                    <form id="shapes-3d-form">
+                        <div class="form-group">
+                            <label class="form-label">Seleccionar Figura</label>
+                            <select id="shape-select" class="form-control">
+                                <option value="line">Recta en 3D</option>
+                                <option value="sphere">Esfera</option>
+                                <option value="cylinder">Cilindro</option>
+                                <option value="cone">Cono</option>
+                                <option value="paraboloid">Paraboloide Elíptico</option>
+                            </select>
+                        </div>
                         
-                        <!-- Slider Fácil -->
-                        <div class="slider-item">
-                            <div class="slider-label-wrapper">
-                                <span>🟢 Nivel Fácil</span>
-                                <span id="easy-value">50% (5 preguntas)</span>
+                        <!-- Parámetros dinámicos -->
+                        <div id="shape-params-line" class="shape-params">
+                            <div class="form-group">
+                                <label class="form-label">Punto P0 (x0, y0, z0)</label>
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <input type="number" id="line-x0" class="form-control" value="0">
+                                    <input type="number" id="line-y0" class="form-control" value="0">
+                                    <input type="number" id="line-z0" class="form-control" value="0">
+                                </div>
                             </div>
-                            <input type="range" id="easy-slider" class="slider-control" min="0" max="100" value="50">
+                            <div class="form-group">
+                                <label class="form-label">Vector V (vx, vy, vz)</label>
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <input type="number" id="line-vx" class="form-control" value="1">
+                                    <input type="number" id="line-vy" class="form-control" value="2">
+                                    <input type="number" id="line-vz" class="form-control" value="3">
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Slider Medio -->
-                        <div class="slider-item">
-                            <div class="slider-label-wrapper">
-                                <span>🟡 Nivel Medio</span>
-                                <span id="medium-value">30% (3 preguntas)</span>
+                        <div id="shape-params-sphere" class="shape-params" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Centro (xc, yc, zc)</label>
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <input type="number" id="sphere-xc" class="form-control" value="0">
+                                    <input type="number" id="sphere-yc" class="form-control" value="0">
+                                    <input type="number" id="sphere-zc" class="form-control" value="0">
+                                </div>
                             </div>
-                            <input type="range" id="medium-slider" class="slider-control" min="0" max="100" value="30">
+                            <div class="form-group">
+                                <label class="form-label">Radio (R)</label>
+                                <input type="number" id="sphere-r" class="form-control" value="5">
+                            </div>
                         </div>
 
-                        <!-- Slider Difícil -->
-                        <div class="slider-item">
-                            <div class="slider-label-wrapper">
-                                <span>🔴 Nivel Difícil</span>
-                                <span id="hard-value">20% (2 preguntas)</span>
+                        <div id="shape-params-cylinder" class="shape-params" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Centro de la Base (xc, yc)</label>
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <input type="number" id="cyl-xc" class="form-control" value="0">
+                                    <input type="number" id="cyl-yc" class="form-control" value="0">
+                                </div>
                             </div>
-                            <input type="range" id="hard-slider" class="slider-control" min="0" max="100" value="20">
+                            <div class="form-group">
+                                <label class="form-label">Radio (R)</label>
+                                <input type="number" id="cyl-r" class="form-control" value="3">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Altura (H)</label>
+                                <input type="number" id="cyl-h" class="form-control" value="6">
+                            </div>
                         </div>
+
+                        <div id="shape-params-cone" class="shape-params" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Centro de la Base (xc, yc)</label>
+                                <div style="display: flex; gap: 0.3rem;">
+                                    <input type="number" id="cone-xc" class="form-control" value="0">
+                                    <input type="number" id="cone-yc" class="form-control" value="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Radio (R)</label>
+                                <input type="number" id="cone-r" class="form-control" value="4">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Altura (H)</label>
+                                <input type="number" id="cone-h" class="form-control" value="8">
+                            </div>
+                        </div>
+
+                        <div id="shape-params-paraboloid" class="shape-params" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Coeficiente a (Eje X)</label>
+                                <input type="number" id="para-a" class="form-control" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Coeficiente b (Eje Y)</label>
+                                <input type="number" id="para-b" class="form-control" value="1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Paleta de Colores (Cmap)</label>
+                            <select id="shape-color-select" class="form-control">
+                                <option value="Viridis">Viridis</option>
+                                <option value="Cividis">Cividis</option>
+                                <option value="Hot">Hot</option>
+                                <option value="Cool">Cool</option>
+                                <option value="YlGnBu">YlGnBu</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            <i class="fa-solid fa-rotate"></i> Renderizar Figura 3D
+                        </button>
+                    </form>
+                    
+                    <div class="card" style="margin-top: 1.5rem; background-color: rgba(255,255,255,0.01); border-color: var(--border-color);">
+                        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-code"></i> Conceptos POO Ilustrados</h4>
+                        <ul style="font-size: 0.8rem; color: var(--text-secondary); padding-left: 1rem; line-height: 1.4;">
+                            <li style="margin-bottom: 0.25rem;"><strong>Encapsulamiento</strong>: Cada clase de figura (`Recta`, `Esfera`) encapsula sus ecuaciones matemáticas.</li>
+                            <li style="margin-bottom: 0.25rem;"><strong>Herencia</strong>: Todas las figuras heredan propiedades comunes (nombre, color) de la clase base `Figura3D`.</li>
+                            <li><strong>Polimorfismo</strong>: Se llama recursivamente al mismo método `dibujar()` sobre cualquier figura.</li>
+                        </ul>
                     </div>
                 </div>
-
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button type="button" id="start-quiz-btn" class="btn btn-primary btn-lg">
-                        <i class="fa-solid fa-graduation-cap"></i> Iniciar Reto Académico
-                    </button>
+                
+                <div class="card" style="padding: 1rem;">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-area"></i> Espacio 3D Plotly (Arrastra para rotar)</h4>
+                    <div class="plot-container" id="plot-3d" style="height: 500px;"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- Modo Enfoque del Quiz -->
-            <div id="quiz-focus-container" class="quiz-container">
-                <div class="quiz-header">
-                    <h3 id="quiz-question-counter">Pregunta 1 de 10</h3>
-                    <div class="timer" id="quiz-timer">
-                        <i class="fa-solid fa-stopwatch"></i> <span id="timer-text">10:00</span>
-                    </div>
-                </div>
-
-                <!-- Carta de la pregunta -->
-                <div class="question-card">
-                    <p class="question-text" id="quiz-question-text">¿Qué condición matemática garantiza la existencia de al menos una raíz real de f(x) en el intervalo [a, b] según el Teorema del Valor Intermedio (Bolzano)?</p>
-                    <div class="options-list" id="quiz-options-list">
-                        <!-- Las opciones se inyectan dinámicamente -->
-                        <div class="option-item" data-index="0">
-                            <i class="fa-regular fa-circle"></i>
-                            <span>f(a) y f(b) deben ser mayores que cero.</span>
+        <!-- Pestaña 5: Ondas y Animaciones -->
+        <div id="tab-animations" class="tab-content" style="display: none;">
+            <div class="workspace-grid">
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-wave-square" style="color: var(--primary);"></i> Animación de Ondas
+                    </h3>
+                    <form id="animations-form">
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Animación</label>
+                            <select id="animation-type" class="form-control">
+                                <option value="sine">Onda Seno Dinámica</option>
+                                <option value="interference">Interferencia de Ondas</option>
+                                <option value="surface3d">Superficie Trigonométrica 3D</option>
+                            </select>
                         </div>
-                        <div class="option-item" data-index="1">
-                            <i class="fa-regular fa-circle"></i>
-                            <span>f(a) y f(b) deben tener signos opuestos, es decir, f(a) * f(b) &lt; 0.</span>
-                        </div>
-                        <div class="option-item" data-index="2">
-                            <i class="fa-regular fa-circle"></i>
-                            <span>La función debe ser racional e indefinida en el intervalo.</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
-                    <button type="button" id="quiz-prev-btn" class="btn btn-secondary" style="display: none;">Atrás</button>
-                    <button type="button" id="quiz-next-btn" class="btn btn-primary">Siguiente Pregunta <i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Panel de Resultados del Quiz -->
-            <div id="quiz-results-container" class="quiz-results">
-                <div class="grid-2" style="margin-bottom: 2rem;">
-                    <!-- Gráfico de Radar -->
-                    <div class="card" style="padding: 1rem; display: flex; align-items: center; justify-content: center;">
-                        <div id="radar-chart" style="width: 100%; height: 350px;"></div>
-                    </div>
-
-                    <!-- Resumen del Score -->
-                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 1rem;">
-                        <h3>Resultado del Reto</h3>
-                        <div style="font-size: 4rem; font-weight: 700; color: var(--accent); line-height: 1;" id="score-text">8 / 10</div>
-                        <p class="text-secondary" id="score-comment">¡Excelente trabajo! Has demostrado una buena comprensión teórica.</p>
-                        <div>
-                            <button type="button" id="reset-quiz-btn" class="btn btn-secondary">
-                                <i class="fa-solid fa-rotate-left"></i> Nuevo Reto
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button type="button" id="anim-play-btn" class="btn btn-primary" style="flex: 1;">
+                                <i class="fa-solid fa-play"></i> Iniciar
+                            </button>
+                            <button type="button" id="anim-pause-btn" class="btn btn-secondary" style="flex: 1;">
+                                <i class="fa-solid fa-pause"></i> Pausar
                             </button>
                         </div>
+                        <button type="button" id="anim-reset-btn" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-rotate-left"></i> Reiniciar
+                        </button>
+                    </form>
+
+                    <div class="card" style="margin-top: 1.5rem; background-color: rgba(0,0,0,0.15);">
+                        <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-question"></i> ¿Qué estamos viendo?</h4>
+                        <p id="anim-description" style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+                            Una simulación en tiempo real que varía la amplitud, la frecuencia y el desfase de la onda en función del tiempo transcurrido, ilustrando las transformaciones de funciones trigonométricas.
+                        </p>
+                    </div>
+                </div>
+                <div class="card" style="padding: 1rem;">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Simulación en Movimiento</h4>
+                    <div class="plot-container" id="plot-animations" style="height: 450px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 6: Tutor Didáctico -->
+        <div id="tab-tutor" class="tab-content" style="display: none;">
+            <section class="card">
+                <h2 style="display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                    <i class="fa-solid fa-brain" style="color: var(--primary);"></i> Panel del Tutor Didáctico
+                </h2>
+
+                <!-- Configuración del Reto -->
+                <div id="tutor-setup">
+                    <p class="text-secondary" style="margin-bottom: 1.5rem;">Genera un reto conceptual y práctico a tu medida utilizando los sliders interactivos de dificultad.</p>
+                    
+                    <div class="grid-2">
+                        <!-- Configuración visual -->
+                        <div>
+                            <!-- Ajuste de Preguntas y Tiempo -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Total de Preguntas</label>
+                                    <input type="number" id="quiz-total-questions" class="form-control" min="3" max="30" value="10" required style="border-radius: var(--radius-sm);">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Tiempo Límite (min)</label>
+                                    <input type="number" id="quiz-time-limit" class="form-control" min="1" max="60" value="10" required style="border-radius: var(--radius-sm);">
+                                </div>
+                            </div>
+
+                            <!-- Leyenda informativa -->
+                            <div class="tutor-alert">
+                                <span style="font-size: 1.25rem; color: var(--accent);"><i class="fa-solid fa-circle-info"></i></span>
+                                <p>Los sliders se auto-ajustan proporcionalmente en tiempo real para sumar siempre exactamente el 100% de la carga de preguntas.</p>
+                            </div>
+                        </div>
+
+                        <!-- Sliders de Dificultad -->
+                        <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: var(--radius-md);">
+                            <h4 style="margin-bottom: 1rem;">Distribución de Preguntas</h4>
+                            
+                            <!-- Slider Fácil -->
+                            <div class="slider-item">
+                                <div class="slider-label-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; align-items: center;">
+                                        <span>🟢 Fácil</span>
+                                        <div class="mode-select-group">
+                                            <button type="button" class="mode-btn active" id="easy-mode-teo" data-difficulty="easy" data-mode="theoretical">📚 Teo</button>
+                                            <button type="button" class="mode-btn" id="easy-mode-prac" data-difficulty="easy" data-mode="practical">🧮 Prac</button>
+                                        </div>
+                                    </div>
+                                    <span id="easy-value">50% (5 preguntas)</span>
+                                </div>
+                                <input type="range" id="easy-slider" class="slider-control" min="0" max="100" value="50">
+                            </div>
+
+                            <!-- Slider Medio -->
+                            <div class="slider-item">
+                                <div class="slider-label-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; align-items: center;">
+                                        <span>🟡 Medio</span>
+                                        <div class="mode-select-group">
+                                            <button type="button" class="mode-btn active" id="medium-mode-teo" data-difficulty="medium" data-mode="theoretical">📚 Teo</button>
+                                            <button type="button" class="mode-btn" id="medium-mode-prac" data-difficulty="medium" data-mode="practical">🧮 Prac</button>
+                                        </div>
+                                    </div>
+                                    <span id="medium-value">30% (3 preguntas)</span>
+                                </div>
+                                <input type="range" id="medium-slider" class="slider-control" min="0" max="100" value="30">
+                            </div>
+
+                            <!-- Slider Difícil -->
+                            <div class="slider-item">
+                                <div class="slider-label-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; align-items: center;">
+                                        <span>🔴 Difícil</span>
+                                        <div class="mode-select-group">
+                                            <button type="button" class="mode-btn active" id="hard-mode-teo" data-difficulty="hard" data-mode="theoretical">📚 Teo</button>
+                                            <button type="button" class="mode-btn" id="hard-mode-prac" data-difficulty="hard" data-mode="practical">🧮 Prac</button>
+                                        </div>
+                                    </div>
+                                    <span id="hard-value">20% (2 preguntas)</span>
+                                </div>
+                                <input type="range" id="hard-slider" class="slider-control" min="0" max="100" value="20">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="button" id="start-quiz-btn" class="btn btn-primary btn-lg">
+                            <i class="fa-solid fa-graduation-cap"></i> Iniciar Reto Académico
+                        </button>
                     </div>
                 </div>
 
-                <!-- Tarjetas de Feedback Didáctico -->
-                <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-lightbulb"></i> Feedback del Tutor Didáctico</h3>
-                <div id="insight-cards-container">
-                    <!-- Se auto-llena con JavaScript -->
+                <!-- Modo Enfoque del Quiz -->
+                <div id="quiz-focus-container" class="quiz-container">
+                    <div class="quiz-header">
+                        <h3 id="quiz-question-counter">Pregunta 1 de 10</h3>
+                        <div class="timer" id="quiz-timer">
+                            <i class="fa-solid fa-stopwatch"></i> <span id="timer-text">10:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Carta de la pregunta -->
+                    <div class="question-card">
+                        <p class="question-text" id="quiz-question-text">¿Qué condición matemática garantiza la existencia de al menos una raíz real de f(x) en el intervalo [a, b] según el Teorema del Valor Intermedio (Bolzano)?</p>
+                        <div class="options-list" id="quiz-options-list">
+                            <!-- Las opciones se inyectan dinámicamente -->
+                            <div class="option-item" data-index="0">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>f(a) y f(b) deben ser mayores que cero.</span>
+                            </div>
+                            <div class="option-item" data-index="1">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>f(a) y f(b) deben tener signos opuestos, es decir, f(a) * f(b) &lt; 0.</span>
+                            </div>
+                            <div class="option-item" data-index="2">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>La función debe ser racional e indefinida en el intervalo.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+                        <button type="button" id="quiz-prev-btn" class="btn btn-secondary" style="display: none;">Atrás</button>
+                        <button type="button" id="quiz-next-btn" class="btn btn-primary">Siguiente Pregunta <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
                 </div>
-            </div>
-        </section>
+
+                <!-- Panel de Resultados del Quiz -->
+                <div id="quiz-results-container" class="quiz-results">
+                    <div class="grid-2" style="margin-bottom: 2rem;">
+                        <!-- Gráfico de Radar -->
+                        <div class="card" style="padding: 1rem; display: flex; align-items: center; justify-content: center;">
+                            <div id="radar-chart" style="width: 100%; height: 350px;"></div>
+                        </div>
+
+                        <!-- Resumen del Score -->
+                        <div class="card" style="display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 1rem;">
+                            <h3>Resultado del Reto</h3>
+                            <div style="font-size: 4rem; font-weight: 700; color: var(--accent); line-height: 1;" id="score-text">8 / 10</div>
+                            <p class="text-secondary" id="score-comment">¡Excelente trabajo! Has demostrado una buena comprensión teórica.</p>
+                            <div>
+                                <button type="button" id="reset-quiz-btn" class="btn btn-secondary">
+                                    <i class="fa-solid fa-rotate-left"></i> Nuevo Reto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas de Feedback Didáctico -->
+                    <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-lightbulb"></i> Feedback del Tutor Didáctico</h3>
+                    <div id="insight-cards-container">
+                        <!-- Se auto-llena con JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- Pie de Página -->

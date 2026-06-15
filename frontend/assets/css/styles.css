@@ -333,3 +333,93 @@ body {
 .main-footer a:hover {
     color: var(--primary);
 }
+
+/* --- ESTILOS ADICIONALES PARA EL SISTEMA DE PESTAÑAS (TABS) --- */
+.tabs-container {
+    scrollbar-width: none; /* Firefox */
+}
+.tabs-container::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+}
+
+.tab-btn {
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-surface-header) !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.9rem !important;
+    padding: 0.6rem 1.2rem !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition) !important;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary) !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--border-hover) !important;
+}
+
+.tab-btn.active {
+    background: var(--primary-gradient) !important;
+    color: var(--text-primary) !important;
+    border-color: transparent !important;
+    box-shadow: var(--shadow-glow) !important;
+}
+
+/* Ocultar contenido inactivo de las pestañas */
+.tab-content {
+    display: none;
+    animation: tabFadeIn 0.4s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos de parámetros para 3D shapes */
+.shape-params {
+    border-top: 1px dashed var(--border-color);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    animation: tabFadeIn 0.3s ease;
+}
+
+/* Selectores de modalidad del Tutor */
+.mode-select-group {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 2px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    margin-left: 0.5rem;
+}
+
+.mode-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    color: var(--text-primary);
+}
+
+.mode-btn.active {
+    background: var(--primary-gradient) !important;
+    color: var(--text-primary) !important;
+    box-shadow: var(--shadow-glow);
+}
+

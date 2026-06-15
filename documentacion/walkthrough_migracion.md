@@ -1,0 +1,64 @@
+# Recorrido de la Migración de Métodos Legacy al Frontend Local
+
+Se ha completado con éxito la migración de todos los módulos del script CLI de Python `legacy/run.py` al frontend local en [estudiante.html](../frontend/pages/estudiante.html). Todo el procesamiento matemático y gráfico se ejecuta directamente en el navegador de manera interactiva y fluida.
+
+---
+
+## Cambios Realizados
+
+### 1. Interfaz de Pestañas (Tab Navigation)
+- **HTML**: Se estructuró la página principal del Estudiante en 6 paneles/pestañas principales accesibles a través de un menú de botones en la parte superior. Se ajustó el sub-panel de Configuración Avanzada para apilar verticalmente los parámetros `a` y `b` (límite inferior y superior) en columnas dinámicas con placeholders claros (`a (Límite inferior / x₀)` / `b (Límite superior / x₁)`), previniendo el desbordamiento de las cajas en pantallas reducidas.
+- **CSS**: Se estilizó la barra de navegación de pestañas con bordes degradados, estados interactivos y transiciones de animación suave (fade-in) al cambiar de pestaña.
+- **JS**: Se implementó la lógica de selección de pestañas activa, controlando el redibujado automático de los gráficos Plotly en la pestaña activa para evitar desajustes visuales.
+
+
+### 2. Nuevos Métodos de Raíces
+- **Método de la Secante**: Implementado localmente en `runSecantLocal`. Calcula la convergencia a partir de dos puntos iniciales y grafica dinámicamente la recta secante didáctica.
+- **Método de Punto Fijo**: Implementado localmente en `runFixedPointLocal`. Permite ingresar la ecuación de iteración $g(x)$ y opcionalmente $f(x)$ para comprobar el residual de la raíz.
+
+### 3. Evasión de Singularidades
+- Implementado el algoritmo del límite lateral en JS.
+- Si la evaluación en el punto $x$ da un error (dominio, división por cero, o magnitud excesiva), el sistema aproxima los límites laterales reduciendo $\delta$ progresivamente ($20$ iteraciones desde $10^{-2}$).
+- Clasifica automáticamente la singularidad como `removible` (como en $sin(x)/x$ en $x=0$) o `polo` (como en $1/x$ en $x=0$), trazando la asíntota vertical en rojo.
+
+### 4. Aproximación de Constantes ($e$ y $\pi$)
+- **Euler ($e$)**: Métodos de Taylor, Límite, Fracción Continua y Newton-Raphson.
+- **Pi ($\pi$)**: Métodos de Leibniz, Nilakantha, Arquímedes, Ramanujan y Chudnovsky.
+- **Visualización**: Muestra una tabla con el progreso de cada iteración, el error absoluto y el tiempo de cómputo, acompañada de un gráfico en escala logarítmica de la reducción del error.
+
+### 5. Geometría 3D Interactiva
+- Se implementaron mallas paramétricas 3D completas para representar las figuras de `graficas_3d.py`:
+  - Recta en 3D
+  - Esfera
+  - Cilindro
+  - Cono
+  - Paraboloide Elíptico
+- Permite configurar parámetros (radio, altura, vector, color) y rotar la figura interactivamente en 3D.
+- Explica los conceptos de POO (Encapsulamiento, Herencia, Polimorfismo) ilustrados con estas figuras.
+
+### 6. Ondas y Animaciones
+- Tres animaciones en tiempo real usando `requestAnimationFrame`:
+  1. *Onda Seno Dinámica*: Muestra variaciones dinámicas de la amplitud, frecuencia y fase de la función.
+  2. *Interferencia*: Muestra la superposición de dos ondas viajeras y su resultante.
+  3. *Superficie Trigonométrica 3D*: Renderiza y rota una superficie trigonométrica dinámica en 3D.
+- Controles interactivos de reproducción (Play, Pause, Reset).
+
+### 7. Tutor Didáctico y Segmentación de Retos
+- **Interruptores de Modalidad**: Se incorporaron botones segmentados estilizados (`📚 Teo` / `🧮 Prac`) junto a cada slider de dificultad (Fácil, Medio, Difícil). Esto permite configurar un examen a medida mezclando preguntas teóricas y ejercicios prácticos en diferentes niveles.
+- **Base de Preguntas Extendida**: Se diseñaron y agregaron nuevos problemas de carácter práctico (como cálculo del punto medio, proyecciones secantes y una iteración Newton-Raphson/Punto Fijo).
+- **Filtrado Dinámico**: El motor de exámenes en `estudiante.js` filtra dinámicamente las preguntas basadas en la combinación Dificultad + Tipo seleccionada para cada slider, con un fallback seguro que evita errores de inicialización.
+
+---
+
+## Resultados de Verificación
+
+Se realizaron comprobaciones manuales en el entorno del frontend local:
+1. **Secante**: Evaluada la función $x^3 - x - 2 = 0$ con valores iniciales $1$ y $2$. Convergió a la raíz exacta $1.521379$ en 5 iteraciones.
+2. **Punto Fijo**: Evaluado con $g(x) = (x+2)^{1/3}$ y valor inicial $1.5$. Encontró la raíz a $1.521379$ con éxito.
+3. **Evasión de Singularidad**:
+   - $sin(x)/x$ en $0$: Evadió la división por cero y reportó límite aproximado de $1.000000$ (Removible).
+   - $1/x$ en $0$: Detectó asíntota de polo y mostró error de no finito.
+4. **Constantes**: El algoritmo de Chudnovsky convergió a $\pi = 3.141592653589793$ en solo 2 iteraciones con error absoluto menor a $10^{-16}$.
+5. **Animaciones**: Verificado que los bucles de animación se inician y pausan correctamente, y se detienen automáticamente al cambiar de pestaña para liberar recursos del navegador.
+6. **Tutor Didáctico (Retos)**: Se validó que al alternar entre Teórico y Práctico para los niveles de dificultad, el generador carga las preguntas correspondientes de forma correcta. Por ejemplo, al seleccionar `🟢 Fácil` + `🧮 Prac`, el examen inicia mostrando un ejercicio de cálculo del punto medio del método de bisección.
+
