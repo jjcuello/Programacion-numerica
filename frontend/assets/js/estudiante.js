@@ -2179,8 +2179,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- LÓGICA DE CONSTANTES ---
 
     function initializeConstantsTab() {
-        constantSelect.addEventListener("change", updateConstantMethods);
+        constantSelect.addEventListener("change", () => {
+            updateConstantMethods();
+            autoTuneRealtimeParams();
+        });
+        constMethodSelect.addEventListener("change", autoTuneRealtimeParams);
+        
         updateConstantMethods();
+        autoTuneRealtimeParams();
 
         constCompareToggle.addEventListener("change", () => {
             if (constCompareToggle.checked) {
@@ -2200,11 +2206,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         constRealtimeToggle.addEventListener("change", () => {
+            const submitBtn = constantsForm.querySelector('button[type="submit"]');
             if (constRealtimeToggle.checked) {
                 constRealtimeControls.style.display = "flex";
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Simulación`;
+                }
             } else {
                 constRealtimeControls.style.display = "none";
                 stopConstRealtimeSimulation();
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+                }
             }
         });
 
@@ -2230,6 +2243,24 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         constantsForm.addEventListener("submit", runConstantApproximation);
+    }
+
+    function autoTuneRealtimeParams() {
+        const method = constMethodSelect.value;
+        if (!method) return;
+        
+        if (method === "leibniz" || method === "limite") {
+            constRealtimeStepSlider.value = 50;
+            constRealtimeSpeed.value = 40;
+        } else if (method === "nilakantha") {
+            constRealtimeStepSlider.value = 10;
+            constRealtimeSpeed.value = 80;
+        } else {
+            constRealtimeStepSlider.value = 1;
+            constRealtimeSpeed.value = 200;
+        }
+        constSpeedVal.textContent = constRealtimeSpeed.value;
+        constStepVal.textContent = constRealtimeStepSlider.value;
     }
 
     function updateConstantMethods() {
@@ -2483,7 +2514,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const submitBtn = constantsForm.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+            if (constRealtimeToggle.checked) {
+                submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Simulación`;
+            } else {
+                submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+            }
         }
     }
 
@@ -2511,6 +2546,7 @@ document.addEventListener("DOMContentLoaded", () => {
             startTime: performance.now(),
             currentIter: 0,
             iterations: [],
+            lastApprox: 0,
             vars: {}
         };
 
@@ -2520,6 +2556,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 vars.sum = 1.0;
                 vars.term = 1.0;
                 constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 1.0;
                 constRealtimeState.iterations.push({
                     iter: 1,
                     approx: vars.sum,
@@ -2529,12 +2566,15 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (method === "limite") {
                 vars.lastVal = 0.0;
                 constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 0.0;
             } else if (method === "fraccion") {
                 vars.lastVal = 2.0;
                 constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 2.0;
             } else if (method === "newton") {
                 vars.x = 2.5;
                 constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 2.5;
                 constRealtimeState.iterations.push({
                     iter: 1,
                     approx: vars.x,
@@ -2547,12 +2587,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 vars.sum = 0.0;
                 vars.lastVal = 0.0;
                 constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 0.0;
             } else if (method === "nilakantha") {
                 vars.val = 3.0;
                 vars.lastVal = 3.0;
                 vars.signo = 1.0;
                 vars.n = 2;
                 constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 3.0;
                 constRealtimeState.iterations.push({
                     iter: 1,
                     approx: vars.val,
@@ -2563,15 +2605,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 vars.lados = 6;
                 vars.lastVal = 0.0;
                 constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 0.0;
             } else if (method === "ramanujan") {
                 vars.sum = 0.0;
                 vars.lastVal = 0.0;
                 constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 0.0;
             } else if (method === "chudnovsky") {
                 vars.sum = 0.0;
                 vars.lastVal = 0.0;
                 vars.constante = 426880 * Math.sqrt(10005);
                 constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 0.0;
             }
         }
 
@@ -2603,7 +2648,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const submitBtn = constantsForm.querySelector('button[type="submit"]');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+                    if (constRealtimeToggle.checked) {
+                        submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Simulación`;
+                    } else {
+                        submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+                    }
                 }
             } else {
                 runRealtimeSimulationLoop();
@@ -2859,17 +2908,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         constRealtimeState.currentIter = currentIt;
+        constRealtimeState.lastApprox = lastApprox;
         const elapsed = ((performance.now() - constRealtimeState.startTime) / 1000).toFixed(6);
+
+        // Actualizar UI de métricas en tiempo real con el progreso actual
+        constMetricIter.textContent = currentIt;
+        constMetricValue.textContent = lastApprox.toFixed(15);
+        constMetricError.textContent = Math.abs(lastApprox - refVal).toExponential(4);
+        constMetricTime.textContent = elapsed;
 
         const currentIterations = constRealtimeState.iterations;
         if (currentIterations.length > 0) {
-            const lastRow = currentIterations[currentIterations.length - 1];
-            
-            constMetricIter.textContent = lastRow.iter;
-            constMetricValue.textContent = lastRow.approx.toFixed(15);
-            constMetricError.textContent = lastRow.error.toExponential(4);
-            constMetricTime.textContent = elapsed;
-
             constTableBody.innerHTML = "";
             currentIterations.forEach(row => {
                 const tr = document.createElement("tr");
