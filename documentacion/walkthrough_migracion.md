@@ -48,6 +48,12 @@ Se ha completado con éxito la migración de todos los módulos del script CLI d
 - **Base de Preguntas Extendida**: Se diseñaron y agregaron nuevos problemas de carácter práctico (como cálculo del punto medio, proyecciones secantes y una iteración Newton-Raphson/Punto Fijo).
 - **Filtrado Dinámico**: El motor de exámenes en `estudiante.js` filtra dinámicamente las preguntas basadas en la combinación Dificultad + Tipo seleccionada para cada slider, con un fallback seguro que evita errores de inicialización.
 
+### 8. Descarga de Gráficas y Singularidades Didácticas
+- **Descarga de Gráficas (PNG)**: Se agregó un botón `#download-plot-btn` ("Descargar PNG") en la cabecera de la tarjeta del gráfico Plotly. Este botón invoca de manera limpia y nativa `Plotly.downloadImage` para exportar la visualización activa a un archivo PNG sin requerir librerías de terceros.
+- **Botón "Forzar Singularidad"**: Se añadió un botón `#force-singularity-btn` ("Forzar Sing.") junto al botón "Sugerir Valores" con el tooltip `"demostración de manejo de error didactico"`.
+- **Manejo de Errores Didácticos**: Se refactorizaron los solucionadores numéricos locales (`runNewtonLocal`, `runSecantLocal` y `runBisectionLocal`) para capturar anomalías matemáticas (como derivadas iguales a cero o violaciones del intervalo de Bolzano) de manera interna sin lanzar excepciones destructivas. Esto permite que el simulador registre e imprima las iteraciones exitosas hasta el punto de error.
+- **Gráfica con Asíntota de Fallo**: La función `plotFunctionGraph` fue modificada para recibir el estado del solucionador y, en caso de fallar por singularidad, dibujar la curva completa, los puntos e hilos de aproximación hasta el último paso válido, y una asíntota vertical punteada de color rojo (`#ef4444`) directamente en el punto de fallo.
+
 ---
 
 ## Resultados de Verificación
@@ -61,4 +67,9 @@ Se realizaron comprobaciones manuales en el entorno del frontend local:
 4. **Constantes**: El algoritmo de Chudnovsky convergió a $\pi = 3.141592653589793$ en solo 2 iteraciones con error absoluto menor a $10^{-16}$.
 5. **Animaciones**: Verificado que los bucles de animación se inician y pausan correctamente, y se detienen automáticamente al cambiar de pestaña para liberar recursos del navegador.
 6. **Tutor Didáctico (Retos)**: Se validó que al alternar entre Teórico y Práctico para los niveles de dificultad, el generador carga las preguntas correspondientes de forma correcta. Por ejemplo, al seleccionar `🟢 Fácil` + `🧮 Prac`, el examen inicia mostrando un ejercicio de cálculo del punto medio del método de bisección.
+7. **Descarga de Gráficas**: Se comprobó que al hacer clic en "Descargar PNG" se exporta correctamente la gráfica de la función en un archivo de imagen.
+8. **Manejo Didáctico de Singularidades (Forzar Sing.)**: Al presionar "Forzar Sing.", el simulador configura automáticamente $f(x)=x^3-3x$, Newton-Raphson, y $x_0=-0.80648$. En la primera iteración calcula con éxito el paso tangente hasta $x_1 \approx 1.0$, y en la segunda iteración detecta la derivada cero ($f'(1.0)=0$). Se verificó que:
+   - La tabla muestra la primera iteración correcta y la segunda fila con el estado `[FALLO]`.
+   - El gráfico Plotly renderiza la función en azul, la recta tangente naranja del primer paso correcto landing en $x_1 = 1.0$, y una línea vertical discontinua roja de fallo en $x = 1.0$.
+   - El estado de la métrica de salida se actualiza a `singularidad` en rojo y el Tutor Didáctico muestra una recomendación específica detallando las causas matemáticas y las posibles soluciones.
 

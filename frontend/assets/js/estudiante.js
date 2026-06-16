@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const maxIterInput = document.getElementById("max-iter-input");
     const simulatorForm = document.getElementById("simulator-form");
     const suggestBtn = document.getElementById("suggest-btn");
+    const downloadPlotBtn = document.getElementById("download-plot-btn");
+    const forceSingularityBtn = document.getElementById("force-singularity-btn");
     
     // Resultados
     const didacticAlert = document.getElementById("didactic-alert");
@@ -234,6 +236,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Botón Sugerir Valores
     suggestBtn.addEventListener("click", suggestMathValues);
+
+    // Descargar Gráfica como PNG
+    if (downloadPlotBtn) {
+        downloadPlotBtn.addEventListener("click", () => {
+            Plotly.downloadImage('plot-container', { format: 'png', filename: 'grafica_funcion', width: 800, height: 500 });
+        });
+    }
+
+    // Forzar Singularidad (Manejo de Error Didáctico)
+    if (forceSingularityBtn) {
+        forceSingularityBtn.addEventListener("click", () => {
+            expressionInput.value = "x**3 - 3*x";
+            renderMathPreview();
+            
+            methodSelect.value = "newton";
+            methodSelect.dispatchEvent(new Event('change'));
+            
+            x0Input.value = "-0.80648";
+            toleranceInput.value = "0.000001";
+            maxIterInput.value = "100";
+            
+            runSimulation();
+        });
+    }
 
     // Formulario de Simulación
     simulatorForm.addEventListener("submit", (e) => {
@@ -490,8 +516,16 @@ document.addEventListener("DOMContentLoaded", () => {
             // Mostrar resultados
             metricStatus.textContent = result.status;
             metricStatus.className = "metric-card-value";
-            metricStatus.classList.add(result.status === "success" ? "badge-success" : "badge-warning");
-            metricRoot.textContent = result.root !== null ? result.root.toFixed(8) : "N/A";
+            
+            if (result.status === "success") {
+                metricStatus.classList.add("badge-success");
+            } else if (result.status === "singularidad" || result.status === "bolzano_violation") {
+                metricStatus.classList.add("badge-danger");
+            } else {
+                metricStatus.classList.add("badge-warning");
+            }
+
+            metricRoot.textContent = (result.root !== null && !isNaN(result.root)) ? result.root.toFixed(8) : "N/A";
             metricIter.textContent = result.iterations.length;
             metricTime.textContent = elapsed;
 
@@ -499,7 +533,20 @@ document.addEventListener("DOMContentLoaded", () => {
             populateIterationsTable(result.iterations, method);
 
             // Graficar
-            plotFunctionGraph(expression, result.iterations, result.root, method);
+            plotFunctionGraph(expression, result.iterations, result.root, method, result.status);
+
+            // Mostrar Alertas Didácticas Específicas
+            if (result.status === "singularidad") {
+                alertTitle.textContent = "¡Derivada Cero o Singularidad!";
+                alertDescription.textContent = "El algoritmo se ha interrumpido porque en la iteración actual se encontró un punto de singularidad o una derivada igual a cero (f'(x) = 0), impidiendo realizar la división de proyección.";
+                alertRecommendation.textContent = "Recomendación del Tutor: Modifica el punto inicial (x₀) a un valor más lejano del extremo/máximo de la curva, o cambia el método a Bisección (método cerrado) que no depende de derivadas.";
+                didacticAlert.style.display = "flex";
+            } else if (result.status === "bolzano_violation") {
+                alertTitle.textContent = "Error de Intervalo Inicial";
+                alertDescription.textContent = "El teorema de Bolzano no se cumple ya que f(a) y f(b) tienen el mismo signo. No se puede garantizar la existencia de una raíz en este intervalo.";
+                alertRecommendation.textContent = "Sugerencia: Haz clic en el botón '✨ Sugerir Valores' o cambia los límites del intervalo para que rodeen la intersección con el eje X.";
+                didacticAlert.style.display = "flex";
+            }
 
             // Guardar en el Historial
             saveToHistory(expression, method, result.root, result.iterations.length, result.status);
@@ -513,24 +560,38 @@ document.addEventListener("DOMContentLoaded", () => {
             metricTime.textContent = ((endTime - startTime) / 1000).toFixed(6);
             
             // Limpiar tabla
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Ocurrió un error o singularidad en el cálculo.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Ocurrió un error al evaluar la función.</td></tr>`;
 
-            // Mostrar Alerta Didáctica de Singularidades
-            showSingularAlert(expression, method);
+            // Mostrar Alerta General
+            alertTitle.textContent = "Error en la Simulación";
+            alertDescription.textContent = "Hubo un problema al evaluar la función. Asegúrate de ingresar una expresión matemática válida (ej. x^3 - 3*x o sin(x)).";
+            alertRecommendation.textContent = "Sugerencia: Revisa la sintaxis de la función y los valores de entrada.";
+            didacticAlert.style.display = "flex";
+            
+            renderEmptyPlot();
         }
     }
 
     // Algoritmo local de Bisección
     function runBisectionLocal(expr, a, b, tol, maxIter) {
-        let fa = evaluateFunction(expr, a);
-        let fb = evaluateFunction(expr, b);
+        let fa, fb;
+        try {
+            fa = evaluateFunction(expr, a);
+            fb = evaluateFunction(expr, b);
+        } catch (err) {
+            return {
+                root: null,
+                iterations: [],
+                status: "singularidad"
+            };
+        }
 
         if (fa * fb >= 0) {
-            alertTitle.textContent = "Error de Intervalo Inicial";
-            alertDescription.textContent = "El teorema de Bolzano no se cumple ya que f(a) y f(b) tienen el mismo signo. No se puede garantizar la existencia de una raíz en este intervalo.";
-            alertRecommendation.textContent = "Sugerencia: Haz clic en el botón '✨ Sugerir Valores' o cambia los límites del intervalo para que rodeen la intersección con el eje X.";
-            didacticAlert.style.display = "flex";
-            throw new Error("intervalo_invalido");
+            return {
+                root: null,
+                iterations: [],
+                status: "bolzano_violation"
+            };
         }
 
         let iterations = [];
@@ -538,36 +599,52 @@ document.addEventListener("DOMContentLoaded", () => {
         let status = "max_iter";
 
         for (let i = 1; i <= maxIter; i++) {
-            let c = (a + b) / 2;
-            let fc = evaluateFunction(expr, c);
-            let err = Math.abs(b - a) / 2;
+            try {
+                let c = (a + b) / 2;
+                let fc = evaluateFunction(expr, c);
+                let err = Math.abs(b - a) / 2;
 
-            iterations.push({
-                iter: i,
-                xi: a,
-                sup: b,
-                root: c,
-                error: i === 1 ? "-" : err.toFixed(8),
-                residual: fc
-            });
+                iterations.push({
+                    iter: i,
+                    xi: a,
+                    sup: b,
+                    root: c,
+                    error: i === 1 ? "-" : err.toFixed(8),
+                    residual: fc
+                });
 
-            if (err < tol || Math.abs(fc) < 1e-12) {
-                root = c;
-                status = "success";
+                if (err < tol || Math.abs(fc) < 1e-12) {
+                    root = c;
+                    status = "success";
+                    break;
+                }
+
+                if (fa * fc < 0) {
+                    b = c;
+                    fb = fc;
+                } else {
+                    a = c;
+                    fa = fc;
+                }
+            } catch (err) {
+                status = "singularidad";
+                iterations.push({
+                    iter: i,
+                    xi: a,
+                    sup: b,
+                    root: null,
+                    error: "FALLO",
+                    residual: null
+                });
                 break;
-            }
-
-            if (fa * fc < 0) {
-                b = c;
-                fb = fc;
-            } else {
-                a = c;
-                fa = fc;
             }
         }
 
         if (!root && iterations.length > 0) {
-            root = iterations[iterations.length - 1].root;
+            let lastIter = iterations[iterations.length - 1];
+            if (lastIter.root !== null) {
+                root = lastIter.root;
+            }
         }
 
         return { root, iterations, status };
@@ -581,38 +658,62 @@ document.addEventListener("DOMContentLoaded", () => {
         let x = x0;
 
         for (let i = 1; i <= maxIter; i++) {
-            let fx = evaluateFunction(expr, x);
-            let dfx = evaluateDerivative(expr, x);
+            try {
+                let fx = evaluateFunction(expr, x);
+                let dfx = evaluateDerivative(expr, x);
 
-            // Detección de singularidad (derivada cero)
-            if (Math.abs(dfx) < 1e-12) {
+                // Detección de singularidad (derivada cero)
+                if (Math.abs(dfx) < 1e-3) {
+                    status = "singularidad";
+                    iterations.push({
+                        iter: i,
+                        xi: x,
+                        sup: "-",
+                        root: null,
+                        error: "FALLO",
+                        residual: fx
+                    });
+                    break;
+                }
+
+                let nextX = x - (fx / dfx);
+                let err = Math.abs(nextX - x);
+
+                iterations.push({
+                    iter: i,
+                    xi: x,
+                    sup: "-",
+                    root: nextX,
+                    error: i === 1 ? "-" : err.toFixed(8),
+                    residual: fx
+                });
+
+                if (err < tol || Math.abs(fx) < 1e-12) {
+                    root = nextX;
+                    status = "success";
+                    break;
+                }
+
+                x = nextX;
+            } catch (err) {
                 status = "singularidad";
-                throw new Error("singularidad");
-            }
-
-            let nextX = x - (fx / dfx);
-            let err = Math.abs(nextX - x);
-
-            iterations.push({
-                iter: i,
-                xi: x,
-                sup: "-",
-                root: nextX,
-                error: i === 1 ? "-" : err.toFixed(8),
-                residual: fx
-            });
-
-            if (err < tol || Math.abs(fx) < 1e-12) {
-                root = nextX;
-                status = "success";
+                iterations.push({
+                    iter: i,
+                    xi: x,
+                    sup: "-",
+                    root: null,
+                    error: "FALLO",
+                    residual: null
+                });
                 break;
             }
-
-            x = nextX;
         }
 
         if (!root && iterations.length > 0) {
-            root = iterations[iterations.length - 1].root;
+            let lastIter = iterations[iterations.length - 1];
+            if (lastIter.root !== null) {
+                root = lastIter.root;
+            }
         }
 
         return { root, iterations, status };
@@ -625,44 +726,64 @@ document.addEventListener("DOMContentLoaded", () => {
         let status = "max_iter";
 
         for (let i = 1; i <= maxIter; i++) {
-            let fx0 = evaluateFunction(expr, x0);
-            let fx1 = evaluateFunction(expr, x1);
-            let denominator = fx1 - fx0;
+            try {
+                let fx0 = evaluateFunction(expr, x0);
+                let fx1 = evaluateFunction(expr, x1);
+                let denominator = fx1 - fx0;
 
-            if (Math.abs(denominator) < 1e-12) {
+                if (Math.abs(denominator) < 1e-12) {
+                    status = "singularidad";
+                    iterations.push({
+                        iter: i,
+                        xi: x0,
+                        sup: x1,
+                        root: null,
+                        error: "FALLO",
+                        residual: fx1
+                    });
+                    break;
+                }
+
+                let x2 = x1 - fx1 * (x1 - x0) / denominator;
+                let fx2 = evaluateFunction(expr, x2);
+                let err = Math.abs(x2 - x1);
+
+                iterations.push({
+                    iter: i,
+                    xi: x0,
+                    sup: x1,
+                    root: x2,
+                    error: i === 1 ? "-" : err.toFixed(8),
+                    residual: fx2
+                });
+
+                if (Math.abs(fx2) < tol || err < tol) {
+                    root = x2;
+                    status = "success";
+                    break;
+                }
+
+                x0 = x1;
+                x1 = x2;
+            } catch (err) {
                 status = "singularidad";
-                alertTitle.textContent = "División por Cero en Secante";
-                alertDescription.textContent = "La diferencia f(x1) - f(x0) es cercana a cero. El método no puede continuar.";
-                alertRecommendation.textContent = "Sugerencia: Elige otros valores iniciales que den valores de función distintos.";
-                didacticAlert.style.display = "flex";
-                throw new Error("division_cero");
-            }
-
-            let x2 = x1 - fx1 * (x1 - x0) / denominator;
-            let fx2 = evaluateFunction(expr, x2);
-            let err = Math.abs(x2 - x1);
-
-            iterations.push({
-                iter: i,
-                xi: x0,
-                sup: x1,
-                root: x2,
-                error: i === 1 ? "-" : err.toFixed(8),
-                residual: fx2
-            });
-
-            if (Math.abs(fx2) < tol || err < tol) {
-                root = x2;
-                status = "success";
+                iterations.push({
+                    iter: i,
+                    xi: x0,
+                    sup: x1,
+                    root: null,
+                    error: "FALLO",
+                    residual: null
+                });
                 break;
             }
-
-            x0 = x1;
-            x1 = x2;
         }
 
         if (!root && iterations.length > 0) {
-            root = iterations[iterations.length - 1].root;
+            let lastIter = iterations[iterations.length - 1];
+            if (lastIter.root !== null) {
+                root = lastIter.root;
+            }
         }
 
         return { root, iterations, status };
@@ -723,20 +844,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
         iterations.forEach(row => {
             const tr = document.createElement("tr");
+            
+            let residualText = "-";
+            let residualColor = "inherit";
+            if (typeof row.residual === 'number' && !isNaN(row.residual)) {
+                residualText = row.residual.toExponential(4);
+                if (Math.abs(row.residual) < 1e-5) {
+                    residualColor = "var(--success)";
+                }
+            } else if (row.residual !== null && row.residual !== undefined) {
+                residualText = row.residual.toString();
+            }
+
+            let xiText = typeof row.xi === 'number' ? row.xi.toFixed(8) : row.xi;
+            let supText = typeof row.sup === 'number' ? row.sup.toFixed(8) : row.sup;
+            let rootText = typeof row.root === 'number' ? row.root.toFixed(8) : (row.root === null ? "[FALLO]" : row.root);
+            let errorText = row.error;
+
             tr.innerHTML = `
                 <td style="text-align: center; font-weight: 600; color: var(--text-secondary);">${row.iter}</td>
-                <td>${typeof row.xi === 'number' ? row.xi.toFixed(8) : row.xi}</td>
-                <td>${typeof row.sup === 'number' ? row.sup.toFixed(8) : row.sup}</td>
-                <td>${typeof row.root === 'number' ? row.root.toFixed(8) : row.root}</td>
-                <td>${row.error}</td>
-                <td style="font-family: 'Fira Code', monospace; color: ${Math.abs(row.residual) < 1e-5 ? 'var(--success)' : 'inherit'};">${row.residual.toExponential(4)}</td>
+                <td>${xiText}</td>
+                <td>${supText}</td>
+                <td>${rootText}</td>
+                <td>${errorText}</td>
+                <td style="font-family: 'Fira Code', monospace; color: ${residualColor};">${residualText}</td>
             `;
             tableBody.appendChild(tr);
         });
     }
 
     // 6. Graficar función en Plotly.js
-    function plotFunctionGraph(expr, iterations, root, method) {
+    function plotFunctionGraph(expr, iterations, root, method, status) {
         // Encontrar rango x
         let xMin = -2;
         let xMax = 4;
@@ -744,10 +882,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (iterations.length > 0) {
             let xs = iterations.map(it => it.xi).filter(x => typeof x === 'number');
             if (root !== null) xs.push(root);
+            iterations.forEach(it => {
+                if (typeof it.sup === 'number') xs.push(it.sup);
+                if (typeof it.root === 'number') xs.push(it.root);
+            });
             let minVal = Math.min(...xs);
             let maxVal = Math.max(...xs);
-            xMin = minVal - Math.abs(maxVal - minVal) * 0.4 - 1;
-            xMax = maxVal + Math.abs(maxVal - minVal) * 0.4 + 1;
+            if (minVal === maxVal) {
+                xMin = minVal - 2;
+                xMax = maxVal + 2;
+            } else {
+                xMin = minVal - Math.abs(maxVal - minVal) * 0.4 - 1;
+                xMax = maxVal + Math.abs(maxVal - minVal) * 0.4 + 1;
+            }
         }
 
         // Generar puntos de la función
@@ -790,10 +937,9 @@ document.addEventListener("DOMContentLoaded", () => {
             showlegend: false
         };
 
-        // Raíz encontrada
         let traces = [traceFunc, traceAxis];
 
-        if (root !== null) {
+        if (root !== null && !isNaN(root)) {
             traces.push({
                 x: [root],
                 y: [0],
@@ -804,40 +950,115 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Si es Newton-Raphson, podemos trazar la última secante/tangente didáctica
+        // Si es Newton-Raphson, trazamos la última tangente didáctica exitosa
         if (method === "newton" && iterations.length > 0) {
-            let lastIt = iterations[iterations.length - 1];
-            let xVal = lastIt.xi;
-            let yVal = lastIt.residual;
-            
-            traces.push({
-                x: [xVal, lastIt.root],
-                y: [yVal, 0],
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Última Tangente',
-                line: { color: '#f59e0b', width: 1.5, dash: 'dot' },
-                marker: { color: '#f59e0b', size: 6 }
-            });
+            let successfulIt = null;
+            for (let i = iterations.length - 1; i >= 0; i--) {
+                if (typeof iterations[i].root === 'number' && !isNaN(iterations[i].root)) {
+                    successfulIt = iterations[i];
+                    break;
+                }
+            }
+            if (successfulIt) {
+                let xVal = successfulIt.xi;
+                let yVal = successfulIt.residual;
+                
+                traces.push({
+                    x: [xVal, successfulIt.root],
+                    y: [yVal, 0],
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Última Tangente',
+                    line: { color: '#f59e0b', width: 1.5, dash: 'dot' },
+                    marker: { color: '#f59e0b', size: 6 }
+                });
+            }
         }
 
-        // Si es Secante, trazamos la última secante didáctica
+        // Si es Secante, trazamos la última secante didáctica exitosa
         if (method === "secant" && iterations.length > 0) {
+            let successfulIt = null;
+            for (let i = iterations.length - 1; i >= 0; i--) {
+                if (typeof iterations[i].root === 'number' && !isNaN(iterations[i].root)) {
+                    successfulIt = iterations[i];
+                    break;
+                }
+            }
+            if (successfulIt) {
+                let x0 = successfulIt.xi;
+                let x1 = successfulIt.sup;
+                let y0 = null;
+                let y1 = null;
+                try { y0 = evaluateFunction(expr, x0); } catch(e){}
+                try { y1 = evaluateFunction(expr, x1); } catch(e){}
+                
+                if (y0 !== null && y1 !== null) {
+                    traces.push({
+                        x: [x0, x1, successfulIt.root],
+                        y: [y0, y1, 0],
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        name: 'Última Secante',
+                        line: { color: '#f59e0b', width: 1.5, dash: 'dot' },
+                        marker: { color: '#f59e0b', size: 6 }
+                    });
+                }
+            }
+        }
+
+        // Si es Bisección, trazamos los límites del intervalo de la última iteración exitosa
+        if (method === "bisection" && iterations.length > 0) {
+            let successfulIt = null;
+            for (let i = iterations.length - 1; i >= 0; i--) {
+                if (typeof iterations[i].root === 'number' && !isNaN(iterations[i].root)) {
+                    successfulIt = iterations[i];
+                    break;
+                }
+            }
+            if (successfulIt) {
+                let aVal = successfulIt.xi;
+                let bVal = successfulIt.sup;
+                let yRange = yPlot.filter(y => y !== null);
+                let yMinVal = yRange.length > 0 ? Math.min(...yRange) : -10;
+                let yMaxVal = yRange.length > 0 ? Math.max(...yRange) : 10;
+                
+                traces.push({
+                    x: [aVal, aVal],
+                    y: [yMinVal, yMaxVal],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Intervalo a',
+                    line: { color: '#8b5cf6', width: 1, dash: 'dash' }
+                });
+                traces.push({
+                    x: [bVal, bVal],
+                    y: [yMinVal, yMaxVal],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Intervalo b',
+                    line: { color: '#ec4899', width: 1, dash: 'dash' }
+                });
+            }
+        }
+
+        // Si terminó con singularidad o error, graficamos la asíntota de fallo en la gráfica activa
+        if ((status === "singularidad" || status === "error") && iterations.length > 0) {
             let lastIt = iterations[iterations.length - 1];
-            let x0 = lastIt.xi;
-            let x1 = lastIt.sup;
-            let y0 = evaluateFunction(expr, x0);
-            let y1 = evaluateFunction(expr, x1);
-            
-            traces.push({
-                x: [x0, x1, lastIt.root],
-                y: [y0, y1, 0],
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Última Secante',
-                line: { color: '#f59e0b', width: 1.5, dash: 'dot' },
-                marker: { color: '#f59e0b', size: 6 }
-            });
+            let singularityX = lastIt.xi;
+            if (typeof singularityX === 'number' && !isNaN(singularityX)) {
+                let yRange = yPlot.filter(y => y !== null);
+                let yMinVal = yRange.length > 0 ? Math.min(...yRange) : -10;
+                let yMaxVal = yRange.length > 0 ? Math.max(...yRange) : 10;
+                
+                traces.push({
+                    x: [singularityX, singularityX],
+                    y: [yMinVal, yMaxVal],
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Asíntota/Singularidad (Fallo)',
+                    line: { color: '#ef4444', width: 2, dash: 'dash' }
+                });
+            }
         }
 
         let layout = {

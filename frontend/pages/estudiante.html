@@ -385,10 +385,15 @@
                                 </select>
                             </div>
 
-                            <!-- Botón Sugerir Valores -->
-                            <button type="button" id="suggest-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 1rem;">
-                                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> ✨ Sugerir Valores
-                            </button>
+                            <!-- Botón Sugerir y Forzar Singularidad -->
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                <button type="button" id="suggest-btn" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;">
+                                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> ✨ Sugerir
+                                </button>
+                                <button type="button" id="force-singularity-btn" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;" title="demostración de manejo de error didactico">
+                                    <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i> Forzar Sing.
+                                </button>
+                            </div>
 
                             <!-- Parámetros Avanzados -->
                             <div class="accordion-header" id="advanced-toggle">
@@ -458,6 +463,12 @@
 
                     <!-- Contenedor del Plot y Gráfica Interactiva -->
                     <div class="card" style="padding: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-area"></i> Representación Gráfica</h4>
+                            <button type="button" id="download-plot-btn" class="btn btn-secondary btn-sm" title="Descargar gráfica como PNG" style="padding: 2px 8px; font-size: 0.75rem;">
+                                <i class="fa-solid fa-download"></i> Descargar PNG
+                            </button>
+                        </div>
                         <div class="plot-container" id="plot-container"></div>
                     </div>
 
