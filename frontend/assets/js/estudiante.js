@@ -934,32 +934,48 @@ document.addEventListener("DOMContentLoaded", () => {
         let xVal = x0;
 
         for (let i = 1; i <= maxIter; i++) {
-            let nextX = evaluateFunction(exprG, xVal);
-            let diff = Math.abs(nextX - xVal);
+            try {
+                let nextX = evaluateFunction(exprG, xVal);
+                let diff = Math.abs(nextX - xVal);
 
-            // residual f(x)
-            let fVal = exprF ? evaluateFunction(exprF, xVal) : (xVal - nextX);
+                // residual f(x)
+                let fVal = exprF ? evaluateFunction(exprF, xVal) : (xVal - nextX);
 
-            iterations.push({
-                iter: i,
-                xi: xVal,
-                sup: "-",
-                root: nextX,
-                error: i === 1 ? "-" : diff.toFixed(8),
-                residual: fVal
-            });
+                iterations.push({
+                    iter: i,
+                    xi: xVal,
+                    sup: "-",
+                    root: nextX,
+                    error: i === 1 ? "-" : diff.toFixed(8),
+                    residual: fVal
+                });
 
-            if (diff < tol) {
-                root = nextX;
-                status = "success";
+                if (diff < tol) {
+                    root = nextX;
+                    status = "success";
+                    break;
+                }
+
+                xVal = nextX;
+            } catch (err) {
+                status = "singularidad";
+                iterations.push({
+                    iter: i,
+                    xi: xVal,
+                    sup: "-",
+                    root: null,
+                    error: "FALLO",
+                    residual: null
+                });
                 break;
             }
-
-            xVal = nextX;
         }
 
         if (!root && iterations.length > 0) {
-            root = iterations[iterations.length - 1].root;
+            let lastIter = iterations[iterations.length - 1];
+            if (lastIter.root !== null) {
+                root = lastIter.root;
+            }
         }
 
         return { root, iterations, status };
