@@ -247,15 +247,43 @@ document.addEventListener("DOMContentLoaded", () => {
     // Forzar Singularidad (Manejo de Error Didáctico)
     if (forceSingularityBtn) {
         forceSingularityBtn.addEventListener("click", () => {
-            expressionInput.value = "x**3 - 3*x";
-            renderMathPreview();
+            const method = methodSelect.value;
             
-            methodSelect.value = "newton";
-            methodSelect.dispatchEvent(new Event('change'));
-            
-            x0Input.value = "-0.80648";
-            toleranceInput.value = "0.000001";
-            maxIterInput.value = "100";
+            if (method === "bisection") {
+                expressionInput.value = "1/(x - 1.5)";
+                renderMathPreview();
+                
+                aInput.value = "1.0";
+                bInput.value = "2.0";
+                toleranceInput.value = "0.000001";
+                maxIterInput.value = "100";
+            } else if (method === "secant") {
+                expressionInput.value = "x**2 - 2";
+                renderMathPreview();
+                
+                aInput.value = "1.0";
+                bInput.value = "-1.0";
+                toleranceInput.value = "0.000001";
+                maxIterInput.value = "100";
+            } else if (method === "newton") {
+                expressionInput.value = "x**3 - 3*x";
+                renderMathPreview();
+                
+                x0Input.value = "-0.80648";
+                toleranceInput.value = "0.000001";
+                maxIterInput.value = "100";
+            } else if (method === "fixedpoint") {
+                expressionInput.value = "x - 1/(x - 1)";
+                renderMathPreview();
+                
+                if (gExprInput) {
+                    gExprInput.value = "1/(x - 1)";
+                    renderGMathPreview();
+                }
+                x0Input.value = "1.5";
+                toleranceInput.value = "0.000001";
+                maxIterInput.value = "100";
+            }
             
             runSimulation();
         });
