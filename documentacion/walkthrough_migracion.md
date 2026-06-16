@@ -228,6 +228,19 @@ Para lograr paridad matemática y pedagógica con las herramientas heredadas del
   - **Gráfica de Convergencia Multitrayecto (Plotly Log-scale)**: Renderiza las curvas de error absoluto de todos los métodos en un solo gráfico interactivo utilizando una escala logarítmica en el eje Y. Esto permite contrastar visualmente la convergencia lineal y lenta (como Leibniz) con la convergencia cuadrática o exponencial ultra rápida (como Ramanujan o Chudnovsky).
   - **Observación Didáctica Directa**: Se muestra un banner explicativo dinámico (`#const-compare-alert`) con recomendaciones pedagógicas sobre la velocidad de convergencia (por ejemplo, destacando que la serie de Leibniz requiere 10,000 iteraciones para obtener apenas 3-4 decimales correctos debido a su naturaleza lineal, mientras que Chudnovsky y Ramanujan obtienen precisión total de hardware en 2-3 pasos).
 
+---
+
+## Simulación de Convergencia en Tiempo Real ("En Vivo") de Constantes
+
+Para completar la paridad funcional del 100% con los scripts de consola heredados (`legacy/metodos/euler.py` y `legacy/metodos/pi.py`), se incorporó un motor de **simulación interactiva paso a paso en tiempo real** en la pestaña de Constantes:
+
+* **Características**:
+  - **Switch de Modo en Vivo**: Permite activar la simulación interactiva `#const-realtime-toggle` en modo individual.
+  - **Ajustes Dinámicos**: Control deslizante de velocidad (`#const-realtime-speed`, entre $20\text{ ms}$ y $1000\text{ ms}$ de delay) y selector de tamaño de paso (`#const-realtime-step-slider`, entre $1$ y $500$ iteraciones por actualización) que se pueden cambiar en caliente durante la simulación.
+  - **Controles de Reproducción**: Botones para **Pausar** (`#const-btn-pause`) y **Detener** (`#const-btn-stop`) la simulación en caliente.
+  - **Trazado Dinámico**: La gráfica en Plotly y la tabla de iteraciones se van poblando dinámicamente de forma progresiva, animando visualmente la reducción del error absoluto y la precisión lograda paso a paso.
+  - **Mitigación de Sobrecarga**: El algoritmo mantiene la optimización del muestreo para métodos de convergencia lenta (como Leibniz) previniendo fugas de memoria o congelamiento de la ventana del navegador.
+
 
 
 

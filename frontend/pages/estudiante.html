@@ -609,6 +609,40 @@
                             <input type="checkbox" id="const-compare-toggle" style="width: 16px; height: 16px; cursor: pointer;">
                             <label for="const-compare-toggle" class="form-label" style="margin-bottom: 0; cursor: pointer; user-select: none;">Comparar todos los métodos</label>
                         </div>
+                        
+                        <!-- Control de Simulación en Tiempo Real (En Vivo) -->
+                        <div id="const-realtime-group" style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="const-realtime-toggle" style="width: 16px; height: 16px; cursor: pointer;">
+                                <label for="const-realtime-toggle" class="form-label" style="margin-bottom: 0; cursor: pointer; user-select: none;">
+                                    Simulación en vivo (Paso a Paso)
+                                </label>
+                            </div>
+                            
+                            <div id="const-realtime-controls" style="display: none; flex-direction: column; gap: 0.75rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>Velocidad (Delay: <span id="const-speed-val" style="font-weight: bold; color: var(--accent);">100</span> ms)</span>
+                                    </label>
+                                    <input type="range" id="const-realtime-speed" min="20" max="1000" step="20" value="100" style="width: 100%; cursor: pointer;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>Paso (Tamaño: <span id="const-step-val" style="font-weight: bold; color: var(--accent);">10</span> iter)</span>
+                                    </label>
+                                    <input type="range" id="const-realtime-step-slider" min="1" max="500" step="5" value="10" style="width: 100%; cursor: pointer;">
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                                    <button type="button" id="const-btn-pause" class="btn btn-secondary" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.8rem; height: auto;" disabled>
+                                        <i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>
+                                    </button>
+                                    <button type="button" id="const-btn-stop" class="btn btn-danger" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.8rem; height: auto;" disabled>
+                                        <i class="fa-solid fa-stop"></i> Detener
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
                             <i class="fa-solid fa-play"></i> Calcular Aproximación
                         </button>

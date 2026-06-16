@@ -109,6 +109,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const constCompareAlertTitle = document.getElementById("const-compare-alert-title");
     const constCompareAlertDesc = document.getElementById("const-compare-alert-desc");
 
+    // Selectores para Simulación en Tiempo Real
+    const constRealtimeGroup = document.getElementById("const-realtime-group");
+    const constRealtimeToggle = document.getElementById("const-realtime-toggle");
+    const constRealtimeControls = document.getElementById("const-realtime-controls");
+    const constRealtimeSpeed = document.getElementById("const-realtime-speed");
+    const constSpeedVal = document.getElementById("const-speed-val");
+    const constRealtimeStepSlider = document.getElementById("const-realtime-step-slider");
+    const constStepVal = document.getElementById("const-step-val");
+    const constBtnPause = document.getElementById("const-btn-pause");
+    const constBtnPauseText = document.getElementById("const-btn-pause-text");
+    const constBtnStop = document.getElementById("const-btn-stop");
+
     // Pestaña 4: Figuras 3D
     const shapes3DForm = document.getElementById("shapes-3d-form");
     const shapeSelect = document.getElementById("shape-select");
@@ -142,6 +154,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let animStartTime = 0;
     let animRunning = false;
     let animTimeOffset = 0;
+
+    // Estado para la Simulación en Tiempo Real de Constantes
+    let constRealtimeTimer = null;
+    let isConstRealtimePaused = false;
+    let constRealtimeState = null;
 
     const animDescriptions = {
         sine: "Onda Seno Dinámica: Muestra cómo cambian la amplitud, frecuencia y desfase en una función senoidal pura a lo largo del tiempo. Ecuación: y = A sin(wx + phi).",
@@ -178,6 +195,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Detener bucles de animación si se sale de la pestaña de animaciones
             if (targetId !== "tab-animations") {
                 stopAnimationLoop();
+            }
+            if (targetId !== "tab-constants") {
+                stopConstRealtimeSimulation();
             }
 
             // Forzar a Plotly a recalcular el tamaño al cambiar de pestaña
@@ -2167,11 +2187,46 @@ document.addEventListener("DOMContentLoaded", () => {
                 constMethodGroup.style.display = "none";
                 constSingleResults.style.display = "none";
                 constCompareResults.style.display = "flex";
+                constRealtimeGroup.style.display = "none";
+                constRealtimeToggle.checked = false;
+                constRealtimeControls.style.display = "none";
+                stopConstRealtimeSimulation();
             } else {
                 constMethodGroup.style.display = "block";
                 constSingleResults.style.display = "flex";
                 constCompareResults.style.display = "none";
+                constRealtimeGroup.style.display = "block";
             }
+        });
+
+        constRealtimeToggle.addEventListener("change", () => {
+            if (constRealtimeToggle.checked) {
+                constRealtimeControls.style.display = "flex";
+            } else {
+                constRealtimeControls.style.display = "none";
+                stopConstRealtimeSimulation();
+            }
+        });
+
+        constRealtimeSpeed.addEventListener("input", () => {
+            constSpeedVal.textContent = constRealtimeSpeed.value;
+        });
+
+        constRealtimeStepSlider.addEventListener("input", () => {
+            constStepVal.textContent = constRealtimeStepSlider.value;
+        });
+
+        constBtnPause.addEventListener("click", () => {
+            isConstRealtimePaused = !isConstRealtimePaused;
+            if (isConstRealtimePaused) {
+                constBtnPause.innerHTML = `<i class="fa-solid fa-play"></i> <span id="const-btn-pause-text">Reanudar</span>`;
+            } else {
+                constBtnPause.innerHTML = `<i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>`;
+            }
+        });
+
+        constBtnStop.addEventListener("click", () => {
+            stopConstRealtimeSimulation();
         });
 
         constantsForm.addEventListener("submit", runConstantApproximation);
@@ -2239,6 +2294,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Modo individual
         const method = constMethodSelect.value;
+
+        if (constRealtimeToggle.checked) {
+            startConstRealtimeSimulation(type, method, tol, maxIter);
+            return;
+        }
         const startTime = performance.now();
         let iterations = [];
         let approx = 0;
@@ -2404,6 +2464,433 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Graficar convergencia
         plotConstantConvergence(iterations);
+    }
+
+    function stopConstRealtimeSimulation() {
+        if (constRealtimeTimer) {
+            clearTimeout(constRealtimeTimer);
+            constRealtimeTimer = null;
+        }
+        isConstRealtimePaused = false;
+        constRealtimeState = null;
+        
+        // Reset buttons to original state
+        constBtnPause.disabled = true;
+        constBtnPause.innerHTML = `<i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>`;
+        constBtnStop.disabled = true;
+        
+        // Enable calculate button / form submit
+        const submitBtn = constantsForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+        }
+    }
+
+    function startConstRealtimeSimulation(type, method, tol, maxIter) {
+        stopConstRealtimeSimulation();
+
+        constBtnPause.disabled = false;
+        constBtnStop.disabled = false;
+        isConstRealtimePaused = false;
+        constBtnPause.innerHTML = `<i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>`;
+
+        const submitBtn = constantsForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Simulando...`;
+        }
+
+        const refVal = type === "e" ? Math.E : Math.PI;
+        constRealtimeState = {
+            type: type,
+            method: method,
+            tol: tol,
+            maxIter: maxIter,
+            refVal: refVal,
+            startTime: performance.now(),
+            currentIter: 0,
+            iterations: [],
+            vars: {}
+        };
+
+        const vars = constRealtimeState.vars;
+        if (type === "e") {
+            if (method === "taylor") {
+                vars.sum = 1.0;
+                vars.term = 1.0;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.iterations.push({
+                    iter: 1,
+                    approx: vars.sum,
+                    diff: vars.term,
+                    error: Math.abs(vars.sum - refVal)
+                });
+            } else if (method === "limite") {
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 1;
+            } else if (method === "fraccion") {
+                vars.lastVal = 2.0;
+                constRealtimeState.currentIter = 0;
+            } else if (method === "newton") {
+                vars.x = 2.5;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.iterations.push({
+                    iter: 1,
+                    approx: vars.x,
+                    diff: "-",
+                    error: Math.abs(vars.x - refVal)
+                });
+            }
+        } else {
+            if (method === "leibniz") {
+                vars.sum = 0.0;
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 0;
+            } else if (method === "nilakantha") {
+                vars.val = 3.0;
+                vars.lastVal = 3.0;
+                vars.signo = 1.0;
+                vars.n = 2;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.iterations.push({
+                    iter: 1,
+                    approx: vars.val,
+                    diff: "-",
+                    error: Math.abs(vars.val - refVal)
+                });
+            } else if (method === "archimedes") {
+                vars.lados = 6;
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 1;
+            } else if (method === "ramanujan") {
+                vars.sum = 0.0;
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 0;
+            } else if (method === "chudnovsky") {
+                vars.sum = 0.0;
+                vars.lastVal = 0.0;
+                vars.constante = 426880 * Math.sqrt(10005);
+                constRealtimeState.currentIter = 0;
+            }
+        }
+
+        constTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Iniciando simulación...</td></tr>`;
+        constMetricIter.textContent = "0";
+        constMetricValue.textContent = "-";
+        constMetricError.textContent = "-";
+        constMetricTime.textContent = "0.000000";
+
+        runRealtimeSimulationLoop();
+    }
+
+    function runRealtimeSimulationLoop() {
+        if (!constRealtimeState) return;
+
+        const delay = parseInt(constRealtimeSpeed.value);
+        constRealtimeTimer = setTimeout(() => {
+            if (isConstRealtimePaused) {
+                runRealtimeSimulationLoop();
+                return;
+            }
+
+            const stepSize = parseInt(constRealtimeStepSlider.value);
+            const finished = runRealtimeSimulationStep(stepSize);
+
+            if (finished) {
+                constBtnPause.disabled = true;
+                constBtnStop.disabled = true;
+                const submitBtn = constantsForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+                }
+            } else {
+                runRealtimeSimulationLoop();
+            }
+        }, delay);
+    }
+
+    function runRealtimeSimulationStep(stepSize) {
+        if (!constRealtimeState) return true;
+
+        const type = constRealtimeState.type;
+        const method = constRealtimeState.method;
+        const tol = constRealtimeState.tol;
+        const maxIter = constRealtimeState.maxIter;
+        const refVal = constRealtimeState.refVal;
+        const vars = constRealtimeState.vars;
+
+        let finished = false;
+        let lastApprox = 0;
+        let currentIt = constRealtimeState.currentIter;
+
+        for (let step = 0; step < stepSize; step++) {
+            if (type === "e") {
+                if (method === "taylor") {
+                    if (currentIt >= maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    vars.term = vars.term / currentIt;
+                    let nextSum = vars.sum + vars.term;
+                    let diff = Math.abs(nextSum - vars.sum);
+                    let err = Math.abs(nextSum - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: nextSum,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.sum = nextSum;
+                    lastApprox = nextSum;
+                    currentIt++;
+                    
+                    if (diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "limite") {
+                    if (currentIt > maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let val = Math.pow(1.0 + 1.0 / currentIt, currentIt);
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt,
+                        approx: val,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 2 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "fraccion") {
+                    if (currentIt > Math.min(maxIter, 150)) {
+                        finished = true;
+                        break;
+                    }
+                    let val = evaluateEulerContinuedFraction(currentIt);
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: val,
+                        diff: currentIt === 0 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "newton") {
+                    if (currentIt > maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let fx = Math.log(vars.x) - 1.0;
+                    let dfx = 1.0 / vars.x;
+                    let nextX = vars.x - (fx / dfx);
+                    let diff = Math.abs(nextX - vars.x);
+                    let err = Math.abs(nextX - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: nextX,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.x = nextX;
+                    lastApprox = nextX;
+                    currentIt++;
+                    
+                    if (diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                }
+            } else { // type === "pi"
+                if (method === "leibniz") {
+                    if (currentIt >= maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let term = (currentIt % 2 === 0 ? 1.0 : -1.0) / (2 * currentIt + 1);
+                    vars.sum += term;
+                    let val = 4.0 * vars.sum;
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    if (currentIt === 0 || currentIt === maxIter - 1 || currentIt % Math.ceil(maxIter / 500) === 0 || diff < tol) {
+                        constRealtimeState.iterations.push({
+                            iter: currentIt + 1,
+                            approx: val,
+                            diff: diff,
+                            error: err
+                        });
+                    }
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "nilakantha") {
+                    if (currentIt > maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let term = 4.0 / (vars.n * (vars.n + 1) * (vars.n + 2));
+                    vars.val += vars.signo * term;
+                    let diff = Math.abs(vars.val - vars.lastVal);
+                    let err = Math.abs(vars.val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: vars.val,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.lastVal = vars.val;
+                    lastApprox = vars.val;
+                    vars.signo *= -1.0;
+                    vars.n += 2;
+                    currentIt++;
+                    
+                    if (diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "archimedes") {
+                    if (currentIt > Math.min(maxIter, 30)) {
+                        finished = true;
+                        break;
+                    }
+                    let val = vars.lados * Math.sin(Math.PI / vars.lados);
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt,
+                        approx: val,
+                        diff: currentIt === 1 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    vars.lados *= 2;
+                    currentIt++;
+                    
+                    if (currentIt > 2 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "ramanujan") {
+                    if (currentIt > Math.min(maxIter, 8)) {
+                        finished = true;
+                        break;
+                    }
+                    let termNum = fact(4 * currentIt) * (1103 + 26390 * currentIt);
+                    let termDen = Math.pow(fact(currentIt), 4) * Math.pow(396, 4 * currentIt);
+                    vars.sum += termNum / termDen;
+                    let invPi = (2.0 * Math.sqrt(2.0) / 9801.0) * vars.sum;
+                    let val = 1.0 / invPi;
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: val,
+                        diff: currentIt === 0 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "chudnovsky") {
+                    if (currentIt > Math.min(maxIter, 6)) {
+                        finished = true;
+                        break;
+                    }
+                    let termNum = (currentIt % 2 === 0 ? 1.0 : -1.0) * fact(6 * currentIt) * (13591409 + 545140134 * currentIt);
+                    let termDen = fact(3 * currentIt) * Math.pow(fact(currentIt), 3) * Math.pow(640320, 3 * currentIt);
+                    vars.sum += termNum / termDen;
+                    let val = vars.constante / vars.sum;
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: val,
+                        diff: currentIt === 0 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        constRealtimeState.currentIter = currentIt;
+        const elapsed = ((performance.now() - constRealtimeState.startTime) / 1000).toFixed(6);
+
+        const currentIterations = constRealtimeState.iterations;
+        if (currentIterations.length > 0) {
+            const lastRow = currentIterations[currentIterations.length - 1];
+            
+            constMetricIter.textContent = lastRow.iter;
+            constMetricValue.textContent = lastRow.approx.toFixed(15);
+            constMetricError.textContent = lastRow.error.toExponential(4);
+            constMetricTime.textContent = elapsed;
+
+            constTableBody.innerHTML = "";
+            currentIterations.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="text-align: center; font-weight: 600;">${row.iter}</td>
+                    <td style="font-family: 'Fira Code', monospace;">${row.approx.toFixed(14)}</td>
+                    <td style="font-family: 'Fira Code', monospace;">${typeof row.diff === 'number' ? row.diff.toExponential(2) : row.diff}</td>
+                    <td style="font-family: 'Fira Code', monospace; color: var(--accent);">${row.error.toExponential(2)}</td>
+                `;
+                constTableBody.appendChild(tr);
+            });
+            
+            const tableParent = constTableBody.parentElement.parentElement;
+            if (tableParent) {
+                tableParent.scrollTop = tableParent.scrollHeight;
+            }
+
+            plotConstantConvergence(currentIterations);
+        }
+
+        return finished;
     }
 
     function calculateSingleMethod(type, method, tol, maxIter) {
