@@ -225,7 +225,7 @@ Para lograr paridad matemática y pedagógica con las herramientas heredadas del
     - *Error Absoluto*: Discrepancia absoluta respecto al valor exacto del sistema (`Math.E` o `Math.PI`).
     - *Decimales Ok*: Cantidad exacta de cifras decimales correctas consecutivas tras la coma.
     - *Tiempo*: Duración exacta del cómputo en segundos.
-  - **Gráfica de Convergencia Multitrayecto (Plotly Log-scale)**: Renderiza las curvas de error absoluto de todos los métodos en un solo gráfico interactivo utilizando una escala logarítmica en el eje Y. Esto permite contrastar visualmente la convergencia lineal y lenta (como Leibniz) con la convergencia cuadrática o exponencial ultra rápida (como Ramanujan o Chudnovsky).
+  - **Gráfica de Convergencia Multitrayecto (Plotly Log-scale)**: Renderiza las curvas de error absoluto de todos los métodos en un solo gráfico interactivo utilizando una escala logarítmica en el eje Y. Esto permite contrastar visualmente la convergencia lineal y lenta (como Leibniz) con la convergencia cuadrática o exponencial ultra rápida (como Ramanujan o Chudnovsky). El error mínimo para el trazado se ha acotado a $10^{-16}$ (la precisión de máquina nativa de hardware para variables `float64`), optimizando la visualización de la curva y evitando distorsiones visuales por errores nulos.
   - **Observación Didáctica Directa**: Se muestra un banner explicativo dinámico (`#const-compare-alert`) con recomendaciones pedagógicas sobre la velocidad de convergencia (por ejemplo, destacando que la serie de Leibniz requiere 10,000 iteraciones para obtener apenas 3-4 decimales correctos debido a su naturaleza lineal, mientras que Chudnovsky y Ramanujan obtienen precisión total de hardware en 2-3 pasos).
 
 ---

@@ -3121,7 +3121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const traces = results.map((res, index) => {
             return {
                 x: res.iterations.map(it => it.iter),
-                y: res.iterations.map(it => it.error + 1e-30),
+                y: res.iterations.map(it => Math.max(it.error, 1e-16)),
                 type: 'scatter',
                 mode: 'lines+markers',
                 name: res.methodName,
@@ -3173,7 +3173,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function plotConstantConvergence(iterations) {
         let traceError = {
             x: iterations.map(it => it.iter),
-            y: iterations.map(it => it.error + 1e-30),
+            y: iterations.map(it => Math.max(it.error, 1e-16)),
             type: 'scatter', mode: 'lines+markers',
             name: 'Error Absoluto',
             line: { color: '#06b6d4', width: 2 },
