@@ -250,11 +250,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const method = methodSelect.value;
             
             if (method === "bisection") {
-                expressionInput.value = "1/(x - 1.5)";
+                expressionInput.value = "x - 1/x";
                 renderMathPreview();
                 
-                aInput.value = "1.0";
-                bInput.value = "2.0";
+                aInput.value = "-0.5";
+                bInput.value = "0.5";
                 toleranceInput.value = "0.000001";
                 maxIterInput.value = "100";
             } else if (method === "secant") {
@@ -411,37 +411,55 @@ document.addEventListener("DOMContentLoaded", () => {
             { key: "x**3 - x - 2", method: "bisection", a: 1, b: 2, x0: 1.5, reason: "El intervalo [1.00, 2.00] es válido porque f(1) = -2 y f(2) = 4 tienen signos opuestos (f(a)·f(b) < 0), cumpliendo con el Teorema de Bolzano." },
             { key: "x**3 - x - 2", method: "newton", a: 1, b: 2, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson ya que la derivada f'(1.5) = 5.75 es segura y el punto está cerca de la raíz." },
             { key: "x**3 - x - 2", method: "secant", a: 1, b: 2, x0: 1.5, reason: "Los puntos iniciales [1.00, 2.00] son válidos para la Secante ya que f(1) y f(2) tienen valores con signos opuestos y no anulan el denominador." },
-            { key: "x**3 - x - 2", method: "fixedpoint", a: 1, b: 2, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo en la vecindad de la raíz." },
+            { key: "x**3 - x - 2", method: "fixedpoint", a: 1, b: 2, x0: 1.5, g: "(x + 2)**(1/3)", reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo en la vecindad de la raíz." },
             
             // cos(x) - x
             { key: "cos(x) - x", method: "bisection", a: 0, b: 1, x0: 0.5, reason: "El intervalo [0.00, 1.00] cumple el Teorema de Bolzano (f(0) = 1.00 > 0 y f(1) ≈ -0.46 < 0). Además, la función es continua en todo el intervalo." },
             { key: "cos(x) - x", method: "newton", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es seguro para Newton-Raphson puesto que la derivada f'(0.5) ≈ -1.48 es bastante lejana a cero." },
             { key: "cos(x) - x", method: "secant", a: 0, b: 1, x0: 0.5, reason: "Los valores iniciales [0.00, 1.00] son correctos para la Secante ya que f(0) = 1.00 y f(1) ≈ -0.46 son distintos." },
-            { key: "cos(x) - x", method: "fixedpoint", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es adecuado para Punto Fijo." },
+            { key: "cos(x) - x", method: "fixedpoint", a: 0, b: 1, x0: 0.5, g: "cos(x)", reason: "El punto inicial x₀ = 0.50 es adecuado para Punto Fijo." },
 
             // exp(-x) - x
             { key: "exp(-x) - x", method: "bisection", a: 0, b: 1, x0: 0.5, reason: "El intervalo [0.00, 1.00] es correcto para Bisección puesto que f(0) = 1.00 y f(1) ≈ -0.63 tienen signos contrarios." },
             { key: "exp(-x) - x", method: "newton", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es óptimo para Newton puesto que f'(0.5) ≈ -1.61 no anula la derivada." },
             { key: "exp(-x) - x", method: "secant", a: 0, b: 1, x0: 0.5, reason: "Los puntos iniciales [0.00, 1.00] son válidos ya que f(0) y f(1) son distintos." },
-            { key: "exp(-x) - x", method: "fixedpoint", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es adecuado para Punto Fijo." },
+            { key: "exp(-x) - x", method: "fixedpoint", a: 0, b: 1, x0: 0.5, g: "exp(-x)", reason: "El punto inicial x₀ = 0.50 es adecuado para Punto Fijo." },
 
             // x^2 + 2*x - 9
             { key: "x**2 + 2*x - 9", method: "bisection", a: 2, b: 3, x0: 2.2, reason: "La diferencia de signos en los extremos [2.00, 3.00] (f(2) = -1 y f(3) = 6) asegura que Bisección encerrará la raíz." },
             { key: "x**2 + 2*x - 9", method: "newton", a: 2, b: 3, x0: 2.2, reason: "El punto inicial x₀ = 2.20 es seguro para Newton ya que f'(2.2) = 6.40 es significativamente distinta de cero." },
             { key: "x**2 + 2*x - 9", method: "secant", a: 2, b: 3, x0: 2.2, reason: "Los valores iniciales [2.00, 3.00] son correctos para la Secante ya que f(2) = -1 y f(3) = 6 son distintos." },
-            { key: "x**2 + 2*x - 9", method: "fixedpoint", a: 2, b: 3, x0: 2.2, reason: "El punto inicial x₀ = 2.20 es adecuado para Punto Fijo." },
+            { key: "x**2 + 2*x - 9", method: "fixedpoint", a: 2, b: 3, x0: 2.2, g: "sqrt(9 - 2*x)", reason: "El punto inicial x₀ = 2.20 es adecuado para Punto Fijo." },
 
             // x^2 - 4
             { key: "x**2 - 4", method: "bisection", a: 1, b: 3, x0: 1.5, reason: "El intervalo [1.00, 3.00] cumple Bolzano puesto que f(1) = -3 y f(3) = 5 tienen signos opuestos." },
             { key: "x**2 - 4", method: "newton", a: 1, b: 3, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson porque la derivada f'(1.5) = 3.00 es lejana a cero." },
             { key: "x**2 - 4", method: "secant", a: 1, b: 3, x0: 1.5, reason: "Los puntos iniciales [1.00, 3.00] son correctos para la Secante puesto que f(1) y f(3) son diferentes." },
-            { key: "x**2 - 4", method: "fixedpoint", a: 1, b: 3, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo." },
+            { key: "x**2 - 4", method: "fixedpoint", a: 1, b: 3, x0: 1.5, g: "4/x", reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo." },
 
             // x^3 - 3*x (función de singularidad)
             { key: "x**3 - 3*x", method: "bisection", a: 1, b: 2.5, x0: 2.0, reason: "El intervalo [1.00, 2.50] cumple Bolzano (f(1) = -2 < 0 y f(2.5) ≈ 8.13 > 0) y evita el punto de derivada cero en x = 1." },
             { key: "x**3 - 3*x", method: "newton", a: 1, b: 2.5, x0: 2.0, reason: "El punto inicial x₀ = 2.00 es seguro para Newton puesto que f'(2) = 9.00 es distinta de cero y alejada de la singularidad en x = 1." },
             { key: "x**3 - 3*x", method: "secant", a: 1, b: 2.5, x0: 2.0, reason: "Los puntos [1.00, 2.50] son válidos para la Secante ya que f(1) = -2 y f(2.5) ≈ 8.13 son distintos." },
-            { key: "x**3 - 3*x", method: "fixedpoint", a: 1, b: 2.5, x0: 2.0, reason: "El punto inicial x₀ = 2.00 es seguro para Punto Fijo." }
+            { key: "x**3 - 3*x", method: "fixedpoint", a: 1, b: 2.5, x0: 2.0, g: "x**3 - 2*x", reason: "El punto inicial x₀ = 2.00 es seguro para Punto Fijo." },
+
+            // x - 1/x (función de singularidad para Bisección)
+            { key: "x - 1/x", method: "bisection", a: 0.5, b: 2.0, x0: 1.5, reason: "El intervalo [0.50, 2.00] es válido porque f(0.5) = -1.50 y f(2) = 1.50 tienen signos opuestos (cumple Bolzano) y evita el punto de singularidad (división por cero) en x = 0." },
+            { key: "x - 1/x", method: "newton", a: 0.5, b: 2.0, x0: 1.5, reason: "El punto inicial x₀ = 1.50 evita la singularidad en x = 0 y la derivada f'(1.5) = 1.44 es segura (distinta de cero), convergiendo a la raíz x = 1.00." },
+            { key: "x - 1/x", method: "secant", a: 0.5, b: 2.0, x0: 1.5, reason: "Los puntos iniciales [0.50, 2.00] evitan la singularidad en x = 0 y f(0.5) ≠ f(2), permitiendo calcular la secante correctamente hacia la raíz x = 1.00." },
+            { key: "x - 1/x", method: "fixedpoint", a: 0.5, b: 2.0, x0: 1.5, g: "1/x", reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo." },
+
+            // x^2 - 2 (función de singularidad para Secante)
+            { key: "x**2 - 2", method: "bisection", a: 1.0, b: 2.0, x0: 1.5, reason: "El intervalo [1.00, 2.00] cumple Bolzano puesto que f(1) = -1 y f(2) = 2 tienen signos opuestos, conteniendo la raíz real √2 ≈ 1.414." },
+            { key: "x**2 - 2", method: "newton", a: 1.0, b: 2.0, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson ya que la derivada f'(1.5) = 3.00 es lejana a cero." },
+            { key: "x**2 - 2", method: "secant", a: 1.0, b: 2.0, x0: 1.5, reason: "Los puntos iniciales [1.00, 2.00] son válidos para la Secante ya que f(1) = -1 y f(2) = 2 tienen signos opuestos y no anulan el denominador." },
+            { key: "x**2 - 2", method: "fixedpoint", a: 1.0, b: 2.0, x0: 1.5, g: "(x + 2/x)/2", reason: "El punto inicial x₀ = 1.50 con el método de Herón (g(x) = (x + 2/x)/2) converge de manera muy estable a la raíz √2." },
+
+            // x - 1/(x - 1) (función de singularidad para Punto Fijo)
+            { key: "x - 1/(x - 1)", method: "bisection", a: -0.8, b: 0.0, x0: -0.5, reason: "El intervalo [-0.80, 0.00] es válido porque f(-0.8) ≈ -0.24 y f(0) = 1.00 tienen signos opuestos (cumple Bolzano) y evita el punto de asíntota en x = 1." },
+            { key: "x - 1/(x - 1)", method: "newton", a: -0.8, b: 0.0, x0: -0.5, reason: "El punto inicial x₀ = -0.50 es seguro para Newton puesto que f'(-0.5) = 1.44 no es cero y evita la singularidad en x = 1, convergiendo a la raíz negativa -0.618." },
+            { key: "x - 1/(x - 1)", method: "secant", a: -0.8, b: 0.0, x0: -0.5, reason: "Los puntos iniciales [-0.80, 0.00] evitan la singularidad en x = 1 y f(-0.8) ≠ f(0), permitiendo iterar la secante hacia la raíz negativa -0.618." },
+            { key: "x - 1/(x - 1)", method: "fixedpoint", a: -0.8, b: 0.0, x0: -0.5, g: "1/(x - 1)", reason: "El punto inicial x₀ = -0.50 converge de forma estable a la raíz negativa -0.618, ya que |g'(-0.618)| ≈ 0.38 < 1, cumpliendo el teorema de convergencia de Punto Fijo." }
         ];
 
         // Buscar coincidencia exacta de expresión y método
@@ -464,6 +482,12 @@ document.addEventListener("DOMContentLoaded", () => {
             aInput.value = found.a;
             bInput.value = found.b;
             x0Input.value = found.x0;
+            if (found.method === "fixedpoint" && gExprInput && found.g) {
+                gExprInput.value = found.g;
+                if (typeof renderGMathPreview === "function") {
+                    renderGMathPreview();
+                }
+            }
             reason = found.reason;
             
             // Efecto visual de brillo en sugerencia
