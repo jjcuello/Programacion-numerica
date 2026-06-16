@@ -93,6 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const constantsForm = document.getElementById("constants-form");
     const constantSelect = document.getElementById("constant-select");
     const constMethodSelect = document.getElementById("const-method-select");
+    const constMethodGroup = document.getElementById("const-method-group");
+    const constCompareToggle = document.getElementById("const-compare-toggle");
     const constTolInput = document.getElementById("const-tol-input");
     const constMaxIter = document.getElementById("const-max-iter");
     const constMetricIter = document.getElementById("const-metric-iter");
@@ -100,6 +102,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const constMetricError = document.getElementById("const-metric-error");
     const constMetricTime = document.getElementById("const-metric-time");
     const constTableBody = document.getElementById("const-table-body");
+    const constSingleResults = document.getElementById("const-single-results");
+    const constCompareResults = document.getElementById("const-compare-results");
+    const constCompareTableBody = document.getElementById("const-compare-table-body");
+    const constCompareAlert = document.getElementById("const-compare-alert");
+    const constCompareAlertTitle = document.getElementById("const-compare-alert-title");
+    const constCompareAlertDesc = document.getElementById("const-compare-alert-desc");
 
     // Pestaña 4: Figuras 3D
     const shapes3DForm = document.getElementById("shapes-3d-form");
@@ -2154,6 +2162,18 @@ document.addEventListener("DOMContentLoaded", () => {
         constantSelect.addEventListener("change", updateConstantMethods);
         updateConstantMethods();
 
+        constCompareToggle.addEventListener("change", () => {
+            if (constCompareToggle.checked) {
+                constMethodGroup.style.display = "none";
+                constSingleResults.style.display = "none";
+                constCompareResults.style.display = "flex";
+            } else {
+                constMethodGroup.style.display = "block";
+                constSingleResults.style.display = "flex";
+                constCompareResults.style.display = "none";
+            }
+        });
+
         constantsForm.addEventListener("submit", runConstantApproximation);
     }
 
@@ -2172,14 +2192,56 @@ document.addEventListener("DOMContentLoaded", () => {
     function runConstantApproximation(e) {
         e.preventDefault();
         const type = constantSelect.value;
-        const method = constMethodSelect.value;
         const tol = parseFloat(constTolInput.value);
         const maxIter = parseInt(constMaxIter.value);
+        const refVal = type === "e" ? Math.E : Math.PI;
 
+        if (constCompareToggle.checked) {
+            // Modo comparación multimétodo
+            const list = type === "e" ? eulerMethods : piMethods;
+            const results = list.map(m => calculateSingleMethod(type, m.value, tol, maxIter));
+
+            // Llenar tabla comparativa
+            constCompareTableBody.innerHTML = "";
+            results.forEach(res => {
+                const decOk = countCorrectDecimals(res.approx, refVal);
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight: 600; color: var(--text-primary);">${res.methodName}</td>
+                    <td style="font-family: 'Fira Code', monospace;">${res.approx.toFixed(15)}</td>
+                    <td style="text-align: center; font-weight: 600;">${res.iters}</td>
+                    <td style="text-align: center; font-family: 'Fira Code', monospace; color: var(--accent);">${res.error.toExponential(4)}</td>
+                    <td style="text-align: center; font-weight: 600; color: var(--success);">${decOk}</td>
+                    <td style="text-align: center; font-family: 'Fira Code', monospace;">${res.time.toFixed(5)}</td>
+                `;
+                constCompareTableBody.appendChild(tr);
+            });
+
+            // Mostrar banner didáctico
+            if (constCompareAlert) {
+                if (type === "pi") {
+                    constCompareAlertTitle.textContent = "Observación Pedagógica (Número Pi)";
+                    constCompareAlertDesc.textContent = "La Serie de Leibniz converge de forma sumamente lenta (requiere 10,000 iteraciones para obtener apenas 4 decimales correctos debido a su tasa lineal). Por el contrario, los algoritmos modernos de Ramanujan y Chudnovsky convergen casi al instante con precisión de hardware en 2-3 pasos.";
+                } else {
+                    constCompareAlertTitle.textContent = "Observación Pedagógica (Número de Euler)";
+                    constCompareAlertDesc.textContent = "La Serie de Taylor y el método de Newton-Raphson muestran una convergencia cuadrática/exponencial veloz, necesitando menos de 15 pasos. En cambio, el método del Límite de definición ((1 + 1/n)^n) es de naturaleza lenta y lineal.";
+                }
+                constCompareAlert.style.backgroundColor = "var(--success-bg)";
+                constCompareAlert.style.borderColor = "var(--success)";
+                constCompareAlert.querySelector(".didactic-alert-icon").innerHTML = `<i class="fa-solid fa-graduation-cap" style="color: var(--success);"></i>`;
+                constCompareAlert.style.display = "flex";
+            }
+
+            // Graficar comparación
+            plotConstantsComparison(results);
+            return;
+        }
+
+        // Modo individual
+        const method = constMethodSelect.value;
         const startTime = performance.now();
         let iterations = [];
         let approx = 0;
-        const refVal = type === "e" ? Math.E : Math.PI;
 
         if (type === "e") {
             if (method === "taylor") {
@@ -2342,6 +2404,214 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Graficar convergencia
         plotConstantConvergence(iterations);
+    }
+
+    function calculateSingleMethod(type, method, tol, maxIter) {
+        const refVal = type === "e" ? Math.E : Math.PI;
+        const startTime = performance.now();
+        let iterations = [];
+        let approx = 0;
+
+        if (type === "e") {
+            if (method === "taylor") {
+                let sum = 1.0;
+                let term = 1.0;
+                iterations.push({ iter: 1, error: Math.abs(sum - refVal) });
+                for (let k = 1; k <= maxIter; k++) {
+                    term = term / k;
+                    let nextSum = sum + term;
+                    let diff = Math.abs(nextSum - sum);
+                    let err = Math.abs(nextSum - refVal);
+                    iterations.push({ iter: k + 1, error: err });
+                    sum = nextSum;
+                    if (diff < tol) break;
+                }
+                approx = sum;
+            } else if (method === "limite") {
+                let lastVal = 0.0;
+                for (let n = 1; n <= maxIter; n++) {
+                    let val = Math.pow(1.0 + 1.0 / n, n);
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: n, error: err });
+                    lastVal = val;
+                    if (n > 1 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "fraccion") {
+                let lastVal = 2.0;
+                for (let depth = 0; depth <= Math.min(maxIter, 150); depth++) {
+                    let val = evaluateEulerContinuedFraction(depth);
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: depth + 1, error: err });
+                    lastVal = val;
+                    if (depth > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "newton") {
+                let x = 2.5; 
+                let lastVal = x;
+                iterations.push({ iter: 1, error: Math.abs(x - refVal) });
+                for (let i = 1; i <= maxIter; i++) {
+                    let fx = Math.log(x) - 1.0;
+                    let dfx = 1.0 / x;
+                    let nextX = x - (fx / dfx);
+                    let diff = Math.abs(nextX - x);
+                    let err = Math.abs(nextX - refVal);
+                    iterations.push({ iter: i + 1, error: err });
+                    x = nextX;
+                    if (diff < tol) break;
+                }
+                approx = x;
+            }
+        } else { 
+            if (method === "leibniz") {
+                let sum = 0.0;
+                let lastVal = 0.0;
+                for (let k = 0; k < maxIter; k++) {
+                    let term = (k % 2 === 0 ? 1.0 : -1.0) / (2 * k + 1);
+                    sum += term;
+                    let val = 4.0 * sum;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    if (k === 0 || k === maxIter - 1 || k % Math.ceil(maxIter / 500) === 0 || diff < tol) {
+                        iterations.push({ iter: k + 1, error: err });
+                    }
+                    lastVal = val;
+                    if (k > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "nilakantha") {
+                let val = 3.0;
+                let lastVal = val;
+                let signo = 1.0;
+                let n = 2;
+                iterations.push({ iter: 1, error: Math.abs(val - refVal) });
+                for (let i = 1; i <= maxIter; i++) {
+                    let term = 4.0 / (n * (n + 1) * (n + 2));
+                    val += signo * term;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: i + 1, error: err });
+                    lastVal = val;
+                    signo *= -1.0;
+                    n += 2;
+                    if (diff < tol) break;
+                }
+                approx = val;
+            } else if (method === "archimedes") {
+                let lados = 6;
+                let lastVal = 0.0;
+                for (let i = 1; i <= Math.min(maxIter, 30); i++) { 
+                    let val = lados * Math.sin(Math.PI / lados);
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: i, error: err });
+                    lastVal = val;
+                    lados *= 2;
+                    if (i > 1 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "ramanujan") {
+                let sum = 0.0;
+                let lastVal = 0.0;
+                for (let k = 0; k <= Math.min(maxIter, 8); k++) { 
+                    let termNum = fact(4 * k) * (1103 + 26390 * k);
+                    let termDen = Math.pow(fact(k), 4) * Math.pow(396, 4 * k);
+                    sum += termNum / termDen;
+                    let invPi = (2.0 * Math.sqrt(2.0) / 9801.0) * sum;
+                    let val = 1.0 / invPi;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: k + 1, error: err });
+                    lastVal = val;
+                    if (k > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "chudnovsky") {
+                let sum = 0.0;
+                let lastVal = 0.0;
+                const constante = 426880 * Math.sqrt(10005);
+                for (let k = 0; k <= Math.min(maxIter, 6); k++) {
+                    let termNum = (k % 2 === 0 ? 1.0 : -1.0) * fact(6 * k) * (13591409 + 545140134 * k);
+                    let termDen = fact(3 * k) * Math.pow(fact(k), 3) * Math.pow(640320, 3 * k);
+                    sum += termNum / termDen;
+                    let val = constante / sum;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: k + 1, error: err });
+                    lastVal = val;
+                    if (k > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            }
+        }
+
+        const endTime = performance.now();
+        const elapsed = (endTime - startTime) / 1000;
+        return {
+            methodName: getMethodDisplayName(type, method),
+            approx: approx,
+            iters: iterations.length > 0 ? iterations[iterations.length - 1].iter : 0,
+            error: Math.abs(approx - refVal),
+            time: elapsed,
+            iterations: iterations
+        };
+    }
+
+    function getMethodDisplayName(type, method) {
+        const list = type === "e" ? eulerMethods : piMethods;
+        const found = list.find(m => m.value === method);
+        return found ? found.name : method;
+    }
+
+    function countCorrectDecimals(approx, refVal) {
+        const approxStr = approx.toFixed(15).split(".")[1] || "";
+        const refStr = refVal.toFixed(15).split(".")[1] || "";
+        let count = 0;
+        for (let i = 0; i < Math.min(approxStr.length, refStr.length); i++) {
+            if (approxStr[i] === refStr[i]) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count;
+    }
+
+    function plotConstantsComparison(results) {
+        const colors = ['#10b981', '#f59e0b', '#06b6d4', '#8b5cf6', '#ef4444'];
+        const traces = results.map((res, index) => {
+            return {
+                x: res.iterations.map(it => it.iter),
+                y: res.iterations.map(it => it.error + 1e-30),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: res.methodName,
+                line: { color: colors[index % colors.length], width: 2 },
+                marker: { size: 4 }
+            };
+        });
+
+        let layout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#94a3b8', family: 'Outfit, sans-serif' },
+            margin: { t: 30, b: 40, l: 60, r: 20 },
+            xaxis: { 
+                gridcolor: 'rgba(255, 255, 255, 0.05)',
+                title: 'Iteraciones'
+            },
+            yaxis: { 
+                gridcolor: 'rgba(255, 255, 255, 0.05)',
+                type: 'log',
+                title: 'Error Absoluto (Log)'
+            },
+            showlegend: true
+        };
+
+        Plotly.newPlot('plot-constants-compare', traces, layout, { responsive: true, displayModeBar: false });
     }
 
     function evaluateEulerContinuedFraction(depth) {

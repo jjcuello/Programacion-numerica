@@ -209,6 +209,25 @@ Para lograr una paridad del 100% con las herramientas heredadas del CLI (`legacy
   - **Auto-Configuración Inteligente**: Si el estudiante hace clic en **Sugerir** para una función de usuario, el motor busca raíces reales dinámicamente. Al encontrarlas, configura de inmediato los campos de límites `a` y `b` (y el punto medio `x0` para métodos abiertos) y despliega el banner didáctico de éxito en color verde detallando la justificación del intervalo encontrado.
   - **Respaldo Seguro**: En caso de no detectarse raíces en el escaneo (como en `x**2 + 4`), el sistema asigna los valores por defecto genéricos y muestra un banner informativo azul con recomendaciones pedagógicas de exploración.
 
+---
+
+## Laboratorio Comparativo de Constantes ($e$ y $\pi$)
+
+Para lograr paridad matemática y pedagógica con las herramientas heredadas del CLI (`legacy/run.py`), se ha implementado un **Laboratorio Comparativo Multimétodo** en la pestaña de Constantes de la vista del estudiante:
+
+* **Problema Original**: La versión web anterior solo permitía simular un método a la vez para aproximar $e$ o $\pi$, impidiendo comparar el rendimiento de convergencia, las iteraciones necesarias y el error absoluto entre diferentes formulaciones en un mismo panel (tal como se hacía en consola en el código heredado).
+* **Solución Implementada**:
+  - **Switch Comparativo**: Se añadió el control interactivo **"Comparar todos los métodos"** en el panel de control del formulario de Constantes.
+  - **Tabla Comparativa Consolidada**: Al activarlo y ejecutar, se calcula en paralelo la aproximación para todos los métodos correspondientes (4 métodos para $e$ y 5 métodos para $\pi$). La tabla consolidada reporta de manera unificada:
+    - *Método*: Nombre del método evaluado.
+    - *Aproximación*: Valor calculado con hasta 15 decimales.
+    - *Iteraciones*: Número de pasos realizados hasta convergencia o límite seguro.
+    - *Error Absoluto*: Discrepancia absoluta respecto al valor exacto del sistema (`Math.E` o `Math.PI`).
+    - *Decimales Ok*: Cantidad exacta de cifras decimales correctas consecutivas tras la coma.
+    - *Tiempo*: Duración exacta del cómputo en segundos.
+  - **Gráfica de Convergencia Multitrayecto (Plotly Log-scale)**: Renderiza las curvas de error absoluto de todos los métodos en un solo gráfico interactivo utilizando una escala logarítmica en el eje Y. Esto permite contrastar visualmente la convergencia lineal y lenta (como Leibniz) con la convergencia cuadrática o exponencial ultra rápida (como Ramanujan o Chudnovsky).
+  - **Observación Didáctica Directa**: Se muestra un banner explicativo dinámico (`#const-compare-alert`) con recomendaciones pedagógicas sobre la velocidad de convergencia (por ejemplo, destacando que la serie de Leibniz requiere 10,000 iteraciones para obtener apenas 3-4 decimales correctos debido a su naturaleza lineal, mientras que Chudnovsky y Ramanujan obtienen precisión total de hardware en 2-3 pasos).
+
 
 
 
