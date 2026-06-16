@@ -682,6 +682,28 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (method === "fixedpoint") {
                 const x0 = parseFloat(x0Input.value);
                 const exprG = document.getElementById("g-expression-input").value.trim();
+                
+                // Verificar compatibilidad didáctica de g(x)
+                try {
+                    const compResult = checkGExpressionCompatibility(expression, exprG, x0);
+                    if (!compResult.compatible) {
+                        didacticAlert.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
+                        didacticAlert.style.borderColor = "#f59e0b";
+                        const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+                        if (alertIconSpan) {
+                            alertIconSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i>`;
+                        }
+                        alertTitle.textContent = "¡Advertencia: g(x) Incompatible!";
+                        let rootText = compResult.root.toFixed(6);
+                        let gValText = compResult.gVal !== null ? compResult.gVal.toFixed(6) : "indefinido/error";
+                        alertDescription.textContent = `La función de iteración g(x) = ${exprG} no parece ser un despeje matemáticamente compatible con f(x) = 0. En la raíz real de f(x) cercana (x ≈ ${rootText}), evaluar g(x) resulta en ${gValText}, lo cual viola la condición fundamental de Punto Fijo g(r) = r (diferencia de ${(compResult.discrepancy !== null ? compResult.discrepancy.toFixed(4) : "N/A")}).`;
+                        alertRecommendation.textContent = "Consejo del Tutor: Asegúrate de despejar la variable 'x' de forma válida a partir de f(x) = 0. Por ejemplo, para x³ - x - 2 = 0, despejes correctos incluyen g(x) = (x + 2)**(1/3) o g(x) = x³ - 2. Recuerda que las potencias se ingresan con '**'.";
+                        didacticAlert.style.display = "flex";
+                    }
+                } catch (err) {
+                    // Ignorar fallas de validación
+                }
+
                 result = runFixedPointLocal(exprG, expression, x0, tol, maxIter);
             }
             const endTime = performance.now();
@@ -1042,6 +1064,75 @@ document.addEventListener("DOMContentLoaded", () => {
         return { root, iterations, status };
     }
 
+    // Validación didáctica de correspondencia de g(x) con f(x)
+    function checkGExpressionCompatibility(exprF, exprG, x0) {
+        let root = null;
+        let x = x0;
+        const tol = 1e-7;
+        const maxIter = 100;
+
+        for (let i = 0; i < maxIter; i++) {
+            try {
+                let fx = evaluateFunction(exprF, x);
+                let dfx = evaluateDerivative(exprF, x);
+                if (Math.abs(dfx) < 1e-12) {
+                    break;
+                }
+                let nextX = x - (fx / dfx);
+                if (Math.abs(nextX - x) < tol) {
+                    if (Math.abs(evaluateFunction(exprF, nextX)) < 1e-5) {
+                        root = nextX;
+                    }
+                    break;
+                }
+                x = nextX;
+            } catch (err) {
+                break;
+            }
+        }
+
+        if (root === null) {
+            const scanPoints = [x0 - 1.0, x0 + 1.0, x0 - 0.5, x0 + 0.5, x0 - 2.0, x0 + 2.0];
+            for (let startPt of scanPoints) {
+                let currX = startPt;
+                let found = false;
+                for (let j = 0; j < 30; j++) {
+                    try {
+                        let fx = evaluateFunction(exprF, currX);
+                        let dfx = evaluateDerivative(exprF, currX);
+                        if (Math.abs(dfx) < 1e-12) break;
+                        let nextX = currX - (fx / dfx);
+                        if (Math.abs(nextX - currX) < tol) {
+                            if (Math.abs(evaluateFunction(exprF, nextX)) < 1e-5) {
+                                root = nextX;
+                                found = true;
+                            }
+                            break;
+                        }
+                        currX = nextX;
+                    } catch (e) {
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+        }
+
+        if (root !== null) {
+            try {
+                let gVal = evaluateFunction(exprG, root);
+                let diff = Math.abs(gVal - root);
+                if (diff > 0.005) {
+                    return { compatible: false, root: root, gVal: gVal, discrepancy: diff };
+                }
+            } catch (err) {
+                return { compatible: false, root: root, gVal: null, discrepancy: null };
+            }
+        }
+
+        return { compatible: true };
+    }
+
     // 5. Rellenar Tabla
     function populateIterationsTable(iterations, method) {
         tableBody.innerHTML = "";
@@ -1230,8 +1321,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
             if (successfulIt) {
-                let aVal = successfulIt.xi;
-                let bVal = successfulIt.sup;
+                // Usamos los límites de la primera iteración para mostrar el intervalo inicial completo en la gráfica
+                let aVal = iterations[0].xi;
+                let bVal = iterations[0].sup;
                 let yRange = yPlot.filter(y => y !== null);
                 let yMinVal = yRange.length > 0 ? Math.min(...yRange) : -10;
                 let yMaxVal = yRange.length > 0 ? Math.max(...yRange) : 10;

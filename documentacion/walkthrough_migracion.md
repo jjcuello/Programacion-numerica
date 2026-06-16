@@ -94,3 +94,96 @@ Se realizaron comprobaciones manuales en el entorno del frontend local:
    - Se presionó "Sugerir" en una expresión desconocida y se verificó la visualización del banner azul informativo con parámetros genéricos, aclarando que no han sido validados para esa expresión.
 11. **Prueba del Historial**:
     - Se comprobó que el historial muestra correctamente etiquetas como "Secante" y "Punto Fijo" con el color correspondiente (rojo para singularidades, verde para éxitos), y que hacer clic en los elementos limpia y carga los datos correctamente.
+
+---
+
+## Actualización del Módulo del Profesor
+
+Se ha completado la actualización estructural e interactiva de la vista de profesores en [profesor.html](../frontend/pages/profesor.html) y [profesor.js](../frontend/assets/js/profesor.js), logrando paridad de rendimiento, control estricto de restricciones matemáticas y una estética premium uniforme con el módulo estudiantil.
+
+### Cambios Realizados
+
+1. **Laboratorio de Comparación Docente Completo**:
+   - **4 Métodos Simultáneos**: Bisección, Secante, Newton-Raphson y Punto Fijo. Se puede activar cualquier combinación de estos algoritmos mediante checkboxes estilizados.
+   - **Métricas Comparativas Directas**: Una tabla consolidada que recopila el estado final del cálculo (Éxito, Límite Iter, Singularidad, Bolzano, etc.), la raíz exacta, número de iteraciones, último residual de la función $f(x)$ y tiempo de cómputo en segundos.
+   - **Trazas de Convergencia Plotly**: Gráfico interactivo con hasta 4 trayectorias diferenciadas por color (Verde: Bisección, Cian: Secante, Naranja: Newton-Raphson, Morado: Punto Fijo) junto con la curva de la función principal.
+   - **Ecuación $g(x)$ Dinámica**: El campo para ingresar $g(x)$ y su previsualización LaTeX KaTeX se muestran u ocultan de forma inteligente dependiendo de si el método de Punto Fijo está marcado.
+   - **Alertas Didácticas**: Banner animado `#didactic-alert` que detecta e informa de divisiones por cero, derivadas nulas o violaciones de Bolzano durante el análisis comparativo, ofreciendo recomendaciones pedagógicas directas.
+   - **Alineación Vertical del Intervalo**: Se apilaron verticalmente los inputs de `a` y `b` con placeholders descriptivos para evitar el desbordamiento horizontal en la columna de parámetros.
+
+2. **Generador de Evaluaciones y Retos Estructurados**:
+   - **Sliders de Dificultad Proporcionales**: Control de distribución de preguntas (Fácil, Medio, Difícil) sincronizados mediante la restricción de suma exacta del 100%.
+   - **Modalidad Segmentada**: Botones interactivos segmentados por nivel de dificultad para configurar el tipo de preguntas (`📚 Teo` / `🧮 Prac` / `🔄 Mix`).
+   - **Sincronización de Plantillas**: Selección de configuraciones preestablecidas de parciales que actualiza automáticamente las barras y etiquetas.
+   - **Código de Clase Estructurado**: Generación de identificadores de curso estandarizados en base a la configuración activa (ej. `NUM-2026-E4T-M4P-D2M`).
+   - **Exportación JSON completa**: Descarga local de un paquete de metadatos del examen en formato JSON con la distribución, código generado y marcas de tiempo.
+
+### Resultados de Verificación (Módulo Profesor)
+
+1. **Comparación Multitrayectoria**:
+   - Se probó la función $x^3 - x - 2$ con Bisección en $[1, 2]$, Secante en $[1, 2]$, Newton en $x_0 = 1.5$ y Punto Fijo con $g(x) = (x+2)^{1/3}$ en $x_0 = 1.5$.
+   - Los cuatro algoritmos convergieron exitosamente a la raíz $1.521379$. El gráfico consolidó las 4 trazas correctamente con sus colores predefinidos.
+2. **Control de Restricciones en Sliders**:
+   - Se modificó el slider "Fácil" a 50%. Los sliders "Medio" y "Difícil" se ajustaron automáticamente de forma proporcional para mantener el total en 100%.
+   - Al cambiar el total de preguntas a 15, las etiquetas de cantidad se recalcularon instantáneamente (`🟢 Fácil: 50% (8 preguntas)`, `🟡 Medio: 30% (5 preguntas)`, etc.).
+3. **Generación e Integración de Código de Clase**:
+   - Se configuraron 10 preguntas con modalidad Teórica en Fácil, Práctica en Medio y Mixta en Difícil.
+   - Al hacer clic en "Generar Código de Clase", se produjo el string exacto `NUM-2026-E4T-M4P-D2M` con una animación glow verde satisfactoria.
+4. **Exportación de JSON**:
+   - Se exportó la configuración del examen exitosamente, generando un archivo JSON válido que describe la plantilla seleccionada, la cantidad total de preguntas, la distribución exacta y el código de clase correspondiente.
+
+## Validación de Ecuación de Iteración $g(x)$ (Módulos Estudiante y Profesor)
+
+Para guiar pedagógicamente a los usuarios al resolver o comparar el método de Punto Fijo, se ha integrado un motor de validación matemática en tiempo real para la función de iteración $g(x)$ ingresada en relación a la función original $f(x)$ tanto en la vista del Estudiante como en la de Profesores.
+
+### Cambios Realizados
+
+1. **Validador Numérico Automático**:
+   - Se implementó la función [checkGExpressionCompatibility](../frontend/assets/js/estudiante.js#L1044) en [estudiante.js](../frontend/assets/js/estudiante.js) y en [profesor.js](../frontend/assets/js/profesor.js#L667).
+   - Esta función busca la raíz real $r$ de $f(x) = 0$ más cercana al punto inicial $x_0$ utilizando un resolvedor Newton-Raphson de alta precisión en segundo plano.
+   - Si se encuentra una raíz, el sistema evalúa $g(r)$ y calcula la diferencia absoluta $|g(r) - r|$. Si esta diferencia supera la tolerancia ($0.005$), se considera que el despeje de $g(x)$ es matemáticamente incompatible o erróneo.
+
+2. **Advertencia Didáctica Interactiva**:
+   - **Módulo Estudiante**: Si se detecta incompatibilidad al simular, se dispara una alerta de advertencia en color naranja (`#f59e0b`) en el banner `#didactic-alert` con la discrepancia y recomendaciones.
+   - **Módulo Profesor**: Al hacer clic en "Comparar Algoritmos", si el método de Punto Fijo está activo y $g(x)$ es incompatible, el comparador dispara el banner de incidencia didáctica detallando el error antes de mostrar los gráficos consolidados, permitiendo evidenciar pedagógicamente la divergencia.
+
+### Resultados de Verificación
+
+1. **Verificación de Entrada Correcta**:
+   - Con $f(x) = x^3 - x - 2$ y $x_0 = 1.5$: se ingresó $g(x) = (x + 2)**(1/3)$. El validador determinó que es compatible, ejecutó la simulación con éxito en ambas vistas y no mostró ninguna alerta de advertencia.
+2. **Verificación de Entrada Incorrecta (Detección y Alerta)**:
+   - Con $f(x) = x^3 - x - 2$ y $x_0 = 1.5$: se ingresó un despeje erróneo $g(x) = x^2$.
+   - Al simular en la vista de estudiantes o comparar en la vista de profesores, el motor detectó inmediatamente que en la raíz real $x \approx 1.521380$ se cumple $f(x) = 0$ pero $g(r) \approx 2.314597 \neq r$.
+   - Se desplegó correctamente el banner de advertencia didáctica naranja advirtiendo de la incompatibilidad y detallando la discrepancia matemática.
+
+---
+
+## Cambio de Nombre e Identidad Visual (Métodos Numéricos)
+
+Se actualizó la terminología de marca en toda la plataforma para utilizar el término académico estándar y descriptivo **Métodos Numéricos** en lugar del genérico "Programación Numérica".
+
+### Cambios Realizados
+
+1. **Ajuste de Cabecera Logo**: Se reemplazó el texto del logotipo en la barra de navegación superior de `Programación Numérica` a `Métodos Numéricos` en todas las páginas web de la plataforma:
+   - [index.html](../index.html)
+   - [estudiante.html](estudiante.html)
+   - [profesor.html](profesor.html)
+   - [admin.html](admin.html)
+   - [dashboard.html](dashboard.html)
+2. **Actualización de Textos e Identidad**: Se eliminó la mención a "Cátedra de" en subtítulos y pies de página de los archivos anteriores, quedando directamente configurado como "Métodos Numéricos" para simplificar y modernizar el pie de página de la plataforma.
+
+---
+
+## Representación Gráfica del Intervalo $[a, b]$ (Bisección)
+
+Se identificó y resolvió un comportamiento visual confuso en el trazado de los límites del intervalo en el método de Bisección dentro del gráfico Plotly.
+
+### Problema y Solución
+
+* **Comportamiento Anterior**: El gráfico trazaba las líneas verticales discontinuas de los límites `a` y `b` basándose en los valores de la **última** iteración del cálculo (`successfulIt`). Dado que el intervalo se reduce a un tamaño menor a la tolerancia (ej. $10^{-6}$), los límites finalizaban prácticamente en el mismo punto exacto que la raíz, haciendo que ambas líneas se solaparan y parecieran una única vertical.
+* **Solución Aplicada**: 
+  - **Módulo Estudiante**: Refactoricé la lógica en [estudiante.js](../frontend/assets/js/estudiante.js#L1321) para tomar los límites del intervalo de la **primera** iteración (`iterations[0]`). Esto permite representar correctamente en la gráfica las líneas verticales del intervalo de búsqueda inicial $[a, b]$ seleccionado por el estudiante.
+  - **Módulo Profesor**: Integre el trazado de los límites iniciales en [profesor.js](../frontend/assets/js/profesor.js#L822) para que las líneas verticales discontinuas del intervalo de búsqueda inicial $[a, b]$ se muestren translúcidas en el comparador de trayectorias, proporcionando una referencia visual clara del dominio elegido.
+
+
+
