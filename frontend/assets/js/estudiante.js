@@ -267,6 +267,21 @@ document.addEventListener("DOMContentLoaded", () => {
         runSimulation();
     });
 
+    // Restablecer salidas al modificar campos de entrada
+    const inputsToWatch = [expressionInput, methodSelect, aInput, bInput, x0Input, toleranceInput, maxIterInput];
+    inputsToWatch.forEach(input => {
+        if (input) {
+            input.addEventListener("input", () => {
+                resetSimulationOutputs();
+            });
+            if (input === methodSelect) {
+                input.addEventListener("change", () => {
+                    resetSimulationOutputs();
+                });
+            }
+        }
+    });
+
     // Sliders Proporcionales (Regla de Suma de 100%)
     [easySlider, mediumSlider, hardSlider].forEach(slider => {
         slider.addEventListener("input", (event) => {
@@ -302,6 +317,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- FUNCIONES CORE ---
 
+    // Restablecer salidas de simulación cuando cambian los parámetros
+    function resetSimulationOutputs() {
+        metricStatus.textContent = "-";
+        metricStatus.className = "metric-card-value";
+        metricRoot.textContent = "-";
+        metricIter.textContent = "-";
+        metricTime.textContent = "-";
+
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1rem;">Configura los parámetros y haz clic en "Resolver Simulación".</td></tr>`;
+        
+        didacticAlert.style.display = "none";
+
+        const expr = expressionInput.value.trim();
+        if (expr) {
+            try {
+                // Graficar solo la curva limpia de la función
+                plotFunctionGraph(expr, [], null, methodSelect.value, "idle");
+            } catch (e) {
+                renderEmptyPlot();
+            }
+        } else {
+            renderEmptyPlot();
+        }
+    }
+
     // 1. Renderizar Vista Previa de Fórmulas Matemáticas
     function renderMathPreview() {
         let raw = expressionInput.value.trim();
@@ -335,58 +375,64 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Botón Sugerir Valores Inteligentes (Base de Datos Básica de f(x))
     function suggestMathValues() {
         const rawExpr = expressionInput.value.trim().toLowerCase();
-        const method = methodSelect.value;
+        let method = methodSelect.value;
         
-        // Diccionario de sugerencias
+        // Diccionario de sugerencias específicas por función y método
         const suggestions = [
-            { 
-                key: "x**3 - x - 2", 
-                method: "bisection", 
-                a: 1, 
-                b: 2, 
-                x0: 1.5,
-                reason: "El intervalo [1.00, 2.00] es válido porque f(1) = -2 y f(2) = 4 tienen signos opuestos (f(a)·f(b) < 0), cumpliendo con el Teorema de Bolzano y garantizando la existencia de al menos una raíz real."
-            },
-            { 
-                key: "cos(x) - x", 
-                method: "bisection", 
-                a: 0, 
-                b: 1, 
-                x0: 0.5,
-                reason: "El intervalo [0.00, 1.00] cumple el Teorema de Bolzano (f(0) = 1.00 > 0 y f(1) ≈ -0.46 < 0). Además, la función es continua en todo el intervalo sin presentar singularidades."
-            },
-            { 
-                key: "exp(-x) - x", 
-                method: "bisection", 
-                a: 0, 
-                b: 1, 
-                x0: 0.5,
-                reason: "El intervalo [0.00, 1.00] es correcto para Bisección puesto que f(0) = 1.00 y f(1) ≈ -0.63. Al ser de signos opuestos, se garantiza la convergencia segura hacia la raíz única."
-            },
-            { 
-                key: "x**2 + 2*x - 9", 
-                method: "bisection", 
-                a: 2, 
-                b: 3, 
-                x0: 2.2,
-                reason: "Para esta función cuadrática, f(2) = -1 y f(3) = 6. La diferencia de signos en los extremos [2.00, 3.00] asegura que el método de Bisección encerrará la raíz exitosamente."
-            },
-            { 
-                key: "x**2 - 4", 
-                method: "newton", 
-                a: 1, 
-                b: 3, 
-                x0: 1.5,
-                reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson porque la derivada f'(1.5) = 3.00 es significativamente distinta de cero, evitando asíntotas y divisiones indeterminadas."
-            }
+            // x^3 - x - 2
+            { key: "x**3 - x - 2", method: "bisection", a: 1, b: 2, x0: 1.5, reason: "El intervalo [1.00, 2.00] es válido porque f(1) = -2 y f(2) = 4 tienen signos opuestos (f(a)·f(b) < 0), cumpliendo con el Teorema de Bolzano." },
+            { key: "x**3 - x - 2", method: "newton", a: 1, b: 2, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson ya que la derivada f'(1.5) = 5.75 es segura y el punto está cerca de la raíz." },
+            { key: "x**3 - x - 2", method: "secant", a: 1, b: 2, x0: 1.5, reason: "Los puntos iniciales [1.00, 2.00] son válidos para la Secante ya que f(1) y f(2) tienen valores con signos opuestos y no anulan el denominador." },
+            { key: "x**3 - x - 2", method: "fixedpoint", a: 1, b: 2, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo en la vecindad de la raíz." },
+            
+            // cos(x) - x
+            { key: "cos(x) - x", method: "bisection", a: 0, b: 1, x0: 0.5, reason: "El intervalo [0.00, 1.00] cumple el Teorema de Bolzano (f(0) = 1.00 > 0 y f(1) ≈ -0.46 < 0). Además, la función es continua en todo el intervalo." },
+            { key: "cos(x) - x", method: "newton", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es seguro para Newton-Raphson puesto que la derivada f'(0.5) ≈ -1.48 es bastante lejana a cero." },
+            { key: "cos(x) - x", method: "secant", a: 0, b: 1, x0: 0.5, reason: "Los valores iniciales [0.00, 1.00] son correctos para la Secante ya que f(0) = 1.00 y f(1) ≈ -0.46 son distintos." },
+            { key: "cos(x) - x", method: "fixedpoint", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es adecuado para Punto Fijo." },
+
+            // exp(-x) - x
+            { key: "exp(-x) - x", method: "bisection", a: 0, b: 1, x0: 0.5, reason: "El intervalo [0.00, 1.00] es correcto para Bisección puesto que f(0) = 1.00 y f(1) ≈ -0.63 tienen signos contrarios." },
+            { key: "exp(-x) - x", method: "newton", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es óptimo para Newton puesto que f'(0.5) ≈ -1.61 no anula la derivada." },
+            { key: "exp(-x) - x", method: "secant", a: 0, b: 1, x0: 0.5, reason: "Los puntos iniciales [0.00, 1.00] son válidos ya que f(0) y f(1) son distintos." },
+            { key: "exp(-x) - x", method: "fixedpoint", a: 0, b: 1, x0: 0.5, reason: "El punto inicial x₀ = 0.50 es adecuado para Punto Fijo." },
+
+            // x^2 + 2*x - 9
+            { key: "x**2 + 2*x - 9", method: "bisection", a: 2, b: 3, x0: 2.2, reason: "La diferencia de signos en los extremos [2.00, 3.00] (f(2) = -1 y f(3) = 6) asegura que Bisección encerrará la raíz." },
+            { key: "x**2 + 2*x - 9", method: "newton", a: 2, b: 3, x0: 2.2, reason: "El punto inicial x₀ = 2.20 es seguro para Newton ya que f'(2.2) = 6.40 es significativamente distinta de cero." },
+            { key: "x**2 + 2*x - 9", method: "secant", a: 2, b: 3, x0: 2.2, reason: "Los valores iniciales [2.00, 3.00] son correctos para la Secante ya que f(2) = -1 y f(3) = 6 son distintos." },
+            { key: "x**2 + 2*x - 9", method: "fixedpoint", a: 2, b: 3, x0: 2.2, reason: "El punto inicial x₀ = 2.20 es adecuado para Punto Fijo." },
+
+            // x^2 - 4
+            { key: "x**2 - 4", method: "bisection", a: 1, b: 3, x0: 1.5, reason: "El intervalo [1.00, 3.00] cumple Bolzano puesto que f(1) = -3 y f(3) = 5 tienen signos opuestos." },
+            { key: "x**2 - 4", method: "newton", a: 1, b: 3, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson porque la derivada f'(1.5) = 3.00 es lejana a cero." },
+            { key: "x**2 - 4", method: "secant", a: 1, b: 3, x0: 1.5, reason: "Los puntos iniciales [1.00, 3.00] son correctos para la Secante puesto que f(1) y f(3) son diferentes." },
+            { key: "x**2 - 4", method: "fixedpoint", a: 1, b: 3, x0: 1.5, reason: "El punto inicial x₀ = 1.50 es adecuado para Punto Fijo." },
+
+            // x^3 - 3*x (función de singularidad)
+            { key: "x**3 - 3*x", method: "bisection", a: 1, b: 2.5, x0: 2.0, reason: "El intervalo [1.00, 2.50] cumple Bolzano (f(1) = -2 < 0 y f(2.5) ≈ 8.13 > 0) y evita el punto de derivada cero en x = 1." },
+            { key: "x**3 - 3*x", method: "newton", a: 1, b: 2.5, x0: 2.0, reason: "El punto inicial x₀ = 2.00 es seguro para Newton puesto que f'(2) = 9.00 es distinta de cero y alejada de la singularidad en x = 1." },
+            { key: "x**3 - 3*x", method: "secant", a: 1, b: 2.5, x0: 2.0, reason: "Los puntos [1.00, 2.50] son válidos para la Secante ya que f(1) = -2 y f(2.5) ≈ 8.13 son distintos." },
+            { key: "x**3 - 3*x", method: "fixedpoint", a: 1, b: 2.5, x0: 2.0, reason: "El punto inicial x₀ = 2.00 es seguro para Punto Fijo." }
         ];
 
-        let found = suggestions.find(s => s.key.replace(/\s+/g, "") === rawExpr.replace(/\s+/g, ""));
+        // Buscar coincidencia exacta de expresión y método
+        let found = suggestions.find(s => s.key.replace(/\s+/g, "") === rawExpr.replace(/\s+/g, "") && s.method === method);
+        
+        // Si no se encuentra para el método actual, buscar cualquier método de esa función
+        if (!found) {
+            found = suggestions.find(s => s.key.replace(/\s+/g, "") === rawExpr.replace(/\s+/g, ""));
+        }
+
         let reason = "";
+        let isFallback = false;
         
         if (found) {
-            methodSelect.value = found.method;
-            methodSelect.dispatchEvent(new Event("change"));
+            // Si cambió de método, actualizar el select y disparar cambio
+            if (methodSelect.value !== found.method) {
+                methodSelect.value = found.method;
+                methodSelect.dispatchEvent(new Event("change"));
+            }
             aInput.value = found.a;
             bInput.value = found.b;
             x0Input.value = found.x0;
@@ -400,27 +446,40 @@ document.addEventListener("DOMContentLoaded", () => {
             aInput.value = 0;
             bInput.value = 2;
             x0Input.value = 1.0;
+            isFallback = true;
             
             if (method === "bisection" || method === "secant") {
-                reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto. Recuerda comprobar que la función sea continua y que f(a) y f(b) posean signos contrarios.";
+                reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto. Por favor, verifica de forma independiente que f(a)·f(b) < 0 antes de simular.";
             } else {
-                reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto. Asegúrate de verificar que el método no caiga en extremos locales o puntos de derivada cero.";
+                reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto. Por favor, verifica que f'(x₀) ≠ 0 antes de simular.";
             }
         }
 
-        // Mostrar banner didáctico con estilo de éxito (verde)
+        // Mostrar banner didáctico
         if (didacticAlert) {
-            didacticAlert.style.backgroundColor = "var(--success-bg)";
-            didacticAlert.style.borderColor = "var(--success)";
-            
             const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
-            if (alertIconSpan) {
-                alertIconSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>`;
-            }
             
-            alertTitle.textContent = "Parámetros Sugeridos Válidos";
-            alertDescription.textContent = reason;
-            alertRecommendation.textContent = "Consejo del Tutor: Ejecuta la simulación para visualizar cómo converge el algoritmo paso a paso.";
+            if (isFallback) {
+                // Banner azul de información genérica
+                didacticAlert.style.backgroundColor = "rgba(59, 130, 246, 0.1)";
+                didacticAlert.style.borderColor = "var(--primary)";
+                if (alertIconSpan) {
+                    alertIconSpan.innerHTML = `<i class="fa-solid fa-circle-info" style="color: var(--primary);"></i>`;
+                }
+                alertTitle.textContent = "Parámetros Asignados (Por Defecto)";
+                alertDescription.textContent = reason;
+                alertRecommendation.textContent = "Consejo del Tutor: Revisa matemáticamente la función para ingresar límites o puntos iniciales adecuados.";
+            } else {
+                // Banner verde de éxito para sugerencia validada
+                didacticAlert.style.backgroundColor = "var(--success-bg)";
+                didacticAlert.style.borderColor = "var(--success)";
+                if (alertIconSpan) {
+                    alertIconSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>`;
+                }
+                alertTitle.textContent = "Parámetros Sugeridos Válidos";
+                alertDescription.textContent = reason;
+                alertRecommendation.textContent = "Consejo del Tutor: Ejecuta la simulación para visualizar cómo converge el algoritmo paso a paso.";
+            }
             didacticAlert.style.display = "flex";
         }
     }
@@ -1225,13 +1284,28 @@ document.addEventListener("DOMContentLoaded", () => {
         history.forEach(item => {
             const div = document.createElement("div");
             div.className = "history-item";
+            
+            // Traducir método
+            let methodLabel = "Newton-Raphson";
+            if (item.method === "bisection") methodLabel = "Bisección";
+            else if (item.method === "secant") methodLabel = "Secante";
+            else if (item.method === "fixedpoint") methodLabel = "Punto Fijo";
+
+            // Clase de distintivo
+            let badgeClass = "badge-warning";
+            if (item.status === "success") {
+                badgeClass = "badge-success";
+            } else if (item.status === "singularidad" || item.status === "bolzano_violation") {
+                badgeClass = "badge-danger";
+            }
+
             div.innerHTML = `
                 <div class="history-item-header">
                     <span class="history-item-title">${item.expr}</span>
-                    <span class="badge ${item.status === 'success' ? 'badge-success' : 'badge-warning'}">${item.status}</span>
+                    <span class="badge ${badgeClass}">${item.status}</span>
                 </div>
                 <div class="history-item-header" style="margin-top: 0.25rem;">
-                    <span class="history-item-meta">${item.method === 'bisection' ? 'Bisección' : 'Newton'} | Raíz: ${item.root}</span>
+                    <span class="history-item-meta">${methodLabel} | Raíz: ${item.root}</span>
                     <span class="history-item-meta" style="font-size: 0.75rem;">${item.date}</span>
                 </div>
             `;
@@ -1241,6 +1315,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 methodSelect.value = item.method;
                 methodSelect.dispatchEvent(new Event("change"));
                 renderMathPreview();
+                resetSimulationOutputs();
             });
             historyList.appendChild(div);
         });

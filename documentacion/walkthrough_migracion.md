@@ -54,6 +54,11 @@ Se ha completado con éxito la migración de todos los módulos del script CLI d
 - **Manejo de Errores Didácticos**: Se refactorizaron los solucionadores numéricos locales (`runNewtonLocal`, `runSecantLocal` y `runBisectionLocal`) para capturar anomalías matemáticas (como derivadas iguales a cero o violaciones del intervalo de Bolzano) de manera interna sin lanzar excepciones destructivas. Esto permite que el simulador registre e imprima las iteraciones exitosas hasta el punto de error.
 - **Gráfica con Asíntota de Fallo**: La función `plotFunctionGraph` fue modificada para recibir el estado del solucionador y, en caso de fallar por singularidad, dibujar la curva completa, los puntos e hilos de aproximación hasta el último paso válido, y una asíntota vertical punteada de color rojo (`#ef4444`) directamente en el punto de fallo.
 - **Explicación de Sugerencias Válidas**: Al presionar el botón "Sugerir", el simulador ahora actualiza el banner didáctico `#didactic-alert` con un estilo de éxito verde (borde verde, fondo translúcido verde y un icono de checkmark verde) y muestra un mensaje explicativo detallando las razones matemáticas (ej. cumplimiento del Teorema de Bolzano o derivadas distintas de cero) por las cuales los parámetros sugeridos son adecuados para el método.
+- **Resolución de Inconsistencias de Visualización**:
+  - Se implementó la función `resetSimulationOutputs()` que se activa en cuanto el usuario altera cualquier parámetro (función, método, tolerancias, iteraciones o límites) o carga un elemento del historial. Esta función limpia inmediatamente las métricas, vacía la tabla y redibuja la curva limpia de la función en Plotly, eliminando aproximaciones y asíntotas de error obsoletas.
+  - Se enriqueció la base de sugerencias para incluir la función del escenario de singularidad ($x^3 - 3x$) de forma diferenciada según el método activo.
+  - Se diferencian visualmente las sugerencias: si están validadas en la base de datos se muestran en un banner **verde** ("Parámetros Sugeridos Válidos"), mientras que si son valores por defecto genéricos se muestran en un banner **azul** ("Parámetros Asignados (Por Defecto)") para no confundir al estudiante.
+  - Se corrigió el historial de simulación para que traduzca correctamente los métodos ("Bisección", "Newton-Raphson", "Secante", "Punto Fijo") y muestre distintivos rojos (`badge-danger`) en caso de fallo por singularidad o violación de Bolzano.
 
 ---
 
@@ -78,4 +83,11 @@ Se realizaron comprobaciones manuales en el entorno del frontend local:
    - Se muestra un banner verde con el título "Parámetros Sugeridos Válidos".
    - El banner explica que $f(1) = -2$ y $f(2) = 4$ tienen signos opuestos, por lo que el Teorema de Bolzano garantiza una raíz en ese rango.
    - Al ejecutar la simulación, el banner verde se oculta automáticamente, permitiendo visualizar los resultados de la simulación normal.
+10. **Prueba de Inconsistencias y Reseteo**:
+   - Se realizó una simulación con Bisección (exitosa), se modificó el intervalo y se confirmó que las métricas y la tabla se limpiaron y el gráfico eliminó los puntos de iteración verdes anteriores.
+   - Se ejecutó el escenario de singularidad ( Newton con $x_0 = -0.80648$), fallando en el segundo paso. Se cargó de nuevo Bisección y se verificó que la tabla y el gráfico se reiniciaron de inmediato mostrando la curva azul limpia.
+   - Se presionó "Sugerir" sobre la función de singularidad $x^3 - 3x$ y se comprobó que cargó los parámetros correctos ($x_0 = 2.0$ para Newton y $[1, 2.5]$ para Bisección) con el banner verde de validez.
+   - Se presionó "Sugerir" en una expresión desconocida y se verificó la visualización del banner azul informativo con parámetros genéricos, aclarando que no han sido validados para esa expresión.
+11. **Prueba del Historial**:
+    - Se comprobó que el historial muestra correctamente etiquetas como "Secante" y "Punto Fijo" con el color correspondiente (rojo para singularidades, verde para éxitos), y que hacer clic en los elementos limpia y carga los datos correctamente.
 
