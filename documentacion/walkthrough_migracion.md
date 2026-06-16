@@ -196,6 +196,19 @@ Se realizó el commit, push y apertura del Pull Request oficial para consolidar 
 * **Enlace del Pull Request**: [PR #2 en GitHub](https://github.com/jjcuello/Programacion-numerica/pull/2)
 * **Contenido**: El cuerpo del PR detalla minuciosamente todos los cambios del Módulo de Profesor, la validación de correspondencia de $g(x)$, la corrección de límites de Bisección en gráficos y las actualizaciones terminológicas de marca ("Métodos Numéricos").
 
+---
+
+## Escaneo Dinámico de Intervalos de Búsqueda de Raíces
+
+Para lograr una paridad del 100% con las herramientas heredadas del CLI (`legacy/run.py`), se ha implementado un motor de **escaneo dinámico de intervalos** en el frontend:
+
+* **Problema Original**: La versión web sugería parámetros válidos basados únicamente en una base de datos estática para funciones predefinidas (ej. `x**3 - x - 2`). Si el estudiante ingresaba una función matemática personalizada, el sistema se limitaba a establecer parámetros por defecto genéricos (`[0, 2]` o `1.0`), perdiendo la capacidad del script de Python para explorar y sugerir intervalos que cumplan el Teorema de Bolzano.
+* **Solución Implementada**:
+  - **Función de Escaneo**: Se agregó la función `scanIntervalsForRoots(expr)` en [estudiante.js](../frontend/assets/js/estudiante.js). Esta función realiza una exploración matemática preliminar en el rango $[-10, 10]$ evaluando la expresión en $200$ puntos uniformes de forma segura.
+  - **Identificación de Raíces**: Detecta cruces por cero directos ($f(x) = 0$) y cambios de signo de la función ($f(x_1) \cdot f(x_2) < 0$), aislando hasta 3 intervalos de raíces candidatas.
+  - **Auto-Configuración Inteligente**: Si el estudiante hace clic en **Sugerir** para una función de usuario, el motor busca raíces reales dinámicamente. Al encontrarlas, configura de inmediato los campos de límites `a` y `b` (y el punto medio `x0` para métodos abiertos) y despliega el banner didáctico de éxito en color verde detallando la justificación del intervalo encontrado.
+  - **Respaldo Seguro**: En caso de no detectarse raíces en el escaneo (como en `x**2 + 4`), el sistema asigna los valores por defecto genéricos y muestra un banner informativo azul con recomendaciones pedagógicas de exploración.
+
 
 
 

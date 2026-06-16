@@ -408,7 +408,49 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 2. Botón Sugerir Valores Inteligentes (Base de Datos Básica de f(x))
+    // Función auxiliar para escanear intervalos donde se encuentra una raíz (Bolzano)
+    function scanIntervalsForRoots(expr) {
+        const start = -10.0;
+        const end = 10.0;
+        const points = 200;
+        const intervals = [];
+        const limit = 3;
+        
+        let prevX = null;
+        let prevY = null;
+        
+        for (let i = 0; i <= points; i++) {
+            let x = start + (end - start) * i / points;
+            let y;
+            try {
+                y = evaluateFunction(expr, x);
+            } catch (err) {
+                prevX = null;
+                prevY = null;
+                continue;
+            }
+            
+            if (isNaN(y) || !isFinite(y)) {
+                prevX = null;
+                prevY = null;
+                continue;
+            }
+            
+            if (y === 0) {
+                intervals.push({ a: x, b: x });
+                if (intervals.length >= limit) break;
+            } else if (prevX !== null && prevY * y < 0) {
+                intervals.push({ a: prevX, b: x });
+                if (intervals.length >= limit) break;
+            }
+            
+            prevX = x;
+            prevY = y;
+        }
+        return intervals;
+    }
+
+    // 2. Botón Sugerir Valores Inteligentes (Base de Datos Básica de f(x) o Escaneo Dinámico)
     function suggestMathValues() {
         const rawExpr = expressionInput.value.trim().toLowerCase();
         let method = methodSelect.value;
@@ -502,16 +544,40 @@ document.addEventListener("DOMContentLoaded", () => {
             suggestBtn.style.boxShadow = "var(--shadow-glow)";
             setTimeout(() => suggestBtn.style.boxShadow = "none", 1000);
         } else {
-            // Sugerencia genérica por defecto
-            aInput.value = 0;
-            bInput.value = 2;
-            x0Input.value = 1.0;
-            isFallback = true;
+            // Escaneo dinámico para funciones personalizadas
+            const exprToScan = (method === "fixedpoint" && !expressionInput.value.trim() && gExprInput) 
+                ? `x - (${gExprInput.value.trim()})` 
+                : expressionInput.value.trim();
+                
+            const scanned = scanIntervalsForRoots(exprToScan);
             
-            if (method === "bisection" || method === "secant") {
-                reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto. Por favor, verifica de forma independiente que f(a)·f(b) < 0 antes de simular.";
+            if (scanned.length > 0) {
+                const first = scanned[0];
+                aInput.value = Number(first.a.toFixed(4));
+                bInput.value = Number(first.b.toFixed(4));
+                x0Input.value = Number(((first.a + first.b) / 2).toFixed(4));
+                
+                if (first.a === first.b) {
+                    reason = `El escáner dinámico ha encontrado una raíz exacta en x ≈ ${first.a.toFixed(4)} dentro del rango [-10, 10]. Se configuró como punto de partida.`;
+                } else {
+                    reason = `El escáner dinámico detectó un cambio de signo (Teorema de Bolzano) en el intervalo [${first.a.toFixed(4)}, ${first.b.toFixed(4)}] para tu función. Parámetros configurados automáticamente.`;
+                }
+                
+                // Efecto visual de brillo
+                suggestBtn.style.boxShadow = "var(--shadow-glow)";
+                setTimeout(() => suggestBtn.style.boxShadow = "none", 1000);
             } else {
-                reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto. Por favor, verifica que f'(x₀) ≠ 0 antes de simular.";
+                // Sugerencia genérica por defecto
+                aInput.value = 0;
+                bInput.value = 2;
+                x0Input.value = 1.0;
+                isFallback = true;
+                
+                if (method === "bisection" || method === "secant") {
+                    reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto ya que no se detectaron raíces reales en la exploración preliminar [-10, 10]. Por favor, verifica de forma independiente que f(a)·f(b) < 0.";
+                } else {
+                    reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto ya que no se detectaron raíces reales en la exploración preliminar [-10, 10]. Por favor, verifica que f'(x₀) ≠ 0.";
+                }
             }
         }
 
@@ -530,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alertDescription.textContent = reason;
                 alertRecommendation.textContent = "Consejo del Tutor: Revisa matemáticamente la función para ingresar límites o puntos iniciales adecuados.";
             } else {
-                // Banner verde de éxito para sugerencia validada
+                // Banner verde de éxito para sugerencia validada o encontrada mediante escaneo dinámico
                 didacticAlert.style.backgroundColor = "var(--success-bg)";
                 didacticAlert.style.borderColor = "var(--success)";
                 if (alertIconSpan) {
