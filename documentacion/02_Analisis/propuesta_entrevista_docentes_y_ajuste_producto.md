@@ -1,14 +1,14 @@
 # Propuesta de entrevistas a docentes de matematicas y ajuste de producto
 
-Fecha: 2026-06-09
+Fecha de emision: 2026-06-09
 Fase: 02_Analisis
-Objetivo: validar, desde la optica de quienes ensenan, que tan util es la plataforma para clase real y traducir hallazgos en decisiones concretas de desarrollo.
+Proposito: validar, desde la optica docente, que tan util es la plataforma para clase real y traducir hallazgos en decisiones concretas de desarrollo.
 
 ## 1. Enfoque recomendado para esta fase
 
 La entrevista no debe quedarse en opiniones generales. Debe producir evidencia util para priorizar backlog.
 
-Resultado esperado de cada entrevista:
+Resultados esperados por entrevista:
 - Problemas docentes concretos (situacion actual).
 - Impacto pedagogico esperado (que debe mejorar en aprendizaje).
 - Condiciones operativas reales (tiempo, infraestructura, tipo de clases).
@@ -25,73 +25,50 @@ Muestra sugerida:
   - 1 de estadistica (si aplica al pensum).
   - 1 coordinador o jefe de catedra.
 
-Criterio de cobertura:
+Criterios de cobertura:
 - Distintos semestres.
 - Distinto dominio tecnologico (alto, medio, bajo).
 - Distinta modalidad de clase (teorica, practica, laboratorio).
 
-## 3. Guion de entrevista propuesto (version orientada a desarrollo)
+## 3. Guion de entrevista propuesto (version simplificada y directa)
 
-Duracion sugerida: 35 a 50 minutos.
-Formato: semiestructurada (preguntas base + profundizacion).
+Duracion sugerida: 20 a 25 minutos.
+Formato: entrevista semiestructurada, con foco en decisiones de producto y no en contexto general.
 
-### Bloque A: Contexto de docencia (5 preguntas)
+Principios de uso:
+- Evitar preguntas de contexto que no cambien una decision.
+- Priorizar dolores, evidencias, adopcion y funcionalidades minimas.
+- Profundizar solo cuando la respuesta abra una necesidad concreta.
 
-1. Que materias y que temas numericos imparte actualmente?
-2. En que momentos del curso se le dificulta mas explicar convergencia, error y comportamiento iterativo?
-3. Que herramientas usa hoy (pizarra, Excel, calculadora, software, scripts)?
-4. Cuanto tiempo de clase dedica a demostracion vs practica guiada?
-5. Cuales son los 3 errores mas repetidos de los estudiantes en metodos numericos?
+### Bloque A: Problema docente actual (4 preguntas)
 
-### Bloque B: Problema real y dolor docente (6 preguntas)
+1. Cual es hoy la mayor dificultad para ensenar metodos numericos en clase?
+2. Que errores o confusiones se repiten mas en los estudiantes?
+3. Que informacion o evidencia le falta para saber si el estudiante realmente entendio?
+4. Que parte de su trabajo docente le consume tiempo y aporta poco valor?
 
-6. Que parte del proceso de ensenanza le consume mas tiempo y no agrega valor directo?
-7. Donde pierde trazabilidad del avance del estudiante?
-8. En que casos no logra comparar metodos de forma clara en clase?
-9. Que evidencia le cuesta recoger para evaluar (iteraciones, errores, procedimiento)?
-10. Que tipo de salida considera inutil o confusa para estudiantes?
-11. Si pudiera eliminar una friccion hoy, cual seria?
+### Bloque B: Validacion de la solucion (5 preguntas)
 
-### Bloque C: Validacion del producto actual (10 preguntas)
+5. Le aportaria valor una herramienta que muestre iteraciones paso a paso y compare metodos? Por que?
+6. Que salida le resulta mas util para clase: tabla, grafica, comparacion o reporte? Cual no le aporta?
+7. Si la herramienta existiera hoy, en que momento de la clase la usaria primero?
+8. Que alertas o recomendaciones automaticas si le ayudarian de verdad?
+9. Cual es la funcionalidad minima que deberia existir para que valga la pena probarla?
 
-12. Que valor ve en una herramienta que muestre iteraciones paso a paso?
-13. Que tan importante es visualizar residual, error absoluto y error relativo en clase?
-14. Le resultaria util comparar dos o mas metodos sobre el mismo problema en una sola vista?
-15. Que nivel de detalle necesita en reportes (resumen, tabla completa, ambos)?
-16. Prefiere comenzar con una CLI robusta o considera indispensable una interfaz web desde ya?
-17. Cuales vistas docentes deberian existir primero (seguimiento por curso, por tema, por estudiante)?
-18. Que alertas pedagogicas le gustaria ver (divergencia, oscilacion, mala parametrizacion)?
-19. Que recomendaciones automaticas considera realmente utiles y cuales evitaria?
-20. Que formato de exportacion necesita para trabajo academico (PDF, CSV, JSON)?
-21. Con que frecuencia usaria esta herramienta durante el semestre?
+### Bloque C: Adopcion y prioridad (3 preguntas)
 
-### Bloque D: Criterios de adopcion institucional (6 preguntas)
+10. Cual es la principal barrera para adoptarla en su catedra?
+11. Que condiciones minimas deben cumplirse para usarla en clase con confianza?
+12. Si solo pudieramos construir 3 capacidades para un piloto, cuales elegiria primero?
 
-22. Que condiciones minimas de uso debe cumplir para adoptarla en su catedra?
-23. Que tan importante es que funcione en laboratorio con recursos limitados?
-24. Que barreras de adopcion anticipa en docentes o estudiantes?
-25. Que evidencias pediria para confiar en los resultados numericos?
-26. Que capacitacion minima requeriria para su equipo docente?
-27. Que riesgos academicos o eticos ve en el uso de una herramienta asi?
+Resultados esperados del guion:
+- 1 dolor principal claro.
+- 1 evidencia que hoy falta.
+- 1 escenario de uso inmediato.
+- 3 prioridades para piloto.
+- 1 barrera de adopcion a mitigar.
 
-### Bloque E: Priorizacion forzada (4 preguntas)
-
-Pedir al docente elegir Top 5 de valor inmediato:
-- Comparador de metodos.
-- Historial de sesiones.
-- Reportes exportables.
-- Visualizacion 2D/3D.
-- Alertas de convergencia.
-- Recomendador didactico.
-- Banco de ejercicios.
-- Dashboard docente.
-
-28. Cuales 5 funcionalidades aportan mayor impacto en aprendizaje?
-29. Cuales 2 dejaria para una fase posterior?
-30. Que funcionalidad considera critica para piloto institucional?
-31. Con que indicador mediria exito en 8 semanas?
-
-## 4. Instrumento de medicion cuantitativa (para decidir backlog)
+## 4. Instrumento de medicion cuantitativa
 
 Al cierre de cada entrevista, puntuar cada capacidad de 1 a 5 en:
 - Utilidad pedagogica.
@@ -107,7 +84,15 @@ Escala de decision:
 - 3.0 a 3.9: backlog de corto plazo.
 - < 3.0: diferido o redisenado.
 
-## 5. Entregables concretos de Analisis_02
+## 5. Criterios de conduccion
+
+- Iniciar directo por el problema principal, no por datos de contexto amplios.
+- Si una respuesta ya cubre otra pregunta, no repetirla.
+- Pedir ejemplos concretos de clase en lugar de opiniones generales.
+- Cerrar siempre con una priorizacion corta y forzada.
+- Si el tiempo cae, conservar solo las preguntas 1, 3, 5, 9, 10 y 12.
+
+## 6. Entregables de Analisis_02
 
 1. Matriz de hallazgos por docente (dolor, evidencia, impacto).
 2. Mapa de problemas recurrentes (top 10) con frecuencia.
@@ -116,7 +101,7 @@ Escala de decision:
 5. Criterios de aceptacion funcional por cada item priorizado.
 6. Riesgos de adopcion y plan de mitigacion.
 
-## 6. Traduccion directa a desarrollo (propuesta de backlog inicial)
+## 7. Traduccion a desarrollo
 
 Must (MVP docente):
 - Comparador de metodos con salida estandarizada.
@@ -136,7 +121,7 @@ Won't (por ahora):
 - Dashboard institucional avanzado.
 - Integraciones externas complejas.
 
-## 7. Plan de ejecucion rapido (2 semanas)
+## 8. Plan de ejecucion resumido
 
 Semana 1:
 - Ejecutar entrevistas (6 a 10).
@@ -148,15 +133,15 @@ Semana 2:
 - Validar ranking y criterios de aceptacion.
 - Cerrar backlog de entrada a la siguiente fase.
 
-## 8. Recomendacion final
+## 9. Cierre
 
 Para este proyecto, la entrevista debe orientarse a una pregunta central:
 "Que necesita el docente para ensenar mejor metodos numericos con evidencia, en menos tiempo y con mayor claridad para el estudiante?"
 
 La propuesta anterior permite responder esa pregunta con datos accionables, no solo percepciones.
-Con esto, la fase 02_Analisis quedaria conectada directamente con decisiones de arquitectura, casos de uso y prioridades reales del producto.
+Con ello, la fase 02_Analisis queda conectada directamente con decisiones de arquitectura, casos de uso y prioridades reales del producto.
 
-## 9. Artefactos operativos creados
+## 10. Artefactos asociados
 
 - Plantilla de levantamiento en campo: `documentacion/02_Analisis/plantilla_operativa_entrevista_docentes.md`
 - Matriz para consolidacion y priorizacion: `documentacion/02_Analisis/matriz_analisis_respuestas_docentes.md`

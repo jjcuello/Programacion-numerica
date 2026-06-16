@@ -2,9 +2,9 @@
 
 Fecha de emision: 2026-06-09
 Fase: 02_Analisis
-Uso: instrumento de campo para levantar necesidades docentes y traducirlas a decisiones de producto.
+Proposito: instrumento de campo para levantar necesidades docentes y traducirlas a decisiones de producto.
 
-## 1. Datos de la entrevista
+## 1. Datos basicos de la entrevista
 
 - Codigo de entrevista: ENT-____
 - Fecha: ____ / ____ / ______
@@ -14,45 +14,54 @@ Uso: instrumento de campo para levantar necesidades docentes y traducirlas a dec
 - Entrevistador(a): ______________________________
 - Docente entrevistado(a): ______________________________
 - Area/materia principal: ______________________________
-- Semestre(s) en que dicta: ______________________________
-- Anos de experiencia docente: ______________________________
-- Nivel de dominio tecnologico percibido: Bajo / Medio / Alto
 
-## 2. Contexto didactico actual
+Nota de uso: registrar solo datos que ayuden a interpretar la respuesta o segmentar hallazgos.
 
-1. Que temas de metodos numericos dicta con mayor frecuencia?
+## 2. Guion resumido de entrevista
+
+### Bloque A. Problema docente actual
+
+1. Cual es hoy la mayor dificultad para ensenar metodos numericos en clase?
    - Respuesta:
 
-2. En que momento de la clase aparecen mas dificultades de comprension?
+2. Que errores o confusiones se repiten mas en los estudiantes?
    - Respuesta:
 
-3. Que recursos usa hoy para explicar iteraciones y convergencia?
+3. Que informacion o evidencia le falta para saber si el estudiante realmente entendio?
    - Respuesta:
 
-4. Que errores cometen los estudiantes de forma recurrente?
+4. Que parte de su trabajo docente le consume tiempo y aporta poco valor?
    - Respuesta:
 
-5. Que parte de su trabajo docente le consume mas tiempo?
+### Bloque B. Validacion de la solucion
+
+5. Le aportaria valor una herramienta que muestre iteraciones paso a paso y compare metodos? Por que?
    - Respuesta:
 
-## 3. Brecha entre necesidad docente y solucion actual
-
-6. Que informacion le falta hoy para hacer seguimiento individual del estudiante?
+6. Que salida le resulta mas util para clase: tabla, grafica, comparacion o reporte? Cual no le aporta?
    - Respuesta:
 
-7. Que tipo de reporte le ayudaria realmente a evaluar mejor?
+7. Si la herramienta existiera hoy, en que momento de la clase la usaria primero?
    - Respuesta:
 
-8. Que visualizaciones considera utiles (tabla, grafica 2D, grafica 3D, comparador de metodos)?
+8. Que alertas o recomendaciones automaticas si le ayudarian de verdad?
    - Respuesta:
 
-9. Que salidas o funciones no aportarian valor en su contexto?
+9. Cual es la funcionalidad minima que deberia existir para que valga la pena probarla?
    - Respuesta:
 
-10. Si esta herramienta existiera manana, en que actividad de clase la usaria primero?
+### Bloque C. Adopcion y prioridad
+
+10. Cual es la principal barrera para adoptarla en su catedra?
     - Respuesta:
 
-## 4. Validacion de funcionalidades propuestas
+11. Que condiciones minimas deben cumplirse para usarla en clase con confianza?
+    - Respuesta:
+
+12. Si solo pudieramos construir 3 capacidades para un piloto, cuales elegiria primero?
+    - Respuesta:
+
+## 3. Validacion de funcionalidades propuestas
 
 Marcar utilidad percibida por funcionalidad: 1 (baja) a 5 (alta).
 
@@ -67,29 +76,20 @@ Marcar utilidad percibida por funcionalidad: 1 (baja) a 5 (alta).
 | Banco de ejercicios |  |  |
 | Dashboard docente |  |  |
 
-## 5. Priorizacion forzada
+## 4. Priorizacion forzada
 
-- Top 5 funcionalidades de mayor impacto inmediato:
+- Top 3 funcionalidades de mayor impacto inmediato:
   1. ______________________________
   2. ______________________________
   3. ______________________________
-  4. ______________________________
-  5. ______________________________
 
-- 2 funcionalidades que pueden esperar a fase posterior:
-  1. ______________________________
-  2. ______________________________
+- 1 funcionalidad que puede esperar a fase posterior:
+   1. ______________________________
 
 - Funcionalidad critica para piloto institucional:
   - ______________________________
 
-## 6. Barreras de adopcion y condiciones minimas
-
-11. Que barreras ve para adoptar la herramienta en su catedra?
-    - Respuesta:
-
-12. Que condiciones minimas deben cumplirse para usarla en clase?
-    - Respuesta:
+## 5. Condiciones de adopcion y confianza
 
 13. Que evidencia necesita para confiar en los resultados?
     - Respuesta:
@@ -97,7 +97,7 @@ Marcar utilidad percibida por funcionalidad: 1 (baja) a 5 (alta).
 14. Que capacitacion minima requeriria?
     - Respuesta:
 
-## 7. Escala cuantitativa de priorizacion (por entrevistador)
+## 6. Escala cuantitativa de priorizacion
 
 Puntuar cada criterio de 1 a 5:
 
@@ -115,10 +115,13 @@ Clasificacion:
 - 3.0 a 3.9: corto plazo
 - < 3.0: diferido/redisenado
 
-## 8. Resumen ejecutivo de la entrevista
+## 7. Resumen ejecutivo de la entrevista
 
 - Dolor principal detectado:
   - ______________________________
+
+- Evidencia principal que hoy falta:
+   - ______________________________
 
 - Valor principal esperado:
   - ______________________________
@@ -137,7 +140,7 @@ Clasificacion:
   - [ ] src/interfaces/cli
   - [ ] futura capa web
 
-## 9. Cierre y trazabilidad
+## 8. Cierre y trazabilidad
 
 - Consentimiento de uso academico de la entrevista: Si / No
 - Requiere seguimiento adicional: Si / No
