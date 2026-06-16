@@ -1094,14 +1094,14 @@ document.addEventListener("DOMContentLoaded", () => {
         let xMax = 4;
         
         if (iterations.length > 0) {
-            let xs = iterations.map(it => it.xi).filter(x => typeof x === 'number');
-            if (root !== null) xs.push(root);
+            let xs = iterations.map(it => it.xi).filter(x => typeof x === 'number' && !isNaN(x) && isFinite(x));
+            if (root !== null && !isNaN(root) && isFinite(root)) xs.push(root);
             iterations.forEach(it => {
-                if (typeof it.sup === 'number') xs.push(it.sup);
-                if (typeof it.root === 'number') xs.push(it.root);
+                if (typeof it.sup === 'number' && !isNaN(it.sup) && isFinite(it.sup)) xs.push(it.sup);
+                if (typeof it.root === 'number' && !isNaN(it.root) && isFinite(it.root)) xs.push(it.root);
             });
-            let minVal = Math.min(...xs);
-            let maxVal = Math.max(...xs);
+            let minVal = xs.length > 0 ? Math.min(...xs) : -2;
+            let maxVal = xs.length > 0 ? Math.max(...xs) : 4;
             if (minVal === maxVal) {
                 xMin = minVal - 2;
                 xMax = maxVal + 2;
@@ -1259,6 +1259,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if ((status === "singularidad" || status === "error") && iterations.length > 0) {
             let lastIt = iterations[iterations.length - 1];
             let singularityX = lastIt.xi;
+            if (method === "bisection" && typeof lastIt.sup === 'number') {
+                singularityX = (lastIt.xi + lastIt.sup) / 2;
+            }
             if (typeof singularityX === 'number' && !isNaN(singularityX)) {
                 let yRange = yPlot.filter(y => y !== null);
                 let yMinVal = yRange.length > 0 ? Math.min(...yRange) : -10;
