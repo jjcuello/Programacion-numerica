@@ -898,7 +898,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     iter: i,
                     xi: x,
                     sup: nextX,
-                    root: err,
+                    root: nextX,
                     error: i === 1 ? "-" : relErr.toFixed(8),
                     residual: fx
                 });
@@ -1026,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     iter: i,
                     xi: xVal,
                     sup: nextX,
-                    root: diff,
+                    root: nextX,
                     error: i === 1 ? "-" : relErr.toFixed(8),
                     residual: fVal
                 });

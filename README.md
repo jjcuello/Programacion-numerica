@@ -381,7 +381,7 @@ La evolucion web del sistema debe incorporar seguridad desde la arquitectura, no
 
 ### Instalacion y Preparacion
 
-Toda la logica de la version modular v0.2 y sus dependencias se gestiona desde el directorio `backend/`. Para instalar:
+La nueva arquitectura separa la experiencia visual en `frontend/`, el nucleo numerico y la CLI modular en `backend/`, y deja `legacy/` como referencia historica del laboratorio de consola. La instalacion de dependencias Python se realiza desde `backend/`:
 
 ```bash
 cd backend
@@ -408,7 +408,22 @@ cd backend
 python -m unittest discover -s tests
 ```
 
-### Ejecutar la base CLI v0.2
+### Ejecutar la interfaz web v0.2
+
+La interfaz visual actual vive en `frontend/` y puede levantarse como sitio estatico local:
+
+```bash
+cd frontend
+python -m http.server 8000
+```
+
+Luego abre en el navegador:
+
+```text
+http://localhost:8000/
+```
+
+### Ejecutar la CLI modular v0.2
 
 Se ejecuta desde la carpeta `backend/` utilizando el entorno virtual activo:
 
@@ -418,9 +433,9 @@ cd backend
 python run_cli.py solve --method bisection --expression "x**3 - x - 2" --interval 1 2
 ```
 
-### Ejecutar la version legacy interactiva (v0.1)
+### Ejecutar la referencia legacy (v0.1)
 
-El menu legacy interactivo de consola se puede arrancar desde la raíz del proyecto utilizando el entorno virtual activo:
+La version de consola original se conserva en `legacy/` como respaldo academico e historico, pero ya no representa la forma principal de presentar el proyecto:
 
 ```bash
 python legacy/run.py
