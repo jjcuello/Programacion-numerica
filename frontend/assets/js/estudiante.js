@@ -231,6 +231,14 @@ document.addEventListener("DOMContentLoaded", () => {
             gExprGroup.style.display = "block";
             gExprInput.required = true;
             exprLabel.textContent = "Función f(x) (para verificar)";
+            
+            // Auto-completar g(x) por defecto si la función es la predeterminada o está vacío
+            if (!gExprInput.value.trim() || expressionInput.value.trim() === "x**3 - x - 2") {
+                gExprInput.value = "(x + 2)**(1/3)";
+                if (typeof renderGMathPreview === "function") {
+                    renderGMathPreview();
+                }
+            }
         }
     });
 
