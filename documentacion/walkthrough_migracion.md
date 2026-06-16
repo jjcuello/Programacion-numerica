@@ -53,6 +53,7 @@ Se ha completado con éxito la migración de todos los módulos del script CLI d
 - **Botón "Forzar Singularidad"**: Se añadió un botón `#force-singularity-btn` ("Forzar Sing.") junto al botón "Sugerir Valores" con el tooltip `"demostración de manejo de error didactico"`.
 - **Manejo de Errores Didácticos**: Se refactorizaron los solucionadores numéricos locales (`runNewtonLocal`, `runSecantLocal` y `runBisectionLocal`) para capturar anomalías matemáticas (como derivadas iguales a cero o violaciones del intervalo de Bolzano) de manera interna sin lanzar excepciones destructivas. Esto permite que el simulador registre e imprima las iteraciones exitosas hasta el punto de error.
 - **Gráfica con Asíntota de Fallo**: La función `plotFunctionGraph` fue modificada para recibir el estado del solucionador y, en caso de fallar por singularidad, dibujar la curva completa, los puntos e hilos de aproximación hasta el último paso válido, y una asíntota vertical punteada de color rojo (`#ef4444`) directamente en el punto de fallo.
+- **Explicación de Sugerencias Válidas**: Al presionar el botón "Sugerir", el simulador ahora actualiza el banner didáctico `#didactic-alert` con un estilo de éxito verde (borde verde, fondo translúcido verde y un icono de checkmark verde) y muestra un mensaje explicativo detallando las razones matemáticas (ej. cumplimiento del Teorema de Bolzano o derivadas distintas de cero) por las cuales los parámetros sugeridos son adecuados para el método.
 
 ---
 
@@ -71,5 +72,10 @@ Se realizaron comprobaciones manuales en el entorno del frontend local:
 8. **Manejo Didáctico de Singularidades (Forzar Sing.)**: Al presionar "Forzar Sing.", el simulador configura automáticamente $f(x)=x^3-3x$, Newton-Raphson, y $x_0=-0.80648$. En la primera iteración calcula con éxito el paso tangente hasta $x_1 \approx 1.0$, y en la segunda iteración detecta la derivada cero ($f'(1.0)=0$). Se verificó que:
    - La tabla muestra la primera iteración correcta y la segunda fila con el estado `[FALLO]`.
    - El gráfico Plotly renderiza la función en azul, la recta tangente naranja del primer paso correcto landing en $x_1 = 1.0$, y una línea vertical discontinua roja de fallo en $x = 1.0$.
-   - El estado de la métrica de salida se actualiza a `singularidad` en rojo y el Tutor Didáctico muestra una recomendación específica detallando las causas matemáticas y las posibles soluciones.
+   - El estado de la métrica de salida se actualiza a `singularidad` en rojo y el Tutor Didáctico muestra una recomendación específica detallando las causas matemáticas y las posibles soluciones en color rojo.
+9. **Sugerencias y Alerta Didáctica de Éxito**: Al hacer clic en "Sugerir" con la función `x**3 - x - 2`, se verificó que:
+   - Los inputs se ajustan a Bisección y el intervalo a `[1, 2]`.
+   - Se muestra un banner verde con el título "Parámetros Sugeridos Válidos".
+   - El banner explica que $f(1) = -2$ y $f(2) = 4$ tienen signos opuestos, por lo que el Teorema de Bolzano garantiza una raíz en ese rango.
+   - Al ejecutar la simulación, el banner verde se oculta automáticamente, permitiendo visualizar los resultados de la simulación normal.
 

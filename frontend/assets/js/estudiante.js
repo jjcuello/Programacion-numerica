@@ -335,17 +335,54 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Botón Sugerir Valores Inteligentes (Base de Datos Básica de f(x))
     function suggestMathValues() {
         const rawExpr = expressionInput.value.trim().toLowerCase();
+        const method = methodSelect.value;
         
         // Diccionario de sugerencias
         const suggestions = [
-            { key: "x**3 - x - 2", method: "bisection", a: 1, b: 2, x0: 1.5 },
-            { key: "cos(x) - x", method: "bisection", a: 0, b: 1, x0: 0.5 },
-            { key: "exp(-x) - x", method: "bisection", a: 0, b: 1, x0: 0.5 },
-            { key: "x**2 + 2*x - 9", method: "bisection", a: 2, b: 3, x0: 2.2 },
-            { key: "x**2 - 4", method: "newton", a: 1, b: 3, x0: 1.5 }
+            { 
+                key: "x**3 - x - 2", 
+                method: "bisection", 
+                a: 1, 
+                b: 2, 
+                x0: 1.5,
+                reason: "El intervalo [1.00, 2.00] es válido porque f(1) = -2 y f(2) = 4 tienen signos opuestos (f(a)·f(b) < 0), cumpliendo con el Teorema de Bolzano y garantizando la existencia de al menos una raíz real."
+            },
+            { 
+                key: "cos(x) - x", 
+                method: "bisection", 
+                a: 0, 
+                b: 1, 
+                x0: 0.5,
+                reason: "El intervalo [0.00, 1.00] cumple el Teorema de Bolzano (f(0) = 1.00 > 0 y f(1) ≈ -0.46 < 0). Además, la función es continua en todo el intervalo sin presentar singularidades."
+            },
+            { 
+                key: "exp(-x) - x", 
+                method: "bisection", 
+                a: 0, 
+                b: 1, 
+                x0: 0.5,
+                reason: "El intervalo [0.00, 1.00] es correcto para Bisección puesto que f(0) = 1.00 y f(1) ≈ -0.63. Al ser de signos opuestos, se garantiza la convergencia segura hacia la raíz única."
+            },
+            { 
+                key: "x**2 + 2*x - 9", 
+                method: "bisection", 
+                a: 2, 
+                b: 3, 
+                x0: 2.2,
+                reason: "Para esta función cuadrática, f(2) = -1 y f(3) = 6. La diferencia de signos en los extremos [2.00, 3.00] asegura que el método de Bisección encerrará la raíz exitosamente."
+            },
+            { 
+                key: "x**2 - 4", 
+                method: "newton", 
+                a: 1, 
+                b: 3, 
+                x0: 1.5,
+                reason: "El punto inicial x₀ = 1.50 es válido para Newton-Raphson porque la derivada f'(1.5) = 3.00 es significativamente distinta de cero, evitando asíntotas y divisiones indeterminadas."
+            }
         ];
 
         let found = suggestions.find(s => s.key.replace(/\s+/g, "") === rawExpr.replace(/\s+/g, ""));
+        let reason = "";
         
         if (found) {
             methodSelect.value = found.method;
@@ -353,6 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
             aInput.value = found.a;
             bInput.value = found.b;
             x0Input.value = found.x0;
+            reason = found.reason;
             
             // Efecto visual de brillo en sugerencia
             suggestBtn.style.boxShadow = "var(--shadow-glow)";
@@ -362,6 +400,28 @@ document.addEventListener("DOMContentLoaded", () => {
             aInput.value = 0;
             bInput.value = 2;
             x0Input.value = 1.0;
+            
+            if (method === "bisection" || method === "secant") {
+                reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto. Recuerda comprobar que la función sea continua y que f(a) y f(b) posean signos contrarios.";
+            } else {
+                reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto. Asegúrate de verificar que el método no caiga en extremos locales o puntos de derivada cero.";
+            }
+        }
+
+        // Mostrar banner didáctico con estilo de éxito (verde)
+        if (didacticAlert) {
+            didacticAlert.style.backgroundColor = "var(--success-bg)";
+            didacticAlert.style.borderColor = "var(--success)";
+            
+            const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+            if (alertIconSpan) {
+                alertIconSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>`;
+            }
+            
+            alertTitle.textContent = "Parámetros Sugeridos Válidos";
+            alertDescription.textContent = reason;
+            alertRecommendation.textContent = "Consejo del Tutor: Ejecuta la simulación para visualizar cómo converge el algoritmo paso a paso.";
+            didacticAlert.style.display = "flex";
         }
     }
 
@@ -537,11 +597,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Mostrar Alertas Didácticas Específicas
             if (result.status === "singularidad") {
+                didacticAlert.style.backgroundColor = "var(--danger-bg)";
+                didacticAlert.style.borderColor = "var(--danger)";
+                const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+                if (alertIconSpan) {
+                    alertIconSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>`;
+                }
                 alertTitle.textContent = "¡Derivada Cero o Singularidad!";
                 alertDescription.textContent = "El algoritmo se ha interrumpido porque en la iteración actual se encontró un punto de singularidad o una derivada igual a cero (f'(x) = 0), impidiendo realizar la división de proyección.";
                 alertRecommendation.textContent = "Recomendación del Tutor: Modifica el punto inicial (x₀) a un valor más lejano del extremo/máximo de la curva, o cambia el método a Bisección (método cerrado) que no depende de derivadas.";
                 didacticAlert.style.display = "flex";
             } else if (result.status === "bolzano_violation") {
+                didacticAlert.style.backgroundColor = "var(--danger-bg)";
+                didacticAlert.style.borderColor = "var(--danger)";
+                const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+                if (alertIconSpan) {
+                    alertIconSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>`;
+                }
                 alertTitle.textContent = "Error de Intervalo Inicial";
                 alertDescription.textContent = "El teorema de Bolzano no se cumple ya que f(a) y f(b) tienen el mismo signo. No se puede garantizar la existencia de una raíz en este intervalo.";
                 alertRecommendation.textContent = "Sugerencia: Haz clic en el botón '✨ Sugerir Valores' o cambia los límites del intervalo para que rodeen la intersección con el eje X.";
@@ -563,6 +635,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Ocurrió un error al evaluar la función.</td></tr>`;
 
             // Mostrar Alerta General
+            didacticAlert.style.backgroundColor = "var(--danger-bg)";
+            didacticAlert.style.borderColor = "var(--danger)";
+            const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+            if (alertIconSpan) {
+                alertIconSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>`;
+            }
             alertTitle.textContent = "Error en la Simulación";
             alertDescription.textContent = "Hubo un problema al evaluar la función. Asegúrate de ingresar una expresión matemática válida (ej. x^3 - 3*x o sin(x)).";
             alertRecommendation.textContent = "Sugerencia: Revisa la sintaxis de la función y los valores de entrada.";
