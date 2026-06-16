@@ -185,5 +185,17 @@ Se identificó y resolvió un comportamiento visual confuso en el trazado de los
   - **Módulo Estudiante**: Refactoricé la lógica en [estudiante.js](../frontend/assets/js/estudiante.js#L1321) para tomar los límites del intervalo de la **primera** iteración (`iterations[0]`). Esto permite representar correctamente en la gráfica las líneas verticales del intervalo de búsqueda inicial $[a, b]$ seleccionado por el estudiante.
   - **Módulo Profesor**: Integre el trazado de los límites iniciales en [profesor.js](../frontend/assets/js/profesor.js#L822) para que las líneas verticales discontinuas del intervalo de búsqueda inicial $[a, b]$ se muestren translúcidas en el comparador de trayectorias, proporcionando una referencia visual clara del dominio elegido.
 
+---
+
+## Creación de Pull Request a `main`
+
+Se realizó el commit, push y apertura del Pull Request oficial para consolidar todos los desarrollos interactivos y didácticos del proyecto:
+
+* **Rama de origen (head)**: `Leonardo_cambios` (con todos los commits cargados y empujados).
+* **Rama de destino (base)**: `main`.
+* **Enlace del Pull Request**: [PR #2 en GitHub](https://github.com/jjcuello/Programacion-numerica/pull/2)
+* **Contenido**: El cuerpo del PR detalla minuciosamente todos los cambios del Módulo de Profesor, la validación de correspondencia de $g(x)$, la corrección de límites de Bisección en gráficos y las actualizaciones terminológicas de marca ("Métodos Numéricos").
+
+
 
 
