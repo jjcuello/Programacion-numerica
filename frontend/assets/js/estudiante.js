@@ -269,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 expressionInput.value = "x**3 - 3*x";
                 renderMathPreview();
                 
-                x0Input.value = "-0.80648";
+                x0Input.value = "-0.80644";
                 toleranceInput.value = "0.000001";
                 maxIterInput.value = "100";
             } else if (method === "fixedpoint") {

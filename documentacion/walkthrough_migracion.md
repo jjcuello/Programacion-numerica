@@ -53,7 +53,7 @@ Se ha completado con éxito la migración de todos los módulos del script CLI d
 - **Botón "Forzar Singularidad"**: Se añadió un botón `#force-singularity-btn` ("Forzar Sing.") junto al botón "Sugerir Valores" con el tooltip `"demostración de manejo de error didactico"`. Este botón ahora no altera el método seleccionado, sino que configura una singularidad pedagógica específica para el método activo:
   - **Bisección**: $f(x) = 1/(x-1.5)$ en $[1, 2]$ (falla en el punto medio $c=1.5$ por división entre cero).
   - **Secante**: $f(x) = x^2 - 2$ en $[1, -1]$ (falla en el primer paso por división entre cero al tener $f(x_1) - f(x_0) = 0$).
-  - **Newton-Raphson**: $f(x) = x^3 - 3x$ con $x_0 = -0.80648$ (falla en el segundo paso por derivada igual a cero en $x = 1.0$).
+  - **Newton-Raphson**: $f(x) = x^3 - 3x$ con $x_0 = -0.80644$ (falla en el segundo paso por derivada igual a cero en $x = 1.0$).
   - **Punto Fijo**: $f(x) = x - 1/(x-1)$, $g(x) = 1/(x-1)$ con $x_0 = 1.5$ (falla en la tercera iteración por división entre cero al evaluar $g(1.0)$).
 - **Manejo de Errores Didácticos**: Se refactorizaron los solucionadores numéricos locales (`runNewtonLocal`, `runSecantLocal`, `runBisectionLocal` y `runFixedPointLocal`) para capturar anomalías matemáticas (como derivadas iguales a cero o violaciones del intervalo de Bolzano) de manera interna sin lanzar excepciones destructivas. Esto permite que el simulador registre e imprima las iteraciones exitosas hasta el punto de error.
 - **Gráfica con Asíntota de Fallo**: La función `plotFunctionGraph` fue modificada para recibir el estado del solucionador y, en caso de fallar por singularidad, dibujar la curva completa, los puntos e hilos de aproximación hasta el último paso válido, y una asíntota vertical punteada de color rojo (`#ef4444`) directamente en el punto de fallo.
@@ -78,7 +78,7 @@ Se realizaron comprobaciones manuales en el entorno del frontend local:
 5. **Animaciones**: Verificado que los bucles de animación se inician y pausan correctamente, y se detienen automáticamente al cambiar de pestaña para liberar recursos del navegador.
 6. **Tutor Didáctico (Retos)**: Se validó que al alternar entre Teórico y Práctico para los niveles de dificultad, el generador carga las preguntas correspondientes de forma correcta. Por ejemplo, al seleccionar `🟢 Fácil` + `🧮 Prac`, el examen inicia mostrando un ejercicio de cálculo del punto medio del método de bisección.
 7. **Descarga de Gráficas**: Se comprobó que al hacer clic en "Descargar PNG" se exporta correctamente la gráfica de la función en un archivo de imagen.
-8. **Manejo Didáctico de Singularidades (Forzar Sing.)**: Al presionar "Forzar Sing.", el simulador configura automáticamente $f(x)=x^3-3x$, Newton-Raphson, y $x_0=-0.80648$. En la primera iteración calcula con éxito el paso tangente hasta $x_1 \approx 1.0$, y en la segunda iteración detecta la derivada cero ($f'(1.0)=0$). Se verificó que:
+8. **Manejo Didáctico de Singularidades (Forzar Sing.)**: Al presionar "Forzar Sing.", el simulador configura automáticamente $f(x)=x^3-3x$, Newton-Raphson, y $x_0=-0.80644$. En la primera iteración calcula con éxito el paso tangente hasta $x_1 \approx 1.0$, y en la segunda iteración detecta la derivada cero ($f'(1.0)=0$). Se verificó que:
    - La tabla muestra la primera iteración correcta y la segunda fila con el estado `[FALLO]`.
    - El gráfico Plotly renderiza la función en azul, la recta tangente naranja del primer paso correcto landing en $x_1 = 1.0$, y una línea vertical discontinua roja de fallo en $x = 1.0$.
    - El estado de la métrica de salida se actualiza a `singularidad` en rojo y el Tutor Didáctico muestra una recomendación específica detallando las causas matemáticas y las posibles soluciones en color rojo.
@@ -89,9 +89,8 @@ Se realizaron comprobaciones manuales en el entorno del frontend local:
    - Al ejecutar la simulación, el banner verde se oculta automáticamente, permitiendo visualizar los resultados de la simulación normal.
 10. **Prueba de Inconsistencias y Reseteo**:
    - Se realizó una simulación con Bisección (exitosa), se modificó el intervalo y se confirmó que las métricas y la tabla se limpiaron y el gráfico eliminó los puntos de iteración verdes anteriores.
-   - Se ejecutó el escenario de singularidad ( Newton con $x_0 = -0.80648$), fallando en el segundo paso. Se cargó de nuevo Bisección y se verificó que la tabla y el gráfico se reiniciaron de inmediato mostrando la curva azul limpia.
+   - Se ejecutó el escenario de singularidad ( Newton con $x_0 = -0.80644$), fallando en el segundo paso. Se cargó de nuevo Bisección y se verificó que la tabla y el gráfico se reiniciaron de inmediato mostrando la curva azul limpia.
    - Se presionó "Sugerir" sobre la función de singularidad $x^3 - 3x$ y se comprobó que cargó los parámetros correctos ($x_0 = 2.0$ para Newton y $[1, 2.5]$ para Bisección) con el banner verde de validez.
    - Se presionó "Sugerir" en una expresión desconocida y se verificó la visualización del banner azul informativo con parámetros genéricos, aclarando que no han sido validados para esa expresión.
 11. **Prueba del Historial**:
     - Se comprobó que el historial muestra correctamente etiquetas como "Secante" y "Punto Fijo" con el color correspondiente (rojo para singularidades, verde para éxitos), y que hacer clic en los elementos limpia y carga los datos correctamente.
-
