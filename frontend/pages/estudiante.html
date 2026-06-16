@@ -331,6 +331,8 @@
             <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
             <a href="estudiante.html" class="nav-link active"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
             <a href="profesor.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
+            <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-simple"></i> Analíticas</a>
+            <a href="admin.html" class="nav-link"><i class="fa-solid fa-user-shield"></i> Admin</a>
         </nav>
     </header>
 
@@ -651,6 +653,14 @@
                 <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
                     <!-- Resultados de Método Único -->
                     <div id="const-single-results" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Alerta Didáctica Individual -->
+                        <div class="didactic-alert" id="const-single-alert" style="display: none; align-items: flex-start; gap: 1rem; margin-bottom: 0; border-color: var(--accent); background-color: rgba(6, 182, 212, 0.05);">
+                            <span class="didactic-alert-icon"><i class="fa-solid fa-circle-info" style="color: var(--accent);"></i></span>
+                            <div>
+                                <h4 id="const-single-alert-title" style="color: var(--text-primary); margin-bottom: 0.25rem;"></h4>
+                                <p id="const-single-alert-desc" style="margin-bottom: 0; font-size: 0.8rem; color: var(--text-secondary);"></p>
+                            </div>
+                        </div>
                         <div class="metric-cards">
                             <div class="metric-card">
                                 <div class="metric-card-label">Iteraciones</div>
@@ -956,6 +966,16 @@
                                     <label class="form-label">Tiempo Límite (min)</label>
                                     <input type="number" id="quiz-time-limit" class="form-control" min="1" max="60" value="10" required style="border-radius: var(--radius-sm);">
                                 </div>
+                            </div>
+
+                            <!-- Cargar Examen por Código de Clase -->
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label">Cargar Examen por Código de Clase</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="class-code-input" class="form-control" placeholder="NUM-2026-E4T-M4P-D2T" style="border-radius: var(--radius-sm); font-family: monospace;">
+                                    <button type="button" id="load-class-code-btn" class="btn btn-secondary" style="border-radius: var(--radius-sm); white-space: nowrap;">Cargar</button>
+                                </div>
+                                <div id="class-code-alert" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem; border-radius: var(--radius-sm);"></div>
                             </div>
 
                             <!-- Leyenda informativa -->

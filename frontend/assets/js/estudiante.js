@@ -58,6 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const hardValueLabel = document.getElementById("hard-value");
     const startQuizBtn = document.getElementById("start-quiz-btn");
     const tutorSetup = document.getElementById("tutor-setup");
+    const classCodeInput = document.getElementById("class-code-input");
+    const loadClassCodeBtn = document.getElementById("load-class-code-btn");
+    const classCodeAlert = document.getElementById("class-code-alert");
 
     // Quiz Focus
     const quizFocusContainer = document.getElementById("quiz-focus-container");
@@ -208,6 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     Plotly.Plots.resize('plot-singularities');
                 } else if (targetId === "tab-constants") {
                     Plotly.Plots.resize('plot-constants');
+                    Plotly.Plots.resize('plot-constants-compare');
                 } else if (targetId === "tab-3d") {
                     Plotly.Plots.resize('plot-3d');
                 } else if (targetId === "tab-animations") {
@@ -377,6 +381,111 @@ document.addEventListener("DOMContentLoaded", () => {
             quizModes[difficulty] = mode;
         });
     });
+
+    // Cargar examen por código de clase
+    if (loadClassCodeBtn && classCodeInput && classCodeAlert) {
+        loadClassCodeBtn.addEventListener("click", () => {
+            const code = classCodeInput.value.trim().toUpperCase();
+            classCodeAlert.style.display = "none";
+            classCodeAlert.className = ""; // Limpiar clases previas
+            
+            if (!code) {
+                classCodeAlert.textContent = "Por favor, ingresa un código de clase.";
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            const match = code.match(/^NUM-2026-E(\d+)(T|P|M)-M(\d+)(T|P|M)-D(\d+)(T|P|M)$/);
+            if (!match) {
+                classCodeAlert.textContent = "Código inválido. Formato correcto: NUM-2026-E[F][Modo]-M[M][Modo]-D[D][Modo] (Ej: NUM-2026-E4T-M4P-D2T).";
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            const nEasy = parseInt(match[1]);
+            const modeEasyChar = match[2];
+            const nMed = parseInt(match[3]);
+            const modeMedChar = match[4];
+            const nHard = parseInt(match[5]);
+            const modeHardChar = match[6];
+            
+            const totalQuestions = nEasy + nMed + nHard;
+            if (totalQuestions === 0) {
+                classCodeAlert.textContent = "El código de clase especifica 0 preguntas en total.";
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            if (totalQuestions < 3 || totalQuestions > 30) {
+                classCodeAlert.textContent = `El total de preguntas del código (${totalQuestions}) debe estar entre 3 y 30.`;
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            // Configurar total de preguntas
+            quizTotalQuestionsInput.value = totalQuestions;
+            
+            // Configurar sliders de dificultad en porcentajes
+            easySlider.value = Math.round((nEasy / totalQuestions) * 100);
+            mediumSlider.value = Math.round((nMed / totalQuestions) * 100);
+            hardSlider.value = 100 - (parseInt(easySlider.value) + parseInt(mediumSlider.value));
+            
+            // Configurar modos
+            const modeMap = {
+                'T': 'theoretical',
+                'P': 'practical',
+                'M': 'mixed'
+            };
+            
+            const configModes = {
+                easy: modeMap[modeEasyChar],
+                medium: modeMap[modeMedChar],
+                hard: modeMap[modeHardChar]
+            };
+            
+            // Aplicar estados de botones
+            const difficulties = ['easy', 'medium', 'hard'];
+            difficulties.forEach(diff => {
+                const targetMode = configModes[diff];
+                quizModes[diff] = targetMode;
+                
+                // Actualizar interfaz visual para el modo seleccionado
+                document.querySelectorAll(`.mode-btn[data-difficulty="${diff}"]`).forEach(btn => {
+                    const btnMode = btn.getAttribute("data-mode");
+                    if (targetMode === 'mixed') {
+                        // En modo mixto, activamos ambos botones
+                        btn.classList.add("active");
+                    } else if (btnMode === targetMode) {
+                        btn.classList.add("active");
+                    } else {
+                        btn.classList.remove("active");
+                    }
+                });
+            });
+            
+            // Actualizar etiquetas visuales de los sliders
+            updateSliderLabels();
+            
+            // Mostrar éxito
+            classCodeAlert.textContent = `¡Código cargado con éxito! Total de preguntas: ${totalQuestions} (${nEasy} fáciles, ${nMed} medias, ${nHard} difíciles).`;
+            classCodeAlert.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+            classCodeAlert.style.color = "#10b981";
+            classCodeAlert.style.border = "1px solid rgba(16, 185, 129, 0.2)";
+            classCodeAlert.style.display = "block";
+        });
+    }
 
 
     // --- FUNCIONES CORE ---
@@ -718,8 +827,16 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/cos\(/g, "Math.cos(")
             .replace(/tan\(/g, "Math.tan(")
             .replace(/exp\(/g, "Math.exp(")
+            .replace(/ln\(/g, "Math.log(")
             .replace(/log\(/g, "Math.log(")
+            .replace(/abs\(/g, "Math.abs(")
             .replace(/sqrt\(/g, "Math.sqrt(")
+            .replace(/sinh\(/g, "Math.sinh(")
+            .replace(/cosh\(/g, "Math.cosh(")
+            .replace(/tanh\(/g, "Math.tanh(")
+            .replace(/asin\(/g, "Math.asin(")
+            .replace(/acos\(/g, "Math.acos(")
+            .replace(/atan\(/g, "Math.atan(")
             .replace(/\bpi\b/g, "Math.PI")
             .replace(/\be\b/g, "Math.E")
             .replace(/\^/g, "**");
@@ -1697,6 +1814,78 @@ document.addEventListener("DOMContentLoaded", () => {
             ],
             correct: 0,
             feedback: "Evaluando la función de iteración: x₁ = g(x₀) = cos(0.5 rad) ≈ 0.87758. Redondeado a tres decimales es 0.878."
+        },
+        {
+            type: "theoretical",
+            difficulty: "easy",
+            question: "¿Qué sucede con el error aproximado máximo en cada iteración del método de Bisección?",
+            options: [
+                "Se reduce exactamente a la mitad.",
+                "Disminuye de forma cuadrática duplicando los dígitos de precisión.",
+                "Permanece constante hasta encontrar la raíz."
+            ],
+            correct: 0,
+            feedback: "El método de bisección divide el intervalo de búsqueda exactamente por la mitad en cada paso, por lo tanto, la cota del error aproximado máximo disminuye a la mitad (convergencia lineal con factor 0.5)."
+        },
+        {
+            type: "practical",
+            difficulty: "medium",
+            question: "Si g(x) es una función de iteración de punto fijo, ¿qué condición sobre la derivada g'(x) asegura la convergencia local hacia una raíz s en un intervalo que contiene a s?",
+            options: [
+                "La derivada debe ser nula en todo el dominio.",
+                "El valor absoluto de la derivada debe ser menor que 1 (|g'(x)| < 1) en el intervalo.",
+                "La derivada debe ser estrictamente mayor que 1 (g'(x) > 1)."
+            ],
+            correct: 1,
+            feedback: "De acuerdo con el Teorema del Punto Fijo, la convergencia de la sucesión x_{n+1} = g(x_n) está garantizada si la función g(x) es contractiva, lo cual requiere que |g'(x)| < 1 en el intervalo de la raíz."
+        },
+        {
+            type: "practical",
+            difficulty: "medium",
+            question: "Se busca encontrar una raíz de f(x) = x³ - x - 1 = 0 con Newton-Raphson. Si la derivada es f'(x) = 3x² - 1 y el valor inicial es x₀ = 1.5, ¿cuál es el valor de f'(x₀)?",
+            options: [
+                "f'(x₀) = 5.75",
+                "f'(x₀) = 3.50",
+                "f'(x₀) = 1.50"
+            ],
+            correct: 0,
+            feedback: "Evaluando la derivada en x₀ = 1.5: f'(1.5) = 3 * (1.5)² - 1 = 3 * 2.25 - 1 = 6.75 - 1 = 5.75."
+        },
+        {
+            type: "theoretical",
+            difficulty: "hard",
+            question: "El método de Steffensen es una aceleración del método de punto fijo. ¿Cuál es su ventaja teórica más representativa?",
+            options: [
+                "Conserva la simplicidad del método de la secante sin usar funciones trascendentes.",
+                "Logra convergencia de orden cuadrático (orden 2) utilizando únicamente evaluaciones de la función de iteración g(x), sin evaluar derivadas g'(x).",
+                "Garantiza convergencia global para cualquier función continua arbitraria."
+            ],
+            correct: 1,
+            feedback: "El método de Steffensen utiliza el método Delta-2 de Aitken para acelerar la convergencia lineal del punto fijo a convergencia cuadrática, sin requerir calcular ni evaluar derivadas."
+        },
+        {
+            type: "practical",
+            difficulty: "hard",
+            question: "Considere el método de la Secante para resolver f(x) = x² - 3 = 0 con valores iniciales x₀ = 1 y x₁ = 2. ¿Cuál es la aproximación x₂ en el primer paso?",
+            options: [
+                "x₂ = 1.667",
+                "x₂ = 1.732",
+                "x₂ = 1.500"
+            ],
+            correct: 0,
+            feedback: "Tenemos f(1) = 1² - 3 = -2 y f(2) = 2² - 3 = 1. Aplicando la fórmula: x₂ = x₁ - f(x₁) * (x₁ - x₀) / (f(x₁) - f(x₀)) = 2 - 1 * (2 - 1) / (1 - (-2)) = 2 - 1/3 = 5/3 ≈ 1.667."
+        },
+        {
+            type: "theoretical",
+            difficulty: "hard",
+            question: "Al analizar la estabilidad numérica en la resolución de ecuaciones no lineales f(x) = 0, ¿qué representa el número de condición de una raíz simple r?",
+            options: [
+                "El grado de sensibilidad de la posición de la raíz r ante pequeñas perturbaciones o errores en la evaluación de la función f(x).",
+                "El límite superior absoluto de iteraciones permitidas para evitar la división por cero.",
+                "La tasa a la cual los dígitos significativos se pierden en la resta de extremos del intervalo."
+            ],
+            correct: 0,
+            feedback: "El número de condición de una raíz simple r se define como 1/|f'(r)|. Si la derivada en la raíz es muy pequeña, cualquier leve error en la función causa un gran desplazamiento de la raíz (raíz mal condicionada)."
         }
     ];
 
@@ -2424,14 +2613,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 approx = val;
             } else if (method === "archimedes") {
                 let lados = 6;
+                let s = 1.0; // lado del hexágono inscrito
                 let lastVal = 0.0;
+                let val = 3.0; // semiperímetro inicial
                 for (let i = 1; i <= Math.min(maxIter, 30); i++) { 
-                    let val = lados * Math.sin(Math.PI / lados);
+                    if (i > 1) {
+                        s = Math.sqrt(2.0 - Math.sqrt(4.0 - s * s));
+                        lados *= 2;
+                        val = (lados / 2) * s;
+                    }
                     let diff = Math.abs(val - lastVal);
                     let err = Math.abs(val - refVal);
                     iterations.push({ iter: i, approx: val, diff: i === 1 ? "-" : diff, error: err });
                     lastVal = val;
-                    lados *= 2;
                     if (i > 1 && diff < tol) break;
                 }
                 approx = lastVal;
@@ -2495,6 +2689,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Graficar convergencia
         plotConstantConvergence(iterations);
+
+        // Mostrar / ocultar alertas didácticas para constantes
+        const singleAlert = document.getElementById("const-single-alert");
+        const singleAlertTitle = document.getElementById("const-single-alert-title");
+        const singleAlertDesc = document.getElementById("const-single-alert-desc");
+        if (singleAlert && singleAlertTitle && singleAlertDesc) {
+            if (type === "e" && method === "newton") {
+                singleAlertTitle.textContent = "Nota Didáctica: Newton-Raphson para Euler (e)";
+                singleAlertDesc.textContent = "El método de Newton-Raphson sobre ln(x) - 1 = 0 es un modelo didáctico. En la práctica, la función de logaritmo natural requiere conocer previamente la constante base e para calcularse por hardware, constituyendo una circularidad lógica.";
+                singleAlert.style.display = "flex";
+            } else if (type === "pi" && method === "archimedes") {
+                singleAlertTitle.textContent = "Información Didáctica: Método de Arquímedes";
+                singleAlertDesc.textContent = "Esta simulación aproxima π de forma no circular mediante la relación de recurrencia geométrica de bisección de lados: s_2n = \u221a(2 - \u221a(4 - s_n²)), duplicando lados desde un hexágono (s_6 = 1.0) sin usar Math.PI en el bucle.";
+                singleAlert.style.display = "flex";
+            } else {
+                singleAlert.style.display = "none";
+            }
+        }
     }
 
     function stopConstRealtimeSimulation() {
@@ -2504,6 +2716,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         isConstRealtimePaused = false;
         constRealtimeState = null;
+
+        // Ocultar alerta didáctica de constantes
+        const singleAlert = document.getElementById("const-single-alert");
+        if (singleAlert) {
+            singleAlert.style.display = "none";
+        }
         
         // Reset buttons to original state
         constBtnPause.disabled = true;
@@ -2524,6 +2742,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function startConstRealtimeSimulation(type, method, tol, maxIter) {
         stopConstRealtimeSimulation();
+
+        // Mostrar / ocultar alertas didácticas para constantes en simulación
+        const singleAlert = document.getElementById("const-single-alert");
+        const singleAlertTitle = document.getElementById("const-single-alert-title");
+        const singleAlertDesc = document.getElementById("const-single-alert-desc");
+        if (singleAlert && singleAlertTitle && singleAlertDesc) {
+            if (type === "e" && method === "newton") {
+                singleAlertTitle.textContent = "Nota Didáctica: Newton-Raphson para Euler (e)";
+                singleAlertDesc.textContent = "El método de Newton-Raphson sobre ln(x) - 1 = 0 es un modelo didáctico. En la práctica, la función de logaritmo natural requiere conocer previamente la constante base e para calcularse por hardware, constituyendo una circularidad lógica.";
+                singleAlert.style.display = "flex";
+            } else if (type === "pi" && method === "archimedes") {
+                singleAlertTitle.textContent = "Información Didáctica: Método de Arquímedes";
+                singleAlertDesc.textContent = "Esta simulación aproxima π de forma no circular mediante la relación de recurrencia geométrica de bisección de lados: s_2n = \u221a(2 - \u221a(4 - s_n²)), duplicando lados desde un hexágono (s_6 = 1.0) sin usar Math.PI en el bucle.";
+                singleAlert.style.display = "flex";
+            } else {
+                singleAlert.style.display = "none";
+            }
+        }
 
         constBtnPause.disabled = false;
         constBtnStop.disabled = false;
@@ -2603,9 +2839,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             } else if (method === "archimedes") {
                 vars.lados = 6;
+                vars.s = 1.0; // lado del hexágono inscrito
                 vars.lastVal = 0.0;
+                vars.val = 3.0; // semiperímetro inicial
                 constRealtimeState.currentIter = 1;
-                constRealtimeState.lastApprox = 0.0;
+                constRealtimeState.lastApprox = 3.0;
             } else if (method === "ramanujan") {
                 vars.sum = 0.0;
                 vars.lastVal = 0.0;
@@ -2831,7 +3069,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         finished = true;
                         break;
                     }
-                    let val = vars.lados * Math.sin(Math.PI / vars.lados);
+                    let val = vars.val;
+                    if (currentIt > 1) {
+                        vars.s = Math.sqrt(2.0 - Math.sqrt(4.0 - vars.s * vars.s));
+                        vars.lados *= 2;
+                        val = (vars.lados / 2) * vars.s;
+                        vars.val = val;
+                    }
                     let diff = Math.abs(val - vars.lastVal);
                     let err = Math.abs(val - refVal);
                     
@@ -2843,7 +3087,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                     vars.lastVal = val;
                     lastApprox = val;
-                    vars.lados *= 2;
                     currentIt++;
                     
                     if (currentIt > 2 && diff < tol) {
@@ -3038,14 +3281,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 approx = val;
             } else if (method === "archimedes") {
                 let lados = 6;
+                let s = 1.0;
                 let lastVal = 0.0;
+                let val = 3.0;
                 for (let i = 1; i <= Math.min(maxIter, 30); i++) { 
-                    let val = lados * Math.sin(Math.PI / lados);
+                    if (i > 1) {
+                        s = Math.sqrt(2.0 - Math.sqrt(4.0 - s * s));
+                        lados *= 2;
+                        val = (lados / 2) * s;
+                    }
                     let diff = Math.abs(val - lastVal);
                     let err = Math.abs(val - refVal);
                     iterations.push({ iter: i, error: err });
                     lastVal = val;
-                    lados *= 2;
                     if (i > 1 && diff < tol) break;
                 }
                 approx = lastVal;
