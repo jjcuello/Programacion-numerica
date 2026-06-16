@@ -3213,14 +3213,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const type = shapeSelect.value;
         const cmap = shapeColorSelect.value;
         let traces = [];
+        const alertEl = document.getElementById("shapes-3d-alert");
+        const alertDescEl = document.getElementById("shapes-3d-alert-desc");
+
+        function showAlert(message) {
+            if (alertEl && alertDescEl) {
+                alertDescEl.textContent = message;
+                alertEl.style.display = "flex";
+            }
+        }
+
+        if (alertEl) {
+            alertEl.style.display = "none";
+        }
 
         if (type === "line") {
-            const x0 = parseFloat(document.getElementById("line-x0").value);
-            const y0 = parseFloat(document.getElementById("line-y0").value);
-            const z0 = parseFloat(document.getElementById("line-z0").value);
-            const vx = parseFloat(document.getElementById("line-vx").value);
-            const vy = parseFloat(document.getElementById("line-vy").value);
-            const vz = parseFloat(document.getElementById("line-vz").value);
+            const x0 = parseFloat(document.getElementById("line-x0").value) || 0;
+            const y0 = parseFloat(document.getElementById("line-y0").value) || 0;
+            const z0 = parseFloat(document.getElementById("line-z0").value) || 0;
+            const vx = parseFloat(document.getElementById("line-vx").value) || 0;
+            const vy = parseFloat(document.getElementById("line-vy").value) || 0;
+            const vz = parseFloat(document.getElementById("line-vz").value) || 0;
+
+            if (vx === 0 && vy === 0 && vz === 0) {
+                showAlert("El vector director V (vx, vy, vz) no puede ser nulo (0, 0, 0). Debe tener al menos una componente distinta de cero.");
+                return;
+            }
 
             let xPlot = [];
             let yPlot = [];
@@ -3240,10 +3258,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Recta 3D'
             });
         } else if (type === "sphere") {
-            const xc = parseFloat(document.getElementById("sphere-xc").value);
-            const yc = parseFloat(document.getElementById("sphere-yc").value);
-            const zc = parseFloat(document.getElementById("sphere-zc").value);
-            const r = parseFloat(document.getElementById("sphere-r").value);
+            const xc = parseFloat(document.getElementById("sphere-xc").value) || 0;
+            const yc = parseFloat(document.getElementById("sphere-yc").value) || 0;
+            const zc = parseFloat(document.getElementById("sphere-zc").value) || 0;
+            const r = parseFloat(document.getElementById("sphere-r").value) || 0;
+
+            if (r <= 0) {
+                showAlert("El radio (R) de la esfera debe ser mayor que cero.");
+                return;
+            }
 
             let theta = [];
             let phi = [];
@@ -3278,10 +3301,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Esfera'
             });
         } else if (type === "cylinder") {
-            const xc = parseFloat(document.getElementById("cyl-xc").value);
-            const yc = parseFloat(document.getElementById("cyl-yc").value);
-            const r = parseFloat(document.getElementById("cyl-r").value);
-            const h = parseFloat(document.getElementById("cyl-h").value);
+            const xc = parseFloat(document.getElementById("cyl-xc").value) || 0;
+            const yc = parseFloat(document.getElementById("cyl-yc").value) || 0;
+            const zc = parseFloat(document.getElementById("cyl-zc").value) || 0;
+            const r = parseFloat(document.getElementById("cyl-r").value) || 0;
+            const h = parseFloat(document.getElementById("cyl-h").value) || 0;
+
+            if (r <= 0 || h <= 0) {
+                showAlert("El radio (R) y la altura (H) del cilindro deben ser mayores que cero.");
+                return;
+            }
 
             let theta = [];
             for (let i = 0; i <= 30; i++) {
@@ -3293,7 +3322,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let zCyl = [];
 
             for (let i = 0; i <= 10; i++) {
-                let zVal = (i * h) / 10;
+                let zVal = zc + (i * h) / 10;
                 let xRow = [];
                 let yRow = [];
                 let zRow = [];
@@ -3315,10 +3344,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Cilindro'
             });
         } else if (type === "cone") {
-            const xc = parseFloat(document.getElementById("cone-xc").value);
-            const yc = parseFloat(document.getElementById("cone-yc").value);
-            const r = parseFloat(document.getElementById("cone-r").value);
-            const h = parseFloat(document.getElementById("cone-h").value);
+            const xc = parseFloat(document.getElementById("cone-xc").value) || 0;
+            const yc = parseFloat(document.getElementById("cone-yc").value) || 0;
+            const zc = parseFloat(document.getElementById("cone-zc").value) || 0;
+            const r = parseFloat(document.getElementById("cone-r").value) || 0;
+            const h = parseFloat(document.getElementById("cone-h").value) || 0;
+
+            if (r <= 0 || h <= 0) {
+                showAlert("El radio (R) y la altura (H) del cono deben ser mayores que cero.");
+                return;
+            }
 
             let theta = [];
             for (let i = 0; i <= 30; i++) {
@@ -3330,8 +3365,9 @@ document.addEventListener("DOMContentLoaded", () => {
             let zCone = [];
 
             for (let i = 0; i <= 10; i++) {
-                let zVal = (i * h) / 10;
-                let currentR = (1.0 - zVal / h) * r;
+                let zOffset = (i * h) / 10;
+                let zVal = zc + zOffset;
+                let currentR = (1.0 - zOffset / h) * r;
                 let xRow = [];
                 let yRow = [];
                 let zRow = [];
@@ -3353,14 +3389,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Cono'
             });
         } else if (type === "paraboloid") {
-            const a = parseFloat(document.getElementById("para-a").value);
-            const b = parseFloat(document.getElementById("para-b").value);
+            const a = parseFloat(document.getElementById("para-a").value) || 0;
+            const b = parseFloat(document.getElementById("para-b").value) || 0;
+            const c = parseFloat(document.getElementById("para-c").value) || 0;
+
+            if (a === 0 || b === 0) {
+                showAlert("Los coeficientes 'a' y 'b' del paraboloide deben ser distintos de cero (a ≠ 0, b ≠ 0) para evitar división por cero.");
+                return;
+            }
 
             let xVal = [];
             let yVal = [];
             for (let i = -15; i <= 15; i++) {
-                xVal.push(i * 2.0 / 15.0);
-                yVal.push(i * 2.0 / 15.0);
+                xVal.push(i * Math.abs(a) / 15.0);
+                yVal.push(i * Math.abs(b) / 15.0);
             }
 
             let xPara = [];
@@ -3374,7 +3416,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 for (let j = 0; j < yVal.length; j++) {
                     xRow.push(xVal[i]);
                     yRow.push(yVal[j]);
-                    zRow.push(Math.pow(xVal[i], 2) / Math.pow(a, 2) + Math.pow(yVal[j], 2) / Math.pow(b, 2));
+                    zRow.push(c * (Math.pow(xVal[i], 2) / Math.pow(a, 2) + Math.pow(yVal[j], 2) / Math.pow(b, 2)));
                 }
                 xPara.push(xRow);
                 yPara.push(yRow);

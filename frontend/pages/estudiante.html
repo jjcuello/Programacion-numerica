@@ -748,6 +748,15 @@
                         <i class="fa-solid fa-cube" style="color: var(--accent);"></i> Geometría 3D Interactiva
                     </h3>
                     <form id="shapes-3d-form">
+                        <!-- Alerta Didáctica 3D -->
+                        <div class="didactic-alert" id="shapes-3d-alert" style="display: none; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; border-color: var(--accent); background-color: rgba(245, 158, 11, 0.05);">
+                            <span class="didactic-alert-icon"><i class="fa-solid fa-circle-exclamation" style="color: var(--accent);"></i></span>
+                            <div>
+                                <h4 id="shapes-3d-alert-title" style="color: var(--text-primary); margin-bottom: 0.25rem;">Parámetros Inválidos</h4>
+                                <p id="shapes-3d-alert-desc" style="margin-bottom: 0; font-size: 0.8rem; color: var(--text-secondary);"></p>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">Seleccionar Figura</label>
                             <select id="shape-select" class="form-control">
@@ -763,18 +772,18 @@
                         <div id="shape-params-line" class="shape-params">
                             <div class="form-group">
                                 <label class="form-label">Punto P0 (x0, y0, z0)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="line-x0" class="form-control" value="0">
-                                    <input type="number" id="line-y0" class="form-control" value="0">
-                                    <input type="number" id="line-z0" class="form-control" value="0">
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="line-x0" class="form-control" value="0" placeholder="x₀" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-y0" class="form-control" value="0" placeholder="y₀" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-z0" class="form-control" value="0" placeholder="z₀" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Vector V (vx, vy, vz)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="line-vx" class="form-control" value="1">
-                                    <input type="number" id="line-vy" class="form-control" value="2">
-                                    <input type="number" id="line-vz" class="form-control" value="3">
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="line-vx" class="form-control" value="1" placeholder="vₓ" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-vy" class="form-control" value="2" placeholder="v_y" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-vz" class="form-control" value="3" placeholder="v_z" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                         </div>
@@ -782,62 +791,68 @@
                         <div id="shape-params-sphere" class="shape-params" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Centro (xc, yc, zc)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="sphere-xc" class="form-control" value="0">
-                                    <input type="number" id="sphere-yc" class="form-control" value="0">
-                                    <input type="number" id="sphere-zc" class="form-control" value="0">
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="sphere-xc" class="form-control" value="0" placeholder="x_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="sphere-yc" class="form-control" value="0" placeholder="y_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="sphere-zc" class="form-control" value="0" placeholder="z_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Radio (R)</label>
-                                <input type="number" id="sphere-r" class="form-control" value="5">
+                                <input type="number" id="sphere-r" class="form-control" value="5" placeholder="R">
                             </div>
                         </div>
 
                         <div id="shape-params-cylinder" class="shape-params" style="display: none;">
                             <div class="form-group">
-                                <label class="form-label">Centro de la Base (xc, yc)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="cyl-xc" class="form-control" value="0">
-                                    <input type="number" id="cyl-yc" class="form-control" value="0">
+                                <label class="form-label">Centro de la Base (xc, yc, zc)</label>
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="cyl-xc" class="form-control" value="0" placeholder="x_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cyl-yc" class="form-control" value="0" placeholder="y_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cyl-zc" class="form-control" value="0" placeholder="z_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Radio (R)</label>
-                                <input type="number" id="cyl-r" class="form-control" value="3">
+                                <input type="number" id="cyl-r" class="form-control" value="3" placeholder="R">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Altura (H)</label>
-                                <input type="number" id="cyl-h" class="form-control" value="6">
+                                <input type="number" id="cyl-h" class="form-control" value="6" placeholder="H">
                             </div>
                         </div>
 
                         <div id="shape-params-cone" class="shape-params" style="display: none;">
                             <div class="form-group">
-                                <label class="form-label">Centro de la Base (xc, yc)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="cone-xc" class="form-control" value="0">
-                                    <input type="number" id="cone-yc" class="form-control" value="0">
+                                <label class="form-label">Centro de la Base (xc, yc, zc)</label>
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="cone-xc" class="form-control" value="0" placeholder="x_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cone-yc" class="form-control" value="0" placeholder="y_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cone-zc" class="form-control" value="0" placeholder="z_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Radio (R)</label>
-                                <input type="number" id="cone-r" class="form-control" value="4">
+                                <input type="number" id="cone-r" class="form-control" value="4" placeholder="R">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Altura (H)</label>
-                                <input type="number" id="cone-h" class="form-control" value="8">
+                                <input type="number" id="cone-h" class="form-control" value="8" placeholder="H">
                             </div>
                         </div>
 
                         <div id="shape-params-paraboloid" class="shape-params" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Coeficiente a (Eje X)</label>
-                                <input type="number" id="para-a" class="form-control" value="1">
+                                <input type="number" id="para-a" class="form-control" value="1" placeholder="a">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Coeficiente b (Eje Y)</label>
-                                <input type="number" id="para-b" class="form-control" value="1">
+                                <input type="number" id="para-b" class="form-control" value="1" placeholder="b">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Escala Vertical c (Eje Z)</label>
+                                <input type="number" id="para-c" class="form-control" value="1" placeholder="c">
                             </div>
                         </div>
 
