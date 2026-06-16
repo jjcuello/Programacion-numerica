@@ -628,12 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/sqrt\(/g, "Math.sqrt(")
             .replace(/\bpi\b/g, "Math.PI")
             .replace(/\be\b/g, "Math.E")
-            .replace(/\*\*/g, "^");
-
-        // Traducir potencias de JS a math
-        while (formatted.includes("^")) {
-            formatted = formatted.replace(/([0-9x\(\)]+)\^([0-9x\(\)\.]+)/g, "Math.pow($1, $2)");
-        }
+            .replace(/\^/g, "**");
 
         // Reemplazar la variable x con su valor numérico
         let evaluatedExpression = formatted.replace(/\bx\b/g, `(${x})`);
