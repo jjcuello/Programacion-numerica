@@ -865,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     iterations.push({
                         iter: i,
                         xi: x,
-                        sup: "-",
+                        sup: null,
                         root: null,
                         error: "FALLO",
                         residual: fx
@@ -875,13 +875,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 let nextX = x - (fx / dfx);
                 let err = Math.abs(nextX - x);
+                let relErr = nextX !== 0 ? err / Math.abs(nextX) : 0;
 
                 iterations.push({
                     iter: i,
                     xi: x,
-                    sup: "-",
-                    root: nextX,
-                    error: i === 1 ? "-" : err.toFixed(8),
+                    sup: nextX,
+                    root: err,
+                    error: i === 1 ? "-" : relErr.toFixed(8),
                     residual: fx
                 });
 
@@ -897,7 +898,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 iterations.push({
                     iter: i,
                     xi: x,
-                    sup: "-",
+                    sup: null,
                     root: null,
                     error: "FALLO",
                     residual: null
@@ -907,9 +908,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!root && iterations.length > 0) {
-            let lastIter = iterations[iterations.length - 1];
-            if (lastIter.root !== null) {
-                root = lastIter.root;
+            for (let i = iterations.length - 1; i >= 0; i--) {
+                if (typeof iterations[i].sup === 'number' && !isNaN(iterations[i].sup)) {
+                    root = iterations[i].sup;
+                    break;
+                }
             }
         }
 
@@ -997,6 +1000,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 let nextX = evaluateFunction(exprG, xVal);
                 let diff = Math.abs(nextX - xVal);
+                let relErr = nextX !== 0 ? diff / Math.abs(nextX) : 0;
 
                 // residual f(x)
                 let fVal = exprF ? evaluateFunction(exprF, xVal) : (xVal - nextX);
@@ -1004,9 +1008,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 iterations.push({
                     iter: i,
                     xi: xVal,
-                    sup: "-",
-                    root: nextX,
-                    error: i === 1 ? "-" : diff.toFixed(8),
+                    sup: nextX,
+                    root: diff,
+                    error: i === 1 ? "-" : relErr.toFixed(8),
                     residual: fVal
                 });
 
@@ -1022,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 iterations.push({
                     iter: i,
                     xi: xVal,
-                    sup: "-",
+                    sup: null,
                     root: null,
                     error: "FALLO",
                     residual: null
@@ -1032,9 +1036,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!root && iterations.length > 0) {
-            let lastIter = iterations[iterations.length - 1];
-            if (lastIter.root !== null) {
-                root = lastIter.root;
+            for (let i = iterations.length - 1; i >= 0; i--) {
+                if (typeof iterations[i].sup === 'number' && !isNaN(iterations[i].sup)) {
+                    root = iterations[i].sup;
+                    break;
+                }
             }
         }
 
