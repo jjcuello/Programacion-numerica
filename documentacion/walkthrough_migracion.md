@@ -241,6 +241,41 @@ Para completar la paridad funcional del 100% con los scripts de consola heredado
   - **Trazado Dinámico**: La gráfica en Plotly y la tabla de iteraciones se van poblando dinámicamente de forma progresiva, animando visualmente la reducción del error absoluto y la precisión lograda paso a paso.
   - **Mitigación de Sobrecarga**: El algoritmo mantiene la optimización del muestreo para métodos de convergencia lenta (como Leibniz) previniendo fugas de memoria o congelamiento de la ventana del navegador.
 
+---
 
+## Auditoría de Frontend, Usabilidad y Control de Acceso (v0.4)
 
+En esta fase se resolvieron incidencias de usabilidad, seguridad de acceso en el cliente y visualización dinámica en los paneles estudiantil, docente y administrativo.
 
+### 1. Control de Acceso y Prevención de Parpadeo de Interfaz (FOUC)
+- **Bloqueo Síncrono en Head**: Se movió la lógica de validación de sesión activa y redirección al `<head>` de [login.html](../frontend/pages/login.html) mediante una función autoejecutable. Esto redirige instantáneamente al usuario autenticado a su panel académico (`estudiante.html`, `profesor.html`, `admin.html`) antes de pintar el cuerpo de la página, eliminando el parpadeo de la pantalla de login.
+- **Header Limpio y Dinámico**: Se vaciaron los enlaces de rol estáticos de la etiqueta `<nav class="main-nav">` de todos los archivos HTML (`index.html`, `estudiante.html`, `profesor.html`, `admin.html`). La renderización de los mismos ahora se realiza de forma 100% dinámica en [auth-ui.js](../frontend/assets/js/auth-ui.js), previniendo la exposición temporal de enlaces protegidos.
+- **Accesos Integrados en Dropdown**: Se movieron los enlaces de acceso de rol al interior del menú desplegable del avatar del usuario (`user-profile-menu`), garantizando un diseño limpio y navegación ágil adaptada al rol actual.
+- **Redirección de CTA en Inicio**: Los botones de acción principal (CTA) en [index.html](../frontend/index.html) redirigen al usuario a `pages/login.html` en caso de no tener una sesión activa.
+- **Enlace de Perfil Corregido**: Se vinculó de forma correcta el script [auth-ui.js](../frontend/assets/js/auth-ui.js) al final de [perfil.html](../frontend/pages/perfil.html) para pintar la cabecera dinámica unificada en la vista de perfil de usuario.
+
+### 2. Limpieza de Interfaz y Eliminación de Opciones Obsoletas
+- **Remoción de Backend en Admin**: Se eliminó la sección "Modo de Ejecución del Backend" de [admin.html](../frontend/pages/admin.html), ya que todos los métodos numéricos y gráficos se ejecutan completamente del lado del cliente.
+- **Remoción de Conceptos POO**: Se retiró la sección informativa sobre conceptos de Programación Orientada a Objetos (POO) del panel 3D en [estudiante.html](../frontend/pages/estudiante.html), adaptando la vista puramente a la simulación matemática.
+- **Simplificación del Profesor**: Se eliminó el botón "Exportar JSON" de [profesor.html](../frontend/pages/profesor.html) y se protegió la vinculación del event listener en [profesor.js](../frontend/assets/js/profesor.js) con un chequeo de nulidad para evitar detenciones de ejecución del script.
+
+### 3. Robustez de Simulación y Soporte de Fórmulas Didácticas
+- **Detección de Raíces en Extremos (Bisección)**: En [estudiante.js](../frontend/assets/js/estudiante.js) y [profesor.js](../frontend/assets/js/profesor.js), el resolvedor de Bisección evalúa ahora de manera anticipada si alguno de los extremos de intervalo (`a` o `b`) ya representa una raíz exacta de la función (con tolerancia de $|f(x)| < 10^{-12}$). Si se cumple, el resolvedor responde con el estado `success_endpoint_root` y detiene el cómputo sin realizar iteraciones innecesarias.
+- **Banner Didáctico de Éxito**: En la vista de estudiante, el estado `success_endpoint_root` despliega una alerta didáctica de éxito (`#didactic-alert`) de color verde que informa al estudiante sobre la coincidencia del límite y brinda consejos académicos para observar la tabla paso a paso.
+- **Inicialización de Plots Protegida**: En [profesor.js](../frontend/assets/js/profesor.js), las inicializaciones de Plotly (`Plotly.newPlot` y `renderRadarChartClass`) se envolvieron en condicionales que comprueban la existencia del ID del contenedor, previniendo errores graves en páginas que no utilicen dichos elementos visuales.
+- **Soporte para Multiplicación Implícita**: Se optimizó la función `evaluateFunction(expr, x)` en ambos archivos JS para pre-procesar expresiones algebraicas ingresadas de forma natural, insertando el operador `*` en patrones comunes:
+  - Constantes seguidas de variables (ej. `2x` $\to$ `2*x`).
+  - Constantes seguidas de constantes matemáticas (ej. `2pi` $\to$ `2*pi`, `2e` $\to$ `2*e`).
+  - Constantes y variables al lado de paréntesis (ej. `2(x-1)` $\to$ `2*(x-1)`, `x(x-1)` $\to$ `x*(x-1)`).
+  - Paréntesis consecutivos (ej. `(x+1)(x-2)` $\to$ `(x+1)*(x-2)`).
+
+---
+
+## Resultados de Verificación de Usabilidad y Auditoría (v0.4)
+
+Se han realizado pruebas manuales en el navegador y análisis estáticos:
+1. **Control de Acceso (FOUC)**: Verificado que al intentar acceder a `login.html` con una sesión activa, el script bloquea y redirige de forma imperceptible e inmediata al panel correspondiente sin mostrar el formulario de login.
+2. **Navegación Dinámica**: Verificado que la barra de navegación superior no contiene enlaces estáticos, y tras iniciar sesión se carga de forma instantánea el dropdown del perfil que contiene los botones hacia el panel respectivo y la opción de cerrar sesión.
+3. **Multiplicación Implícita**: Se simuló con éxito el método de Bisección y Newton-Raphson ingresando funciones con notación abreviada como `2x - 1` o `x(x-2)`, ejecutando la lógica matemática sin excepciones de sintaxis.
+4. **Bisección en los Extremos**: Ingresando la función `x - 1` en el rango `[1, 2]` (donde $a=1$ es raíz exacta ya que $f(1)=0$), se comprobó que el solucionador responde de inmediato sin iterar y muestra el banner verde de éxito en el panel del estudiante.
+5. **Robustez en la Vista de Profesor**: Se comprobó que al cargar la vista de profesor, no ocurren errores de Plotly y la visualización de comparación de métodos y radar se inicializa correctamente al contar con las comprobaciones de existencia de los contenedores en el DOM.
