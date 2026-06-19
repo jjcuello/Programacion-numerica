@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Script de Bloqueo Inmediato (Control de Acceso) -->
+    <script>
+        (function() {
+            const sessionStr = localStorage.getItem("user_session");
+            if (!sessionStr) {
+                window.location.href = "../index.html";
+                return;
+            }
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.role !== "admin") {
+                    window.location.href = "../index.html";
+                }
+            } catch(e) {
+                localStorage.removeItem("user_session");
+                window.location.href = "../index.html";
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Módulo Administrativo - Métodos Numéricos</title>
@@ -161,5 +180,7 @@
         <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Métodos Numéricos</p>
     </footer>
 
+    <!-- Script de Autenticación -->
+    <script src="../assets/js/auth-ui.js"></script>
 </body>
 </html>

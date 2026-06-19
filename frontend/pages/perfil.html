@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Métodos Numéricos</title>
+    <!-- CSS Maestro -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- Iconos (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Script de Bloqueo Inmediato si no hay sesión -->
+    <script>
+        (function() {
+            const session = localStorage.getItem("user_session");
+            if (!session) {
+                window.location.href = "../index.html";
+            }
+        })();
+    </script>
+</head>
+<body style="min-height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-main);">
+
+    <!-- Cabecera Principal -->
+    <header class="main-header">
+        <a href="../index.html" class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="logo-text">Métodos Numéricos</span>
+        </a>
+        <nav class="main-nav" id="profile-page-nav">
+            <!-- Será controlado dinámicamente por auth-ui.js, pero mantenemos estructura básica -->
+        </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+        <div class="card" style="width: 100%; max-width: 480px; padding: 2.5rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            
+            <!-- Avatar e Identificación -->
+            <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem;">
+                <div id="profile-avatar" style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; color: #fff; text-transform: uppercase; box-shadow: var(--shadow-glow); margin-bottom: 1rem;">
+                    U
+                </div>
+                <h3 id="profile-name" style="margin-bottom: 0.25rem; font-size: 1.4rem;">Nombre de Usuario</h3>
+                <span id="profile-role-badge" class="badge badge-success" style="font-size: 0.8rem; padding: 0.3rem 0.75rem; border-radius: 12px; font-weight: 600;">Rol</span>
+            </div>
+
+            <!-- Tabla de Detalles -->
+            <div style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.85rem;">Usuario</span>
+                    <strong id="detail-username" style="font-size: 0.85rem; color: var(--text-primary);">estudiante</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.85rem;">Email</span>
+                    <strong id="detail-email" style="font-size: 0.85rem; color: var(--text-primary);">estudiante@universidad.edu</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.85rem;">Ingreso</span>
+                    <strong id="detail-joined" style="font-size: 0.85rem; color: var(--text-primary);">Junio 2026</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-bottom: 0.25rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.85rem;">Estado</span>
+                    <strong id="detail-status" style="font-size: 0.85rem; color: var(--success);">Activo</strong>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button id="back-to-panel-btn" class="btn btn-primary" style="width: 100%; border-radius: var(--radius-sm); font-weight: 600; padding: 0.75rem 1rem;">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a mi Panel Académico
+                </button>
+                
+                <button id="profile-logout-btn" class="btn btn-outline" style="width: 100%; border-radius: var(--radius-sm); font-weight: 600; padding: 0.75rem 1rem; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="main-footer">
+        <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Métodos Numéricos</p>
+    </footer>
+
+    <!-- Lógica de visualización del perfil -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const session = JSON.parse(localStorage.getItem("user_session"));
+            if (!session) {
+                window.location.href = "../index.html";
+                return;
+            }
+
+            // Mapear elementos del DOM
+            const pAvatar = document.getElementById("profile-avatar");
+            const pName = document.getElementById("profile-name");
+            const pBadge = document.getElementById("profile-role-badge");
+            const dUser = document.getElementById("detail-username");
+            const dEmail = document.getElementById("detail-email");
+            const dJoined = document.getElementById("detail-joined");
+            const dStatus = document.getElementById("detail-status");
+            const backBtn = document.getElementById("back-to-panel-btn");
+            const logoutBtn = document.getElementById("profile-logout-btn");
+
+            // Rellenar datos
+            const initial = session.username ? session.username.charAt(0) : "U";
+            pAvatar.textContent = initial;
+            pName.textContent = session.name || session.username;
+            
+            // Badge styling por rol
+            if (session.role === "estudiante") {
+                pBadge.textContent = "Estudiante";
+                pBadge.className = "badge badge-success";
+            } else if (session.role === "profesor") {
+                pBadge.textContent = "Profesor";
+                pBadge.className = "badge";
+                pBadge.style.backgroundColor = "var(--primary)";
+            } else if (session.role === "admin") {
+                pBadge.textContent = "Administrador";
+                pBadge.className = "badge badge-danger";
+            }
+
+            dUser.textContent = session.username;
+            dEmail.textContent = session.email || `${session.username}@universidad.edu`;
+            dJoined.textContent = session.joined || "Junio 2026";
+            dStatus.textContent = session.status || "Activo";
+
+            // Botón volver
+            backBtn.addEventListener("click", () => {
+                if (session.role === "estudiante") window.location.href = "estudiante.html";
+                else if (session.role === "profesor") window.location.href = "profesor.html";
+                else if (session.role === "admin") window.location.href = "admin.html";
+                else window.location.href = "../index.html";
+            });
+
+            // Botón cerrar sesión
+            logoutBtn.addEventListener("click", () => {
+                localStorage.removeItem("user_session");
+                window.location.href = "../index.html";
+            });
+        });
+    </script>
+</body>
+</html>
