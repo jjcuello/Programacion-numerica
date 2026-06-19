@@ -24,6 +24,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Ajustar enlaces del CTA en la página principal según el estado de la sesión
+    if (!isPagesDir) {
+        const ctaButtons = document.querySelectorAll(".cta-group a");
+        if (ctaButtons.length >= 2) {
+            if (!session) {
+                ctaButtons[0].href = "pages/login.html";
+                ctaButtons[1].href = "pages/login.html";
+            }
+        }
+    }
+
     if (!session) {
         // --- CASO: NO LOGUEADO (Invitado) ---
         mainNav.innerHTML = `
