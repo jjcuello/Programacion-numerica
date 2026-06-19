@@ -36,24 +36,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const initial = session.username ? session.username.charAt(0) : "U";
         const profileUrl = isPagesDir ? "perfil.html" : "pages/perfil.html";
         
-        let allowedLinkHtml = "";
+        // Determinar enlace y detalles del panel correspondiente al rol
+        let panelUrl = "";
+        let panelLabel = "";
+        let panelIcon = "";
         
-        // Renderizar enlace correspondiente a su rol
         if (session.role === "estudiante") {
-            const linkPath = isPagesDir ? "estudiante.html" : "pages/estudiante.html";
-            const isActive = window.location.pathname.includes("estudiante.html") ? "active" : "";
-            allowedLinkHtml = `<a href="${linkPath}" class="nav-link ${isActive}"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>`;
+            panelUrl = isPagesDir ? "estudiante.html" : "pages/estudiante.html";
+            panelLabel = "Panel de Estudiante";
+            panelIcon = "fa-graduation-cap";
         } else if (session.role === "profesor") {
-            const linkPath = isPagesDir ? "profesor.html" : "pages/profesor.html";
-            const isActive = window.location.pathname.includes("profesor.html") ? "active" : "";
-            allowedLinkHtml = `<a href="${linkPath}" class="nav-link ${isActive}"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>`;
+            panelUrl = isPagesDir ? "profesor.html" : "pages/profesor.html";
+            panelLabel = "Panel de Profesor";
+            panelIcon = "fa-chalkboard-user";
         } else if (session.role === "admin") {
-            const linkPath = isPagesDir ? "admin.html" : "pages/admin.html";
-            const isActive = window.location.pathname.includes("admin.html") ? "active" : "";
-            allowedLinkHtml = `<a href="${linkPath}" class="nav-link ${isActive}"><i class="fa-solid fa-user-shield"></i> Admin</a>`;
+            panelUrl = isPagesDir ? "admin.html" : "pages/admin.html";
+            panelLabel = "Consola de Admin";
+            panelIcon = "fa-user-shield";
         }
 
-        // Estructura del dropdown
+        // Estructura del dropdown con enlace al panel correspondiente dentro del menú
         const dropdownHtml = `
             <div class="user-profile-menu" id="user-profile-menu-btn" style="margin-left: 0.5rem;">
                 <div class="user-avatar">${initial}</div>
@@ -61,13 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
                 
                 <div class="profile-dropdown-menu" id="profile-dropdown-menu-list">
+                    <a href="${panelUrl}" class="profile-dropdown-item"><i class="fa-solid ${panelIcon}"></i> ${panelLabel}</a>
                     <a href="${profileUrl}" class="profile-dropdown-item"><i class="fa-solid fa-user"></i> Ver Perfil</a>
                     <button type="button" id="logout-btn-action" class="profile-dropdown-item danger-item"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
             </div>
         `;
 
-        mainNav.innerHTML = allowedLinkHtml + dropdownHtml;
+        mainNav.innerHTML = dropdownHtml;
 
         // Comportamientos interactivos del dropdown
         const menuBtn = document.getElementById("user-profile-menu-btn");
