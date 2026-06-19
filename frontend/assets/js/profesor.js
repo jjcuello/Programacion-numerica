@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderEmptyPlot();
     toggleGExprGroup();
     updateSliderLabelsProf();
+    renderGeneralAnalyticsCharts();
 
     // --- EVENT LISTENERS ---
     exprInputProf.addEventListener("input", renderMathPreview);
@@ -1126,5 +1127,49 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+    }
+
+    // 9. Gráficos de Analíticas Generales (anteriormente en dashboard.html)
+    function renderGeneralAnalyticsCharts() {
+        const activityEl = document.getElementById('chart-activity');
+        const distributionEl = document.getElementById('chart-distribution');
+        
+        if (activityEl) {
+            const activityData = [{
+                x: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+                y: [28, 45, 62, 58, 70, 32, 25],
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#3b82f6', width: 3 },
+                marker: { color: '#6366f1', size: 8 }
+            }];
+            const activityLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#94a3b8', family: 'Outfit, sans-serif' },
+                margin: { t: 20, b: 40, l: 40, r: 20 },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.05)' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.05)' }
+            };
+            Plotly.newPlot('chart-activity', activityData, activityLayout, { responsive: true, displayModeBar: false });
+        }
+
+        if (distributionEl) {
+            const distData = [{
+                values: [142, 98, 28, 16],
+                labels: ['Bisección', 'Newton-Raphson', 'Secante', 'Punto Fijo'],
+                type: 'pie',
+                marker: {
+                    colors: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b']
+                }
+            }];
+            const distLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#94a3b8', family: 'Outfit, sans-serif' },
+                margin: { t: 20, b: 20, l: 20, r: 20 }
+            };
+            Plotly.newPlot('chart-distribution', distData, distLayout, { responsive: true, displayModeBar: false });
+        }
     }
 });
