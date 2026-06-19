@@ -408,6 +408,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (result.status === "success") {
             statusText = "Éxito";
             badgeClass = "badge-success";
+        } else if (result.status === "success_endpoint_root") {
+            statusText = "Raíz en Extremo";
+            badgeClass = "badge-success";
         } else if (result.status === "max_iter") {
             statusText = "Límite Iter";
             badgeClass = "badge-warning";
@@ -442,6 +445,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             return { root: null, iterations: [], status: "singularidad" };
         }
+
+        if (Math.abs(fa) < 1e-12) return { root: a, iterations: [], status: "success_endpoint_root" };
+        if (Math.abs(fb) < 1e-12) return { root: b, iterations: [], status: "success_endpoint_root" };
 
         if (fa * fb >= 0) return { root: null, iterations: [], status: "bolzano_violation" };
 

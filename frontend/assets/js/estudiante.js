@@ -928,15 +928,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const elapsed = ((endTime - startTime) / 1000).toFixed(6);
 
             // Mostrar resultados
-            metricStatus.textContent = result.status;
-            metricStatus.className = "metric-card-value";
-            
             if (result.status === "success") {
-                metricStatus.classList.add("badge-success");
-            } else if (result.status === "singularidad" || result.status === "bolzano_violation") {
-                metricStatus.classList.add("badge-danger");
+                metricStatus.textContent = "Éxito";
+                metricStatus.className = "metric-card-value badge-success";
+            } else if (result.status === "success_endpoint_root") {
+                metricStatus.textContent = "Raíz en Extremo";
+                metricStatus.className = "metric-card-value badge-success";
+            } else if (result.status === "singularidad") {
+                metricStatus.textContent = "Singularidad";
+                metricStatus.className = "metric-card-value badge-danger";
+            } else if (result.status === "bolzano_violation") {
+                metricStatus.textContent = "Bolzano Violado";
+                metricStatus.className = "metric-card-value badge-danger";
             } else {
-                metricStatus.classList.add("badge-warning");
+                metricStatus.textContent = result.status;
+                metricStatus.className = "metric-card-value badge-warning";
             }
 
             metricRoot.textContent = (result.root !== null && !isNaN(result.root)) ? result.root.toFixed(8) : "N/A";
@@ -972,6 +978,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 alertDescription.textContent = "El teorema de Bolzano no se cumple ya que f(a) y f(b) tienen el mismo signo. No se puede garantizar la existencia de una raíz en este intervalo.";
                 alertRecommendation.textContent = "Sugerencia: Haz clic en el botón '✨ Sugerir Valores' o cambia los límites del intervalo para que rodeen la intersección con el eje X.";
                 didacticAlert.style.display = "flex";
+            } else if (result.status === "success_endpoint_root") {
+                didacticAlert.style.backgroundColor = "var(--success-bg)";
+                didacticAlert.style.borderColor = "var(--success)";
+                const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+                if (alertIconSpan) {
+                    alertIconSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>`;
+                }
+                alertTitle.textContent = "Raíz en Extremo del Intervalo";
+                alertDescription.textContent = "¡Excelente! Uno de los límites del intervalo ingresado ya coincide con una raíz exacta de la función (f(x) = 0). No se requiere realizar iteraciones.";
+                alertRecommendation.textContent = "Consejo Académico: Si deseas observar la tabla de aproximaciones sucesivas paso a paso, desplaza los límites del intervalo de manera que la raíz quede dentro del mismo (ej: a = 0.5, b = 1.5).";
+                didacticAlert.style.display = "flex";
+            } else {
+                didacticAlert.style.display = "none";
             }
 
             // Guardar en el Historial
@@ -1015,6 +1034,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 root: null,
                 iterations: [],
                 status: "singularidad"
+            };
+        }
+
+        if (Math.abs(fa) < 1e-12) {
+            return {
+                root: a,
+                iterations: [],
+                status: "success_endpoint_root"
+            };
+        }
+        if (Math.abs(fb) < 1e-12) {
+            return {
+                root: b,
+                iterations: [],
+                status: "success_endpoint_root"
             };
         }
 
