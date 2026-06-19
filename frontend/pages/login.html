@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        (function() {
+            const activeSession = localStorage.getItem("user_session");
+            if (activeSession) {
+                try {
+                    const sessionObj = JSON.parse(activeSession);
+                    if (sessionObj.role === "estudiante") window.location.href = "estudiante.html";
+                    else if (sessionObj.role === "profesor") window.location.href = "profesor.html";
+                    else if (sessionObj.role === "admin") window.location.href = "admin.html";
+                } catch(e) {
+                    localStorage.removeItem("user_session");
+                }
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Métodos Numéricos</title>
+    <!-- CSS Maestro -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- Iconos (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="min-height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-main);">
+
+    <!-- Cabecera Principal (Simplificada para Login) -->
+    <header class="main-header">
+        <a href="../index.html" class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="logo-text">Métodos Numéricos</span>
+        </a>
+    </header>
+
+    <!-- Contenido del Formulario -->
+    <main class="main-content" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+        <div class="card" style="width: 100%; max-width: 420px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <span style="font-size: 2.5rem; color: var(--primary);"><i class="fa-solid fa-circle-user"></i></span>
+                <h3 style="margin-top: 0.5rem; margin-bottom: 0.25rem;">Iniciar Sesión</h3>
+                <p class="text-secondary" style="font-size: 0.85rem;">Ingresa tus credenciales para acceder a tu panel académico.</p>
+            </div>
+
+            <!-- Alerta de Error -->
+            <div id="login-error-alert" style="display: none; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1.25rem; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="login-error-text">Usuario o contraseña incorrectos.</span>
+            </div>
+
+            <!-- Formulario -->
+            <form id="login-form">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label class="form-label" for="username-input">Nombre de Usuario</label>
+                    <input type="text" id="username-input" class="form-control" placeholder="Ej: estudiante" required autocomplete="username">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label" for="password-input">Contraseña</label>
+                    <input type="password" id="password-input" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: var(--radius-sm); font-weight: 600; padding: 0.75rem 1rem;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Ingresar
+                </button>
+            </form>
+
+            <!-- Cuentas de Prueba -->
+            <div class="test-users-card">
+                <div class="test-users-title">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <span>Cuentas de prueba (Simulación):</span>
+                </div>
+                <ul class="test-users-list">
+                    <li>Estudiante: <code>estudiante</code> / <code>estudiante123</code></li>
+                    <li>Profesor: <code>profesor</code> / <code>profesor123</code></li>
+                    <li>Administrador: <code>admin</code> / <code>admin123</code></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="main-footer">
+        <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Métodos Numéricos</p>
+    </footer>
+
+    <!-- Lógica de Autenticación del Frontend -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginForm = document.getElementById("login-form");
+            const usernameInput = document.getElementById("username-input");
+            const passwordInput = document.getElementById("password-input");
+            const errorAlert = document.getElementById("login-error-alert");
+            const errorText = document.getElementById("login-error-text");
+
+
+            // Credenciales precargadas en local (Mock de base de datos)
+            const mockUsers = {
+                "estudiante": { password: "estudiante123", role: "estudiante", name: "Estudiante de Prueba" },
+                "profesor": { password: "profesor123", role: "profesor", name: "Prof. Leonardo González" },
+                "admin": { password: "admin123", role: "admin", name: "Administrador del Sistema" }
+            };
+
+            loginForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                errorAlert.style.display = "none";
+
+                const userVal = usernameInput.value.trim().toLowerCase();
+                const passVal = passwordInput.value;
+
+                if (mockUsers[userVal] && mockUsers[userVal].password === passVal) {
+                    // Guardar sesión en local storage
+                    const userData = {
+                        username: userVal,
+                        role: mockUsers[userVal].role,
+                        name: mockUsers[userVal].name,
+                        email: `${userVal}@universidad.edu`,
+                        joined: "Junio 2026",
+                        status: "Activo"
+                    };
+                    localStorage.setItem("user_session", JSON.stringify(userData));
+
+                    // Redirección de rol
+                    if (userData.role === "estudiante") {
+                        window.location.href = "estudiante.html";
+                    } else if (userData.role === "profesor") {
+                        window.location.href = "profesor.html";
+                    } else if (userData.role === "admin") {
+                        window.location.href = "admin.html";
+                    }
+                } else {
+                    // Mostrar error de credenciales
+                    errorText.textContent = "Usuario o contraseña incorrectos. Revisa las cuentas de prueba abajo.";
+                    errorAlert.style.display = "flex";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

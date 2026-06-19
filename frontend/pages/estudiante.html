@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Script de Bloqueo Inmediato (Control de Acceso) -->
+    <script>
+        (function() {
+            const sessionStr = localStorage.getItem("user_session");
+            if (!sessionStr) {
+                window.location.href = "../index.html";
+                return;
+            }
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.role !== "estudiante") {
+                    window.location.href = "../index.html";
+                }
+            } catch(e) {
+                localStorage.removeItem("user_session");
+                window.location.href = "../index.html";
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laboratorio del Estudiante - Métodos Numéricos</title>
@@ -327,11 +346,7 @@
             <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
             <span class="logo-text">Métodos Numéricos</span>
         </a>
-        <nav class="main-nav">
-            <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
-            <a href="estudiante.html" class="nav-link active"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
-            <a href="profesor.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
-        </nav>
+        <nav class="main-nav"></nav>
     </header>
 
     <!-- Contenido Principal -->
@@ -591,7 +606,7 @@
                                 <option value="pi">Número Pi (π)</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="const-method-group">
                             <label class="form-label">Método de Aproximación</label>
                             <select id="const-method-select" class="form-control">
                                 <!-- Se llena dinámicamente con JS -->
@@ -605,54 +620,143 @@
                             <label class="form-label">Máx. Iteraciones</label>
                             <input type="number" id="const-max-iter" class="form-control" value="10000">
                         </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="const-compare-toggle" style="width: 16px; height: 16px; cursor: pointer;">
+                            <label for="const-compare-toggle" class="form-label" style="margin-bottom: 0; cursor: pointer; user-select: none;">Comparar todos los métodos</label>
+                        </div>
+                        
+                        <!-- Control de Simulación en Tiempo Real (En Vivo) -->
+                        <div id="const-realtime-group" style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="const-realtime-toggle" style="width: 16px; height: 16px; cursor: pointer;">
+                                <label for="const-realtime-toggle" class="form-label" style="margin-bottom: 0; cursor: pointer; user-select: none;">
+                                    Simulación en vivo (Paso a Paso)
+                                </label>
+                            </div>
+                            
+                            <div id="const-realtime-controls" style="display: none; flex-direction: column; gap: 0.75rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>Velocidad (Delay: <span id="const-speed-val" style="font-weight: bold; color: var(--accent);">100</span> ms)</span>
+                                    </label>
+                                    <input type="range" id="const-realtime-speed" min="20" max="1000" step="20" value="100" style="width: 100%; cursor: pointer;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>Paso (Tamaño: <span id="const-step-val" style="font-weight: bold; color: var(--accent);">10</span> iter)</span>
+                                    </label>
+                                    <input type="range" id="const-realtime-step-slider" min="1" max="500" step="5" value="10" style="width: 100%; cursor: pointer;">
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                                    <button type="button" id="const-btn-pause" class="btn btn-secondary" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.8rem; height: auto;" disabled>
+                                        <i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>
+                                    </button>
+                                    <button type="button" id="const-btn-stop" class="btn btn-danger" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.8rem; height: auto;" disabled>
+                                        <i class="fa-solid fa-stop"></i> Detener
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
                             <i class="fa-solid fa-play"></i> Calcular Aproximación
                         </button>
                     </form>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div class="metric-cards">
-                        <div class="metric-card">
-                            <div class="metric-card-label">Iteraciones</div>
-                            <div class="metric-card-value" id="const-metric-iter">-</div>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+                    <!-- Resultados de Método Único -->
+                    <div id="const-single-results" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Alerta Didáctica Individual -->
+                        <div class="didactic-alert" id="const-single-alert" style="display: none; align-items: flex-start; gap: 1rem; margin-bottom: 0; border-color: var(--accent); background-color: rgba(6, 182, 212, 0.05);">
+                            <span class="didactic-alert-icon"><i class="fa-solid fa-circle-info" style="color: var(--accent);"></i></span>
+                            <div>
+                                <h4 id="const-single-alert-title" style="color: var(--text-primary); margin-bottom: 0.25rem;"></h4>
+                                <p id="const-single-alert-desc" style="margin-bottom: 0; font-size: 0.8rem; color: var(--text-secondary);"></p>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-card-label">Aproximación</div>
-                            <div class="metric-card-value" id="const-metric-value" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
+                        <div class="metric-cards">
+                            <div class="metric-card">
+                                <div class="metric-card-label">Iteraciones</div>
+                                <div class="metric-card-value" id="const-metric-iter">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-card-label">Aproximación</div>
+                                <div class="metric-card-value" id="const-metric-value" style="color: var(--accent); font-family: 'Fira Code', monospace; font-size: 1.1rem;">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-card-label">Error Absoluto</div>
+                                <div class="metric-card-value" id="const-metric-error" style="font-family: 'Fira Code', monospace; font-size: 0.9rem;">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-card-label">Tiempo (s)</div>
+                                <div class="metric-card-value" id="const-metric-time">-</div>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-card-label">Error Absoluto</div>
-                            <div class="metric-card-value" id="const-metric-error" style="font-family: 'Fira Code', monospace; font-size: 0.9rem;">-</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-card-label">Tiempo (s)</div>
-                            <div class="metric-card-value" id="const-metric-time">-</div>
+                        <div class="grid-2">
+                            <div class="card" style="padding: 1rem;">
+                                <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Gráfica de Convergencia</h4>
+                                <div class="plot-container" id="plot-constants" style="height: 300px;"></div>
+                            </div>
+                            <div class="card" style="padding: 1rem;">
+                                <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-list-ol"></i> Historial de Convergencia</h4>
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table" id="const-table" style="font-size: 0.82rem; margin-top: 0;">
+                                        <thead>
+                                            <tr>
+                                                <th>Iter</th>
+                                                <th>Aprox.</th>
+                                                <th>Diferencia</th>
+                                                <th>Error Abs.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="const-table-body">
+                                            <tr>
+                                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Sin simulaciones.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="grid-2">
-                        <div class="card" style="padding: 1rem;">
-                            <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Gráfica de Convergencia</h4>
-                            <div class="plot-container" id="plot-constants" style="height: 300px;"></div>
+
+                    <!-- Resultados Comparativos (Multimétodo) -->
+                    <div id="const-compare-results" style="display: none; flex-direction: column; gap: 1.5rem;">
+                        <!-- Alerta Didáctica Comparativa -->
+                        <div class="didactic-alert" id="const-compare-alert" style="display: none; align-items: flex-start; gap: 1rem;">
+                            <span class="didactic-alert-icon"></span>
+                            <div>
+                                <h4 id="const-compare-alert-title"></h4>
+                                <p id="const-compare-alert-desc"></p>
+                            </div>
                         </div>
-                        <div class="card" style="padding: 1rem;">
-                            <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-list-ol"></i> Historial de Convergencia</h4>
-                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                <table class="table" id="const-table" style="font-size: 0.82rem; margin-top: 0;">
+
+                        <div class="card" style="padding: 1.25rem;">
+                            <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-table-list"></i> Tabla Comparativa de Rendimiento</h4>
+                            <div class="table-responsive">
+                                <table class="table" style="font-size: 0.85rem; margin-top: 0;">
                                     <thead>
                                         <tr>
-                                            <th>Iter</th>
-                                            <th>Aprox.</th>
-                                            <th>Diferencia</th>
-                                            <th>Error Abs.</th>
+                                            <th>Método</th>
+                                            <th>Aproximación</th>
+                                            <th style="text-align: center;">Iteraciones</th>
+                                            <th style="text-align: center;">Error Absoluto</th>
+                                            <th style="text-align: center;">Decimales Ok</th>
+                                            <th style="text-align: center;">Tiempo (s)</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="const-table-body">
+                                    <tbody id="const-compare-table-body">
                                         <tr>
-                                            <td colspan="4" style="text-align: center; color: var(--text-muted);">Sin simulaciones.</td>
+                                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Sin comparaciones ejecutadas.</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        <div class="card" style="padding: 1.25rem;">
+                            <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-chart-line"></i> Comparación de Convergencia (Error Absoluto Logarítmico)</h4>
+                            <div class="plot-container" id="plot-constants-compare" style="height: 320px;"></div>
                         </div>
                     </div>
                 </div>
@@ -667,6 +771,15 @@
                         <i class="fa-solid fa-cube" style="color: var(--accent);"></i> Geometría 3D Interactiva
                     </h3>
                     <form id="shapes-3d-form">
+                        <!-- Alerta Didáctica 3D -->
+                        <div class="didactic-alert" id="shapes-3d-alert" style="display: none; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; border-color: var(--accent); background-color: rgba(245, 158, 11, 0.05);">
+                            <span class="didactic-alert-icon"><i class="fa-solid fa-circle-exclamation" style="color: var(--accent);"></i></span>
+                            <div>
+                                <h4 id="shapes-3d-alert-title" style="color: var(--text-primary); margin-bottom: 0.25rem;">Parámetros Inválidos</h4>
+                                <p id="shapes-3d-alert-desc" style="margin-bottom: 0; font-size: 0.8rem; color: var(--text-secondary);"></p>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">Seleccionar Figura</label>
                             <select id="shape-select" class="form-control">
@@ -682,18 +795,18 @@
                         <div id="shape-params-line" class="shape-params">
                             <div class="form-group">
                                 <label class="form-label">Punto P0 (x0, y0, z0)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="line-x0" class="form-control" value="0">
-                                    <input type="number" id="line-y0" class="form-control" value="0">
-                                    <input type="number" id="line-z0" class="form-control" value="0">
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="line-x0" class="form-control" value="0" placeholder="x₀" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-y0" class="form-control" value="0" placeholder="y₀" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-z0" class="form-control" value="0" placeholder="z₀" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Vector V (vx, vy, vz)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="line-vx" class="form-control" value="1">
-                                    <input type="number" id="line-vy" class="form-control" value="2">
-                                    <input type="number" id="line-vz" class="form-control" value="3">
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="line-vx" class="form-control" value="1" placeholder="vₓ" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-vy" class="form-control" value="2" placeholder="v_y" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="line-vz" class="form-control" value="3" placeholder="v_z" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                         </div>
@@ -701,62 +814,68 @@
                         <div id="shape-params-sphere" class="shape-params" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Centro (xc, yc, zc)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="sphere-xc" class="form-control" value="0">
-                                    <input type="number" id="sphere-yc" class="form-control" value="0">
-                                    <input type="number" id="sphere-zc" class="form-control" value="0">
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="sphere-xc" class="form-control" value="0" placeholder="x_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="sphere-yc" class="form-control" value="0" placeholder="y_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="sphere-zc" class="form-control" value="0" placeholder="z_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Radio (R)</label>
-                                <input type="number" id="sphere-r" class="form-control" value="5">
+                                <input type="number" id="sphere-r" class="form-control" value="5" placeholder="R">
                             </div>
                         </div>
 
                         <div id="shape-params-cylinder" class="shape-params" style="display: none;">
                             <div class="form-group">
-                                <label class="form-label">Centro de la Base (xc, yc)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="cyl-xc" class="form-control" value="0">
-                                    <input type="number" id="cyl-yc" class="form-control" value="0">
+                                <label class="form-label">Centro de la Base (xc, yc, zc)</label>
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="cyl-xc" class="form-control" value="0" placeholder="x_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cyl-yc" class="form-control" value="0" placeholder="y_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cyl-zc" class="form-control" value="0" placeholder="z_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Radio (R)</label>
-                                <input type="number" id="cyl-r" class="form-control" value="3">
+                                <input type="number" id="cyl-r" class="form-control" value="3" placeholder="R">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Altura (H)</label>
-                                <input type="number" id="cyl-h" class="form-control" value="6">
+                                <input type="number" id="cyl-h" class="form-control" value="6" placeholder="H">
                             </div>
                         </div>
 
                         <div id="shape-params-cone" class="shape-params" style="display: none;">
                             <div class="form-group">
-                                <label class="form-label">Centro de la Base (xc, yc)</label>
-                                <div style="display: flex; gap: 0.3rem;">
-                                    <input type="number" id="cone-xc" class="form-control" value="0">
-                                    <input type="number" id="cone-yc" class="form-control" value="0">
+                                <label class="form-label">Centro de la Base (xc, yc, zc)</label>
+                                <div style="display: flex; gap: 0.3rem; width: 100%;">
+                                    <input type="number" id="cone-xc" class="form-control" value="0" placeholder="x_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cone-yc" class="form-control" value="0" placeholder="y_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
+                                    <input type="number" id="cone-zc" class="form-control" value="0" placeholder="z_c" style="flex: 1; min-width: 0; padding: 0.5rem 0.4rem; text-align: center;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Radio (R)</label>
-                                <input type="number" id="cone-r" class="form-control" value="4">
+                                <input type="number" id="cone-r" class="form-control" value="4" placeholder="R">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Altura (H)</label>
-                                <input type="number" id="cone-h" class="form-control" value="8">
+                                <input type="number" id="cone-h" class="form-control" value="8" placeholder="H">
                             </div>
                         </div>
 
                         <div id="shape-params-paraboloid" class="shape-params" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Coeficiente a (Eje X)</label>
-                                <input type="number" id="para-a" class="form-control" value="1">
+                                <input type="number" id="para-a" class="form-control" value="1" placeholder="a">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Coeficiente b (Eje Y)</label>
-                                <input type="number" id="para-b" class="form-control" value="1">
+                                <input type="number" id="para-b" class="form-control" value="1" placeholder="b">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Escala Vertical c (Eje Z)</label>
+                                <input type="number" id="para-c" class="form-control" value="1" placeholder="c">
                             </div>
                         </div>
 
@@ -776,14 +895,6 @@
                         </button>
                     </form>
                     
-                    <div class="card" style="margin-top: 1.5rem; background-color: rgba(255,255,255,0.01); border-color: var(--border-color);">
-                        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-code"></i> Conceptos POO Ilustrados</h4>
-                        <ul style="font-size: 0.8rem; color: var(--text-secondary); padding-left: 1rem; line-height: 1.4;">
-                            <li style="margin-bottom: 0.25rem;"><strong>Encapsulamiento</strong>: Cada clase de figura (`Recta`, `Esfera`) encapsula sus ecuaciones matemáticas.</li>
-                            <li style="margin-bottom: 0.25rem;"><strong>Herencia</strong>: Todas las figuras heredan propiedades comunes (nombre, color) de la clase base `Figura3D`.</li>
-                            <li><strong>Polimorfismo</strong>: Se llama recursivamente al mismo método `dibujar()` sobre cualquier figura.</li>
-                        </ul>
-                    </div>
                 </div>
                 
                 <div class="card" style="padding: 1rem;">
@@ -860,6 +971,16 @@
                                     <label class="form-label">Tiempo Límite (min)</label>
                                     <input type="number" id="quiz-time-limit" class="form-control" min="1" max="60" value="10" required style="border-radius: var(--radius-sm);">
                                 </div>
+                            </div>
+
+                            <!-- Cargar Examen por Código de Clase -->
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label">Cargar Examen por Código de Clase</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="class-code-input" class="form-control" placeholder="NUM-2026-E4T-M4P-D2T" style="border-radius: var(--radius-sm); font-family: monospace;">
+                                    <button type="button" id="load-class-code-btn" class="btn btn-secondary" style="border-radius: var(--radius-sm); white-space: nowrap;">Cargar</button>
+                                </div>
+                                <div id="class-code-alert" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem; border-radius: var(--radius-sm);"></div>
                             </div>
 
                             <!-- Leyenda informativa -->
@@ -1004,6 +1125,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <!-- Script Principal Estudiante -->
     <script src="../assets/js/estudiante.js"></script>
-
+    <!-- Script de Autenticación -->
+    <script src="../assets/js/auth-ui.js"></script>
 </body>
 </html>

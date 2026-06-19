@@ -196,6 +196,86 @@ Se realizó el commit, push y apertura del Pull Request oficial para consolidar 
 * **Enlace del Pull Request**: [PR #2 en GitHub](https://github.com/jjcuello/Programacion-numerica/pull/2)
 * **Contenido**: El cuerpo del PR detalla minuciosamente todos los cambios del Módulo de Profesor, la validación de correspondencia de $g(x)$, la corrección de límites de Bisección en gráficos y las actualizaciones terminológicas de marca ("Métodos Numéricos").
 
+---
 
+## Escaneo Dinámico de Intervalos de Búsqueda de Raíces
 
+Para lograr una paridad del 100% con las herramientas heredadas del CLI (`legacy/run.py`), se ha implementado un motor de **escaneo dinámico de intervalos** en el frontend:
 
+* **Problema Original**: La versión web sugería parámetros válidos basados únicamente en una base de datos estática para funciones predefinidas (ej. `x**3 - x - 2`). Si el estudiante ingresaba una función matemática personalizada, el sistema se limitaba a establecer parámetros por defecto genéricos (`[0, 2]` o `1.0`), perdiendo la capacidad del script de Python para explorar y sugerir intervalos que cumplan el Teorema de Bolzano.
+* **Solución Implementada**:
+  - **Función de Escaneo**: Se agregó la función `scanIntervalsForRoots(expr)` en [estudiante.js](../frontend/assets/js/estudiante.js). Esta función realiza una exploración matemática preliminar en el rango $[-10, 10]$ evaluando la expresión en $200$ puntos uniformes de forma segura.
+  - **Identificación de Raíces**: Detecta cruces por cero directos ($f(x) = 0$) y cambios de signo de la función ($f(x_1) \cdot f(x_2) < 0$), aislando hasta 3 intervalos de raíces candidatas.
+  - **Auto-Configuración Inteligente**: Si el estudiante hace clic en **Sugerir** para una función de usuario, el motor busca raíces reales dinámicamente. Al encontrarlas, configura de inmediato los campos de límites `a` y `b` (y el punto medio `x0` para métodos abiertos) y despliega el banner didáctico de éxito en color verde detallando la justificación del intervalo encontrado.
+  - **Respaldo Seguro**: En caso de no detectarse raíces en el escaneo (como en `x**2 + 4`), el sistema asigna los valores por defecto genéricos y muestra un banner informativo azul con recomendaciones pedagógicas de exploración.
+
+---
+
+## Laboratorio Comparativo de Constantes ($e$ y $\pi$)
+
+Para lograr paridad matemática y pedagógica con las herramientas heredadas del CLI (`legacy/run.py`), se ha implementado un **Laboratorio Comparativo Multimétodo** en la pestaña de Constantes de la vista del estudiante:
+
+* **Problema Original**: La versión web anterior solo permitía simular un método a la vez para aproximar $e$ o $\pi$, impidiendo comparar el rendimiento de convergencia, las iteraciones necesarias y el error absoluto entre diferentes formulaciones en un mismo panel (tal como se hacía en consola en el código heredado).
+* **Solución Implementada**:
+  - **Switch Comparativo**: Se añadió el control interactivo **"Comparar todos los métodos"** en el panel de control del formulario de Constantes.
+  - **Tabla Comparativa Consolidada**: Al activarlo y ejecutar, se calcula en paralelo la aproximación para todos los métodos correspondientes (4 métodos para $e$ y 5 métodos para $\pi$). La tabla consolidada reporta de manera unificada:
+    - *Método*: Nombre del método evaluado.
+    - *Aproximación*: Valor calculado con hasta 15 decimales.
+    - *Iteraciones*: Número de pasos realizados hasta convergencia o límite seguro.
+    - *Error Absoluto*: Discrepancia absoluta respecto al valor exacto del sistema (`Math.E` o `Math.PI`).
+    - *Decimales Ok*: Cantidad exacta de cifras decimales correctas consecutivas tras la coma.
+    - *Tiempo*: Duración exacta del cómputo en segundos.
+  - **Gráfica de Convergencia Multitrayecto (Plotly Log-scale)**: Renderiza las curvas de error absoluto de todos los métodos en un solo gráfico interactivo utilizando una escala logarítmica en el eje Y. Esto permite contrastar visualmente la convergencia lineal y lenta (como Leibniz) con la convergencia cuadrática o exponencial ultra rápida (como Ramanujan o Chudnovsky). El error mínimo para el trazado se ha acotado a $10^{-16}$ (la precisión de máquina nativa de hardware para variables `float64`), optimizando la visualización de la curva y evitando distorsiones visuales por errores nulos.
+  - **Observación Didáctica Directa**: Se muestra un banner explicativo dinámico (`#const-compare-alert`) con recomendaciones pedagógicas sobre la velocidad de convergencia (por ejemplo, destacando que la serie de Leibniz requiere 10,000 iteraciones para obtener apenas 3-4 decimales correctos debido a su naturaleza lineal, mientras que Chudnovsky y Ramanujan obtienen precisión total de hardware en 2-3 pasos).
+
+---
+
+## Simulación de Convergencia en Tiempo Real ("En Vivo") de Constantes
+
+Para completar la paridad funcional del 100% con los scripts de consola heredados (`legacy/metodos/euler.py` y `legacy/metodos/pi.py`), se incorporó un motor de **simulación interactiva paso a paso en tiempo real** en la pestaña de Constantes:
+
+* **Características**:
+  - **Switch de Modo en Vivo**: Permite activar la simulación interactiva `#const-realtime-toggle` en modo individual.
+  - **Ajustes Dinámicos**: Control deslizante de velocidad (`#const-realtime-speed`, entre $20\text{ ms}$ y $1000\text{ ms}$ de delay) y selector de tamaño de paso (`#const-realtime-step-slider`, entre $1$ y $500$ iteraciones por actualización) que se pueden cambiar en caliente durante la simulación.
+  - **Controles de Reproducción**: Botones para **Pausar** (`#const-btn-pause`) y **Detener** (`#const-btn-stop`) la simulación en caliente.
+  - **Trazado Dinámico**: La gráfica en Plotly y la tabla de iteraciones se van poblando dinámicamente de forma progresiva, animando visualmente la reducción del error absoluto y la precisión lograda paso a paso.
+  - **Mitigación de Sobrecarga**: El algoritmo mantiene la optimización del muestreo para métodos de convergencia lenta (como Leibniz) previniendo fugas de memoria o congelamiento de la ventana del navegador.
+
+---
+
+## Auditoría de Frontend, Usabilidad y Control de Acceso (v0.4)
+
+En esta fase se resolvieron incidencias de usabilidad, seguridad de acceso en el cliente y visualización dinámica en los paneles estudiantil, docente y administrativo.
+
+### 1. Control de Acceso y Prevención de Parpadeo de Interfaz (FOUC)
+- **Bloqueo Síncrono en Head**: Se movió la lógica de validación de sesión activa y redirección al `<head>` de [login.html](../frontend/pages/login.html) mediante una función autoejecutable. Esto redirige instantáneamente al usuario autenticado a su panel académico (`estudiante.html`, `profesor.html`, `admin.html`) antes de pintar el cuerpo de la página, eliminando el parpadeo de la pantalla de login.
+- **Header Limpio y Dinámico**: Se vaciaron los enlaces de rol estáticos de la etiqueta `<nav class="main-nav">` de todos los archivos HTML (`index.html`, `estudiante.html`, `profesor.html`, `admin.html`). La renderización de los mismos ahora se realiza de forma 100% dinámica en [auth-ui.js](../frontend/assets/js/auth-ui.js), previniendo la exposición temporal de enlaces protegidos.
+- **Accesos Integrados en Dropdown**: Se movieron los enlaces de acceso de rol al interior del menú desplegable del avatar del usuario (`user-profile-menu`), garantizando un diseño limpio y navegación ágil adaptada al rol actual.
+- **Redirección de CTA en Inicio**: Los botones de acción principal (CTA) en [index.html](../frontend/index.html) redirigen al usuario a `pages/login.html` en caso de no tener una sesión activa.
+- **Enlace de Perfil Corregido**: Se vinculó de forma correcta el script [auth-ui.js](../frontend/assets/js/auth-ui.js) al final de [perfil.html](../frontend/pages/perfil.html) para pintar la cabecera dinámica unificada en la vista de perfil de usuario.
+
+### 2. Limpieza de Interfaz y Eliminación de Opciones Obsoletas
+- **Remoción de Backend en Admin**: Se eliminó la sección "Modo de Ejecución del Backend" de [admin.html](../frontend/pages/admin.html), ya que todos los métodos numéricos y gráficos se ejecutan completamente del lado del cliente.
+- **Remoción de Conceptos POO**: Se retiró la sección informativa sobre conceptos de Programación Orientada a Objetos (POO) del panel 3D en [estudiante.html](../frontend/pages/estudiante.html), adaptando la vista puramente a la simulación matemática.
+- **Simplificación del Profesor**: Se eliminó el botón "Exportar JSON" de [profesor.html](../frontend/pages/profesor.html) y se protegió la vinculación del event listener en [profesor.js](../frontend/assets/js/profesor.js) con un chequeo de nulidad para evitar detenciones de ejecución del script.
+
+### 3. Robustez de Simulación y Soporte de Fórmulas Didácticas
+- **Detección de Raíces en Extremos (Bisección)**: En [estudiante.js](../frontend/assets/js/estudiante.js) y [profesor.js](../frontend/assets/js/profesor.js), el resolvedor de Bisección evalúa ahora de manera anticipada si alguno de los extremos de intervalo (`a` o `b`) ya representa una raíz exacta de la función (con tolerancia de $|f(x)| < 10^{-12}$). Si se cumple, el resolvedor responde con el estado `success_endpoint_root` y detiene el cómputo sin realizar iteraciones innecesarias.
+- **Banner Didáctico de Éxito**: En la vista de estudiante, el estado `success_endpoint_root` despliega una alerta didáctica de éxito (`#didactic-alert`) de color verde que informa al estudiante sobre la coincidencia del límite y brinda consejos académicos para observar la tabla paso a paso.
+- **Inicialización de Plots Protegida**: En [profesor.js](../frontend/assets/js/profesor.js), las inicializaciones de Plotly (`Plotly.newPlot` y `renderRadarChartClass`) se envolvieron en condicionales que comprueban la existencia del ID del contenedor, previniendo errores graves en páginas que no utilicen dichos elementos visuales.
+- **Soporte para Multiplicación Implícita**: Se optimizó la función `evaluateFunction(expr, x)` en ambos archivos JS para pre-procesar expresiones algebraicas ingresadas de forma natural, insertando el operador `*` en patrones comunes:
+  - Constantes seguidas de variables (ej. `2x` $\to$ `2*x`).
+  - Constantes seguidas de constantes matemáticas (ej. `2pi` $\to$ `2*pi`, `2e` $\to$ `2*e`).
+  - Constantes y variables al lado de paréntesis (ej. `2(x-1)` $\to$ `2*(x-1)`, `x(x-1)` $\to$ `x*(x-1)`).
+  - Paréntesis consecutivos (ej. `(x+1)(x-2)` $\to$ `(x+1)*(x-2)`).
+
+---
+
+## Resultados de Verificación de Usabilidad y Auditoría (v0.4)
+
+Se han realizado pruebas manuales en el navegador y análisis estáticos:
+1. **Control de Acceso (FOUC)**: Verificado que al intentar acceder a `login.html` con una sesión activa, el script bloquea y redirige de forma imperceptible e inmediata al panel correspondiente sin mostrar el formulario de login.
+2. **Navegación Dinámica**: Verificado que la barra de navegación superior no contiene enlaces estáticos, y tras iniciar sesión se carga de forma instantánea el dropdown del perfil que contiene los botones hacia el panel respectivo y la opción de cerrar sesión.
+3. **Multiplicación Implícita**: Se simuló con éxito el método de Bisección y Newton-Raphson ingresando funciones con notación abreviada como `2x - 1` o `x(x-2)`, ejecutando la lógica matemática sin excepciones de sintaxis.
+4. **Bisección en los Extremos**: Ingresando la función `x - 1` en el rango `[1, 2]` (donde $a=1$ es raíz exacta ya que $f(1)=0$), se comprobó que el solucionador responde de inmediato sin iterar y muestra el banner verde de éxito en el panel del estudiante.
+5. **Robustez en la Vista de Profesor**: Se comprobó que al cargar la vista de profesor, no ocurren errores de Plotly y la visualización de comparación de métodos y radar se inicializa correctamente al contar con las comprobaciones de existencia de los contenedores en el DOM.

@@ -58,6 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const hardValueLabel = document.getElementById("hard-value");
     const startQuizBtn = document.getElementById("start-quiz-btn");
     const tutorSetup = document.getElementById("tutor-setup");
+    const classCodeInput = document.getElementById("class-code-input");
+    const loadClassCodeBtn = document.getElementById("load-class-code-btn");
+    const classCodeAlert = document.getElementById("class-code-alert");
 
     // Quiz Focus
     const quizFocusContainer = document.getElementById("quiz-focus-container");
@@ -93,6 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const constantsForm = document.getElementById("constants-form");
     const constantSelect = document.getElementById("constant-select");
     const constMethodSelect = document.getElementById("const-method-select");
+    const constMethodGroup = document.getElementById("const-method-group");
+    const constCompareToggle = document.getElementById("const-compare-toggle");
     const constTolInput = document.getElementById("const-tol-input");
     const constMaxIter = document.getElementById("const-max-iter");
     const constMetricIter = document.getElementById("const-metric-iter");
@@ -100,6 +105,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const constMetricError = document.getElementById("const-metric-error");
     const constMetricTime = document.getElementById("const-metric-time");
     const constTableBody = document.getElementById("const-table-body");
+    const constSingleResults = document.getElementById("const-single-results");
+    const constCompareResults = document.getElementById("const-compare-results");
+    const constCompareTableBody = document.getElementById("const-compare-table-body");
+    const constCompareAlert = document.getElementById("const-compare-alert");
+    const constCompareAlertTitle = document.getElementById("const-compare-alert-title");
+    const constCompareAlertDesc = document.getElementById("const-compare-alert-desc");
+
+    // Selectores para Simulación en Tiempo Real
+    const constRealtimeGroup = document.getElementById("const-realtime-group");
+    const constRealtimeToggle = document.getElementById("const-realtime-toggle");
+    const constRealtimeControls = document.getElementById("const-realtime-controls");
+    const constRealtimeSpeed = document.getElementById("const-realtime-speed");
+    const constSpeedVal = document.getElementById("const-speed-val");
+    const constRealtimeStepSlider = document.getElementById("const-realtime-step-slider");
+    const constStepVal = document.getElementById("const-step-val");
+    const constBtnPause = document.getElementById("const-btn-pause");
+    const constBtnPauseText = document.getElementById("const-btn-pause-text");
+    const constBtnStop = document.getElementById("const-btn-stop");
 
     // Pestaña 4: Figuras 3D
     const shapes3DForm = document.getElementById("shapes-3d-form");
@@ -134,6 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let animStartTime = 0;
     let animRunning = false;
     let animTimeOffset = 0;
+
+    // Estado para la Simulación en Tiempo Real de Constantes
+    let constRealtimeTimer = null;
+    let isConstRealtimePaused = false;
+    let constRealtimeState = null;
 
     const animDescriptions = {
         sine: "Onda Seno Dinámica: Muestra cómo cambian la amplitud, frecuencia y desfase en una función senoidal pura a lo largo del tiempo. Ecuación: y = A sin(wx + phi).",
@@ -171,6 +199,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (targetId !== "tab-animations") {
                 stopAnimationLoop();
             }
+            if (targetId !== "tab-constants") {
+                stopConstRealtimeSimulation();
+            }
 
             // Forzar a Plotly a recalcular el tamaño al cambiar de pestaña
             setTimeout(() => {
@@ -180,6 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     Plotly.Plots.resize('plot-singularities');
                 } else if (targetId === "tab-constants") {
                     Plotly.Plots.resize('plot-constants');
+                    Plotly.Plots.resize('plot-constants-compare');
                 } else if (targetId === "tab-3d") {
                     Plotly.Plots.resize('plot-3d');
                 } else if (targetId === "tab-animations") {
@@ -350,6 +382,111 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Cargar examen por código de clase
+    if (loadClassCodeBtn && classCodeInput && classCodeAlert) {
+        loadClassCodeBtn.addEventListener("click", () => {
+            const code = classCodeInput.value.trim().toUpperCase();
+            classCodeAlert.style.display = "none";
+            classCodeAlert.className = ""; // Limpiar clases previas
+            
+            if (!code) {
+                classCodeAlert.textContent = "Por favor, ingresa un código de clase.";
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            const match = code.match(/^NUM-2026-E(\d+)(T|P|M)-M(\d+)(T|P|M)-D(\d+)(T|P|M)$/);
+            if (!match) {
+                classCodeAlert.textContent = "Código inválido. Formato correcto: NUM-2026-E[F][Modo]-M[M][Modo]-D[D][Modo] (Ej: NUM-2026-E4T-M4P-D2T).";
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            const nEasy = parseInt(match[1]);
+            const modeEasyChar = match[2];
+            const nMed = parseInt(match[3]);
+            const modeMedChar = match[4];
+            const nHard = parseInt(match[5]);
+            const modeHardChar = match[6];
+            
+            const totalQuestions = nEasy + nMed + nHard;
+            if (totalQuestions === 0) {
+                classCodeAlert.textContent = "El código de clase especifica 0 preguntas en total.";
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            if (totalQuestions < 3 || totalQuestions > 30) {
+                classCodeAlert.textContent = `El total de preguntas del código (${totalQuestions}) debe estar entre 3 y 30.`;
+                classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                classCodeAlert.style.color = "#ef4444";
+                classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+                classCodeAlert.style.display = "block";
+                return;
+            }
+            
+            // Configurar total de preguntas
+            quizTotalQuestionsInput.value = totalQuestions;
+            
+            // Configurar sliders de dificultad en porcentajes
+            easySlider.value = Math.round((nEasy / totalQuestions) * 100);
+            mediumSlider.value = Math.round((nMed / totalQuestions) * 100);
+            hardSlider.value = 100 - (parseInt(easySlider.value) + parseInt(mediumSlider.value));
+            
+            // Configurar modos
+            const modeMap = {
+                'T': 'theoretical',
+                'P': 'practical',
+                'M': 'mixed'
+            };
+            
+            const configModes = {
+                easy: modeMap[modeEasyChar],
+                medium: modeMap[modeMedChar],
+                hard: modeMap[modeHardChar]
+            };
+            
+            // Aplicar estados de botones
+            const difficulties = ['easy', 'medium', 'hard'];
+            difficulties.forEach(diff => {
+                const targetMode = configModes[diff];
+                quizModes[diff] = targetMode;
+                
+                // Actualizar interfaz visual para el modo seleccionado
+                document.querySelectorAll(`.mode-btn[data-difficulty="${diff}"]`).forEach(btn => {
+                    const btnMode = btn.getAttribute("data-mode");
+                    if (targetMode === 'mixed') {
+                        // En modo mixto, activamos ambos botones
+                        btn.classList.add("active");
+                    } else if (btnMode === targetMode) {
+                        btn.classList.add("active");
+                    } else {
+                        btn.classList.remove("active");
+                    }
+                });
+            });
+            
+            // Actualizar etiquetas visuales de los sliders
+            updateSliderLabels();
+            
+            // Mostrar éxito
+            classCodeAlert.textContent = `¡Código cargado con éxito! Total de preguntas: ${totalQuestions} (${nEasy} fáciles, ${nMed} medias, ${nHard} difíciles).`;
+            classCodeAlert.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+            classCodeAlert.style.color = "#10b981";
+            classCodeAlert.style.border = "1px solid rgba(16, 185, 129, 0.2)";
+            classCodeAlert.style.display = "block";
+        });
+    }
+
 
     // --- FUNCIONES CORE ---
 
@@ -408,7 +545,49 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 2. Botón Sugerir Valores Inteligentes (Base de Datos Básica de f(x))
+    // Función auxiliar para escanear intervalos donde se encuentra una raíz (Bolzano)
+    function scanIntervalsForRoots(expr) {
+        const start = -10.0;
+        const end = 10.0;
+        const points = 200;
+        const intervals = [];
+        const limit = 3;
+        
+        let prevX = null;
+        let prevY = null;
+        
+        for (let i = 0; i <= points; i++) {
+            let x = start + (end - start) * i / points;
+            let y;
+            try {
+                y = evaluateFunction(expr, x);
+            } catch (err) {
+                prevX = null;
+                prevY = null;
+                continue;
+            }
+            
+            if (isNaN(y) || !isFinite(y)) {
+                prevX = null;
+                prevY = null;
+                continue;
+            }
+            
+            if (y === 0) {
+                intervals.push({ a: x, b: x });
+                if (intervals.length >= limit) break;
+            } else if (prevX !== null && prevY * y < 0) {
+                intervals.push({ a: prevX, b: x });
+                if (intervals.length >= limit) break;
+            }
+            
+            prevX = x;
+            prevY = y;
+        }
+        return intervals;
+    }
+
+    // 2. Botón Sugerir Valores Inteligentes (Base de Datos Básica de f(x) o Escaneo Dinámico)
     function suggestMathValues() {
         const rawExpr = expressionInput.value.trim().toLowerCase();
         let method = methodSelect.value;
@@ -502,16 +681,40 @@ document.addEventListener("DOMContentLoaded", () => {
             suggestBtn.style.boxShadow = "var(--shadow-glow)";
             setTimeout(() => suggestBtn.style.boxShadow = "none", 1000);
         } else {
-            // Sugerencia genérica por defecto
-            aInput.value = 0;
-            bInput.value = 2;
-            x0Input.value = 1.0;
-            isFallback = true;
+            // Escaneo dinámico para funciones personalizadas
+            const exprToScan = (method === "fixedpoint" && !expressionInput.value.trim() && gExprInput) 
+                ? `x - (${gExprInput.value.trim()})` 
+                : expressionInput.value.trim();
+                
+            const scanned = scanIntervalsForRoots(exprToScan);
             
-            if (method === "bisection" || method === "secant") {
-                reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto. Por favor, verifica de forma independiente que f(a)·f(b) < 0 antes de simular.";
+            if (scanned.length > 0) {
+                const first = scanned[0];
+                aInput.value = Number(first.a.toFixed(4));
+                bInput.value = Number(first.b.toFixed(4));
+                x0Input.value = Number(((first.a + first.b) / 2).toFixed(4));
+                
+                if (first.a === first.b) {
+                    reason = `El escáner dinámico ha encontrado una raíz exacta en x ≈ ${first.a.toFixed(4)} dentro del rango [-10, 10]. Se configuró como punto de partida.`;
+                } else {
+                    reason = `El escáner dinámico detectó un cambio de signo (Teorema de Bolzano) en el intervalo [${first.a.toFixed(4)}, ${first.b.toFixed(4)}] para tu función. Parámetros configurados automáticamente.`;
+                }
+                
+                // Efecto visual de brillo
+                suggestBtn.style.boxShadow = "var(--shadow-glow)";
+                setTimeout(() => suggestBtn.style.boxShadow = "none", 1000);
             } else {
-                reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto. Por favor, verifica que f'(x₀) ≠ 0 antes de simular.";
+                // Sugerencia genérica por defecto
+                aInput.value = 0;
+                bInput.value = 2;
+                x0Input.value = 1.0;
+                isFallback = true;
+                
+                if (method === "bisection" || method === "secant") {
+                    reason = "Se han establecido límites genéricos [0.00, 2.00] por defecto ya que no se detectaron raíces reales en la exploración preliminar [-10, 10]. Por favor, verifica de forma independiente que f(a)·f(b) < 0.";
+                } else {
+                    reason = "Se ha establecido el punto inicial genérico x₀ = 1.00 por defecto ya que no se detectaron raíces reales en la exploración preliminar [-10, 10]. Por favor, verifica que f'(x₀) ≠ 0.";
+                }
             }
         }
 
@@ -530,7 +733,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alertDescription.textContent = reason;
                 alertRecommendation.textContent = "Consejo del Tutor: Revisa matemáticamente la función para ingresar límites o puntos iniciales adecuados.";
             } else {
-                // Banner verde de éxito para sugerencia validada
+                // Banner verde de éxito para sugerencia validada o encontrada mediante escaneo dinámico
                 didacticAlert.style.backgroundColor = "var(--success-bg)";
                 didacticAlert.style.borderColor = "var(--success)";
                 if (alertIconSpan) {
@@ -620,12 +823,27 @@ document.addEventListener("DOMContentLoaded", () => {
         // Sanitizar y parsear términos habituales
         let formatted = expr.toLowerCase()
             .replace(/\s+/g, "")
+            // Multiplicación implícita
+            .replace(/(\d)(x)/g, "$1*$2")
+            .replace(/(\d)(\bpi\b|\be\b)/g, "$1*$2")
+            .replace(/(\d)\(/g, "$1*(")
+            .replace(/(x)\(/g, "$1*(")
+            .replace(/\)(x)/g, ")*$1")
+            .replace(/\)\(/g, ")*(")
             .replace(/sin\(/g, "Math.sin(")
             .replace(/cos\(/g, "Math.cos(")
             .replace(/tan\(/g, "Math.tan(")
             .replace(/exp\(/g, "Math.exp(")
+            .replace(/ln\(/g, "Math.log(")
             .replace(/log\(/g, "Math.log(")
+            .replace(/abs\(/g, "Math.abs(")
             .replace(/sqrt\(/g, "Math.sqrt(")
+            .replace(/sinh\(/g, "Math.sinh(")
+            .replace(/cosh\(/g, "Math.cosh(")
+            .replace(/tanh\(/g, "Math.tanh(")
+            .replace(/asin\(/g, "Math.asin(")
+            .replace(/acos\(/g, "Math.acos(")
+            .replace(/atan\(/g, "Math.atan(")
             .replace(/\bpi\b/g, "Math.PI")
             .replace(/\be\b/g, "Math.E")
             .replace(/\^/g, "**");
@@ -710,15 +928,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const elapsed = ((endTime - startTime) / 1000).toFixed(6);
 
             // Mostrar resultados
-            metricStatus.textContent = result.status;
-            metricStatus.className = "metric-card-value";
-            
             if (result.status === "success") {
-                metricStatus.classList.add("badge-success");
-            } else if (result.status === "singularidad" || result.status === "bolzano_violation") {
-                metricStatus.classList.add("badge-danger");
+                metricStatus.textContent = "Éxito";
+                metricStatus.className = "metric-card-value badge-success";
+            } else if (result.status === "success_endpoint_root") {
+                metricStatus.textContent = "Raíz en Extremo";
+                metricStatus.className = "metric-card-value badge-success";
+            } else if (result.status === "singularidad") {
+                metricStatus.textContent = "Singularidad";
+                metricStatus.className = "metric-card-value badge-danger";
+            } else if (result.status === "bolzano_violation") {
+                metricStatus.textContent = "Bolzano Violado";
+                metricStatus.className = "metric-card-value badge-danger";
             } else {
-                metricStatus.classList.add("badge-warning");
+                metricStatus.textContent = result.status;
+                metricStatus.className = "metric-card-value badge-warning";
             }
 
             metricRoot.textContent = (result.root !== null && !isNaN(result.root)) ? result.root.toFixed(8) : "N/A";
@@ -754,6 +978,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 alertDescription.textContent = "El teorema de Bolzano no se cumple ya que f(a) y f(b) tienen el mismo signo. No se puede garantizar la existencia de una raíz en este intervalo.";
                 alertRecommendation.textContent = "Sugerencia: Haz clic en el botón '✨ Sugerir Valores' o cambia los límites del intervalo para que rodeen la intersección con el eje X.";
                 didacticAlert.style.display = "flex";
+            } else if (result.status === "success_endpoint_root") {
+                didacticAlert.style.backgroundColor = "var(--success-bg)";
+                didacticAlert.style.borderColor = "var(--success)";
+                const alertIconSpan = didacticAlert.querySelector(".didactic-alert-icon");
+                if (alertIconSpan) {
+                    alertIconSpan.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>`;
+                }
+                alertTitle.textContent = "Raíz en Extremo del Intervalo";
+                alertDescription.textContent = "¡Excelente! Uno de los límites del intervalo ingresado ya coincide con una raíz exacta de la función (f(x) = 0). No se requiere realizar iteraciones.";
+                alertRecommendation.textContent = "Consejo Académico: Si deseas observar la tabla de aproximaciones sucesivas paso a paso, desplaza los límites del intervalo de manera que la raíz quede dentro del mismo (ej: a = 0.5, b = 1.5).";
+                didacticAlert.style.display = "flex";
+            } else {
+                didacticAlert.style.display = "none";
             }
 
             // Guardar en el Historial
@@ -797,6 +1034,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 root: null,
                 iterations: [],
                 status: "singularidad"
+            };
+        }
+
+        if (Math.abs(fa) < 1e-12) {
+            return {
+                root: a,
+                iterations: [],
+                status: "success_endpoint_root"
+            };
+        }
+        if (Math.abs(fb) < 1e-12) {
+            return {
+                root: b,
+                iterations: [],
+                status: "success_endpoint_root"
             };
         }
 
@@ -1603,6 +1855,78 @@ document.addEventListener("DOMContentLoaded", () => {
             ],
             correct: 0,
             feedback: "Evaluando la función de iteración: x₁ = g(x₀) = cos(0.5 rad) ≈ 0.87758. Redondeado a tres decimales es 0.878."
+        },
+        {
+            type: "theoretical",
+            difficulty: "easy",
+            question: "¿Qué sucede con el error aproximado máximo en cada iteración del método de Bisección?",
+            options: [
+                "Se reduce exactamente a la mitad.",
+                "Disminuye de forma cuadrática duplicando los dígitos de precisión.",
+                "Permanece constante hasta encontrar la raíz."
+            ],
+            correct: 0,
+            feedback: "El método de bisección divide el intervalo de búsqueda exactamente por la mitad en cada paso, por lo tanto, la cota del error aproximado máximo disminuye a la mitad (convergencia lineal con factor 0.5)."
+        },
+        {
+            type: "practical",
+            difficulty: "medium",
+            question: "Si g(x) es una función de iteración de punto fijo, ¿qué condición sobre la derivada g'(x) asegura la convergencia local hacia una raíz s en un intervalo que contiene a s?",
+            options: [
+                "La derivada debe ser nula en todo el dominio.",
+                "El valor absoluto de la derivada debe ser menor que 1 (|g'(x)| < 1) en el intervalo.",
+                "La derivada debe ser estrictamente mayor que 1 (g'(x) > 1)."
+            ],
+            correct: 1,
+            feedback: "De acuerdo con el Teorema del Punto Fijo, la convergencia de la sucesión x_{n+1} = g(x_n) está garantizada si la función g(x) es contractiva, lo cual requiere que |g'(x)| < 1 en el intervalo de la raíz."
+        },
+        {
+            type: "practical",
+            difficulty: "medium",
+            question: "Se busca encontrar una raíz de f(x) = x³ - x - 1 = 0 con Newton-Raphson. Si la derivada es f'(x) = 3x² - 1 y el valor inicial es x₀ = 1.5, ¿cuál es el valor de f'(x₀)?",
+            options: [
+                "f'(x₀) = 5.75",
+                "f'(x₀) = 3.50",
+                "f'(x₀) = 1.50"
+            ],
+            correct: 0,
+            feedback: "Evaluando la derivada en x₀ = 1.5: f'(1.5) = 3 * (1.5)² - 1 = 3 * 2.25 - 1 = 6.75 - 1 = 5.75."
+        },
+        {
+            type: "theoretical",
+            difficulty: "hard",
+            question: "El método de Steffensen es una aceleración del método de punto fijo. ¿Cuál es su ventaja teórica más representativa?",
+            options: [
+                "Conserva la simplicidad del método de la secante sin usar funciones trascendentes.",
+                "Logra convergencia de orden cuadrático (orden 2) utilizando únicamente evaluaciones de la función de iteración g(x), sin evaluar derivadas g'(x).",
+                "Garantiza convergencia global para cualquier función continua arbitraria."
+            ],
+            correct: 1,
+            feedback: "El método de Steffensen utiliza el método Delta-2 de Aitken para acelerar la convergencia lineal del punto fijo a convergencia cuadrática, sin requerir calcular ni evaluar derivadas."
+        },
+        {
+            type: "practical",
+            difficulty: "hard",
+            question: "Considere el método de la Secante para resolver f(x) = x² - 3 = 0 con valores iniciales x₀ = 1 y x₁ = 2. ¿Cuál es la aproximación x₂ en el primer paso?",
+            options: [
+                "x₂ = 1.667",
+                "x₂ = 1.732",
+                "x₂ = 1.500"
+            ],
+            correct: 0,
+            feedback: "Tenemos f(1) = 1² - 3 = -2 y f(2) = 2² - 3 = 1. Aplicando la fórmula: x₂ = x₁ - f(x₁) * (x₁ - x₀) / (f(x₁) - f(x₀)) = 2 - 1 * (2 - 1) / (1 - (-2)) = 2 - 1/3 = 5/3 ≈ 1.667."
+        },
+        {
+            type: "theoretical",
+            difficulty: "hard",
+            question: "Al analizar la estabilidad numérica en la resolución de ecuaciones no lineales f(x) = 0, ¿qué representa el número de condición de una raíz simple r?",
+            options: [
+                "El grado de sensibilidad de la posición de la raíz r ante pequeñas perturbaciones o errores en la evaluación de la función f(x).",
+                "El límite superior absoluto de iteraciones permitidas para evitar la división por cero.",
+                "La tasa a la cual los dígitos significativos se pierden en la resta de extremos del intervalo."
+            ],
+            correct: 0,
+            feedback: "El número de condición de una raíz simple r se define como 1/|f'(r)|. Si la derivada en la raíz es muy pequeña, cualquier leve error en la función causa un gran desplazamiento de la raíz (raíz mal condicionada)."
         }
     ];
 
@@ -2085,10 +2409,88 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- LÓGICA DE CONSTANTES ---
 
     function initializeConstantsTab() {
-        constantSelect.addEventListener("change", updateConstantMethods);
+        constantSelect.addEventListener("change", () => {
+            updateConstantMethods();
+            autoTuneRealtimeParams();
+        });
+        constMethodSelect.addEventListener("change", autoTuneRealtimeParams);
+        
         updateConstantMethods();
+        autoTuneRealtimeParams();
+
+        constCompareToggle.addEventListener("change", () => {
+            if (constCompareToggle.checked) {
+                constMethodGroup.style.display = "none";
+                constSingleResults.style.display = "none";
+                constCompareResults.style.display = "flex";
+                constRealtimeGroup.style.display = "none";
+                constRealtimeToggle.checked = false;
+                constRealtimeControls.style.display = "none";
+                stopConstRealtimeSimulation();
+            } else {
+                constMethodGroup.style.display = "block";
+                constSingleResults.style.display = "flex";
+                constCompareResults.style.display = "none";
+                constRealtimeGroup.style.display = "block";
+            }
+        });
+
+        constRealtimeToggle.addEventListener("change", () => {
+            const submitBtn = constantsForm.querySelector('button[type="submit"]');
+            if (constRealtimeToggle.checked) {
+                constRealtimeControls.style.display = "flex";
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Simulación`;
+                }
+            } else {
+                constRealtimeControls.style.display = "none";
+                stopConstRealtimeSimulation();
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+                }
+            }
+        });
+
+        constRealtimeSpeed.addEventListener("input", () => {
+            constSpeedVal.textContent = constRealtimeSpeed.value;
+        });
+
+        constRealtimeStepSlider.addEventListener("input", () => {
+            constStepVal.textContent = constRealtimeStepSlider.value;
+        });
+
+        constBtnPause.addEventListener("click", () => {
+            isConstRealtimePaused = !isConstRealtimePaused;
+            if (isConstRealtimePaused) {
+                constBtnPause.innerHTML = `<i class="fa-solid fa-play"></i> <span id="const-btn-pause-text">Reanudar</span>`;
+            } else {
+                constBtnPause.innerHTML = `<i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>`;
+            }
+        });
+
+        constBtnStop.addEventListener("click", () => {
+            stopConstRealtimeSimulation();
+        });
 
         constantsForm.addEventListener("submit", runConstantApproximation);
+    }
+
+    function autoTuneRealtimeParams() {
+        const method = constMethodSelect.value;
+        if (!method) return;
+        
+        if (method === "leibniz" || method === "limite") {
+            constRealtimeStepSlider.value = 50;
+            constRealtimeSpeed.value = 40;
+        } else if (method === "nilakantha") {
+            constRealtimeStepSlider.value = 10;
+            constRealtimeSpeed.value = 80;
+        } else {
+            constRealtimeStepSlider.value = 1;
+            constRealtimeSpeed.value = 200;
+        }
+        constSpeedVal.textContent = constRealtimeSpeed.value;
+        constStepVal.textContent = constRealtimeStepSlider.value;
     }
 
     function updateConstantMethods() {
@@ -2106,14 +2508,61 @@ document.addEventListener("DOMContentLoaded", () => {
     function runConstantApproximation(e) {
         e.preventDefault();
         const type = constantSelect.value;
-        const method = constMethodSelect.value;
         const tol = parseFloat(constTolInput.value);
         const maxIter = parseInt(constMaxIter.value);
+        const refVal = type === "e" ? Math.E : Math.PI;
 
+        if (constCompareToggle.checked) {
+            // Modo comparación multimétodo
+            const list = type === "e" ? eulerMethods : piMethods;
+            const results = list.map(m => calculateSingleMethod(type, m.value, tol, maxIter));
+
+            // Llenar tabla comparativa
+            constCompareTableBody.innerHTML = "";
+            results.forEach(res => {
+                const decOk = countCorrectDecimals(res.approx, refVal);
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight: 600; color: var(--text-primary);">${res.methodName}</td>
+                    <td style="font-family: 'Fira Code', monospace;">${res.approx.toFixed(15)}</td>
+                    <td style="text-align: center; font-weight: 600;">${res.iters}</td>
+                    <td style="text-align: center; font-family: 'Fira Code', monospace; color: var(--accent);">${res.error.toExponential(4)}</td>
+                    <td style="text-align: center; font-weight: 600; color: var(--success);">${decOk}</td>
+                    <td style="text-align: center; font-family: 'Fira Code', monospace;">${res.time.toFixed(5)}</td>
+                `;
+                constCompareTableBody.appendChild(tr);
+            });
+
+            // Mostrar banner didáctico
+            if (constCompareAlert) {
+                if (type === "pi") {
+                    constCompareAlertTitle.textContent = "Observación Pedagógica (Número Pi)";
+                    constCompareAlertDesc.textContent = "La Serie de Leibniz converge de forma sumamente lenta (requiere 10,000 iteraciones para obtener apenas 4 decimales correctos debido a su tasa lineal). Por el contrario, los algoritmos modernos de Ramanujan y Chudnovsky convergen casi al instante con precisión de hardware en 2-3 pasos.";
+                } else {
+                    constCompareAlertTitle.textContent = "Observación Pedagógica (Número de Euler)";
+                    constCompareAlertDesc.textContent = "La Serie de Taylor y el método de Newton-Raphson muestran una convergencia cuadrática/exponencial veloz, necesitando menos de 15 pasos. En cambio, el método del Límite de definición ((1 + 1/n)^n) es de naturaleza lenta y lineal.";
+                }
+                constCompareAlert.style.backgroundColor = "var(--success-bg)";
+                constCompareAlert.style.borderColor = "var(--success)";
+                constCompareAlert.querySelector(".didactic-alert-icon").innerHTML = `<i class="fa-solid fa-graduation-cap" style="color: var(--success);"></i>`;
+                constCompareAlert.style.display = "flex";
+            }
+
+            // Graficar comparación
+            plotConstantsComparison(results);
+            return;
+        }
+
+        // Modo individual
+        const method = constMethodSelect.value;
+
+        if (constRealtimeToggle.checked) {
+            startConstRealtimeSimulation(type, method, tol, maxIter);
+            return;
+        }
         const startTime = performance.now();
         let iterations = [];
         let approx = 0;
-        const refVal = type === "e" ? Math.E : Math.PI;
 
         if (type === "e") {
             if (method === "taylor") {
@@ -2205,14 +2654,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 approx = val;
             } else if (method === "archimedes") {
                 let lados = 6;
+                let s = 1.0; // lado del hexágono inscrito
                 let lastVal = 0.0;
+                let val = 3.0; // semiperímetro inicial
                 for (let i = 1; i <= Math.min(maxIter, 30); i++) { 
-                    let val = lados * Math.sin(Math.PI / lados);
+                    if (i > 1) {
+                        s = Math.sqrt(2.0 - Math.sqrt(4.0 - s * s));
+                        lados *= 2;
+                        val = (lados / 2) * s;
+                    }
                     let diff = Math.abs(val - lastVal);
                     let err = Math.abs(val - refVal);
                     iterations.push({ iter: i, approx: val, diff: i === 1 ? "-" : diff, error: err });
                     lastVal = val;
-                    lados *= 2;
                     if (i > 1 && diff < tol) break;
                 }
                 approx = lastVal;
@@ -2276,6 +2730,713 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Graficar convergencia
         plotConstantConvergence(iterations);
+
+        // Mostrar / ocultar alertas didácticas para constantes
+        const singleAlert = document.getElementById("const-single-alert");
+        const singleAlertTitle = document.getElementById("const-single-alert-title");
+        const singleAlertDesc = document.getElementById("const-single-alert-desc");
+        if (singleAlert && singleAlertTitle && singleAlertDesc) {
+            if (type === "e" && method === "newton") {
+                singleAlertTitle.textContent = "Nota Didáctica: Newton-Raphson para Euler (e)";
+                singleAlertDesc.textContent = "El método de Newton-Raphson sobre ln(x) - 1 = 0 es un modelo didáctico. En la práctica, la función de logaritmo natural requiere conocer previamente la constante base e para calcularse por hardware, constituyendo una circularidad lógica.";
+                singleAlert.style.display = "flex";
+            } else if (type === "pi" && method === "archimedes") {
+                singleAlertTitle.textContent = "Información Didáctica: Método de Arquímedes";
+                singleAlertDesc.textContent = "Esta simulación aproxima π de forma no circular mediante la relación de recurrencia geométrica de bisección de lados: s_2n = \u221a(2 - \u221a(4 - s_n²)), duplicando lados desde un hexágono (s_6 = 1.0) sin usar Math.PI en el bucle.";
+                singleAlert.style.display = "flex";
+            } else {
+                singleAlert.style.display = "none";
+            }
+        }
+    }
+
+    function stopConstRealtimeSimulation() {
+        if (constRealtimeTimer) {
+            clearTimeout(constRealtimeTimer);
+            constRealtimeTimer = null;
+        }
+        isConstRealtimePaused = false;
+        constRealtimeState = null;
+
+        // Ocultar alerta didáctica de constantes
+        const singleAlert = document.getElementById("const-single-alert");
+        if (singleAlert) {
+            singleAlert.style.display = "none";
+        }
+        
+        // Reset buttons to original state
+        constBtnPause.disabled = true;
+        constBtnPause.innerHTML = `<i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>`;
+        constBtnStop.disabled = true;
+        
+        // Enable calculate button / form submit
+        const submitBtn = constantsForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            if (constRealtimeToggle.checked) {
+                submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Simulación`;
+            } else {
+                submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+            }
+        }
+    }
+
+    function startConstRealtimeSimulation(type, method, tol, maxIter) {
+        stopConstRealtimeSimulation();
+
+        // Mostrar / ocultar alertas didácticas para constantes en simulación
+        const singleAlert = document.getElementById("const-single-alert");
+        const singleAlertTitle = document.getElementById("const-single-alert-title");
+        const singleAlertDesc = document.getElementById("const-single-alert-desc");
+        if (singleAlert && singleAlertTitle && singleAlertDesc) {
+            if (type === "e" && method === "newton") {
+                singleAlertTitle.textContent = "Nota Didáctica: Newton-Raphson para Euler (e)";
+                singleAlertDesc.textContent = "El método de Newton-Raphson sobre ln(x) - 1 = 0 es un modelo didáctico. En la práctica, la función de logaritmo natural requiere conocer previamente la constante base e para calcularse por hardware, constituyendo una circularidad lógica.";
+                singleAlert.style.display = "flex";
+            } else if (type === "pi" && method === "archimedes") {
+                singleAlertTitle.textContent = "Información Didáctica: Método de Arquímedes";
+                singleAlertDesc.textContent = "Esta simulación aproxima π de forma no circular mediante la relación de recurrencia geométrica de bisección de lados: s_2n = \u221a(2 - \u221a(4 - s_n²)), duplicando lados desde un hexágono (s_6 = 1.0) sin usar Math.PI en el bucle.";
+                singleAlert.style.display = "flex";
+            } else {
+                singleAlert.style.display = "none";
+            }
+        }
+
+        constBtnPause.disabled = false;
+        constBtnStop.disabled = false;
+        isConstRealtimePaused = false;
+        constBtnPause.innerHTML = `<i class="fa-solid fa-pause"></i> <span id="const-btn-pause-text">Pausar</span>`;
+
+        const submitBtn = constantsForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Simulando...`;
+        }
+
+        const refVal = type === "e" ? Math.E : Math.PI;
+        constRealtimeState = {
+            type: type,
+            method: method,
+            tol: tol,
+            maxIter: maxIter,
+            refVal: refVal,
+            startTime: performance.now(),
+            currentIter: 0,
+            iterations: [],
+            lastApprox: 0,
+            vars: {}
+        };
+
+        const vars = constRealtimeState.vars;
+        if (type === "e") {
+            if (method === "taylor") {
+                vars.sum = 1.0;
+                vars.term = 1.0;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 1.0;
+                constRealtimeState.iterations.push({
+                    iter: 1,
+                    approx: vars.sum,
+                    diff: vars.term,
+                    error: Math.abs(vars.sum - refVal)
+                });
+            } else if (method === "limite") {
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 0.0;
+            } else if (method === "fraccion") {
+                vars.lastVal = 2.0;
+                constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 2.0;
+            } else if (method === "newton") {
+                vars.x = 2.5;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 2.5;
+                constRealtimeState.iterations.push({
+                    iter: 1,
+                    approx: vars.x,
+                    diff: "-",
+                    error: Math.abs(vars.x - refVal)
+                });
+            }
+        } else {
+            if (method === "leibniz") {
+                vars.sum = 0.0;
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 0.0;
+            } else if (method === "nilakantha") {
+                vars.val = 3.0;
+                vars.lastVal = 3.0;
+                vars.signo = 1.0;
+                vars.n = 2;
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 3.0;
+                constRealtimeState.iterations.push({
+                    iter: 1,
+                    approx: vars.val,
+                    diff: "-",
+                    error: Math.abs(vars.val - refVal)
+                });
+            } else if (method === "archimedes") {
+                vars.lados = 6;
+                vars.s = 1.0; // lado del hexágono inscrito
+                vars.lastVal = 0.0;
+                vars.val = 3.0; // semiperímetro inicial
+                constRealtimeState.currentIter = 1;
+                constRealtimeState.lastApprox = 3.0;
+            } else if (method === "ramanujan") {
+                vars.sum = 0.0;
+                vars.lastVal = 0.0;
+                constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 0.0;
+            } else if (method === "chudnovsky") {
+                vars.sum = 0.0;
+                vars.lastVal = 0.0;
+                vars.constante = 426880 * Math.sqrt(10005);
+                constRealtimeState.currentIter = 0;
+                constRealtimeState.lastApprox = 0.0;
+            }
+        }
+
+        constTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Iniciando simulación...</td></tr>`;
+        constMetricIter.textContent = "0";
+        constMetricValue.textContent = "-";
+        constMetricError.textContent = "-";
+        constMetricTime.textContent = "0.000000";
+
+        runRealtimeSimulationLoop();
+    }
+
+    function runRealtimeSimulationLoop() {
+        if (!constRealtimeState) return;
+
+        const delay = parseInt(constRealtimeSpeed.value);
+        constRealtimeTimer = setTimeout(() => {
+            if (isConstRealtimePaused) {
+                runRealtimeSimulationLoop();
+                return;
+            }
+
+            const stepSize = parseInt(constRealtimeStepSlider.value);
+            const finished = runRealtimeSimulationStep(stepSize);
+
+            if (finished) {
+                constBtnPause.disabled = true;
+                constBtnStop.disabled = true;
+                const submitBtn = constantsForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    if (constRealtimeToggle.checked) {
+                        submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Simulación`;
+                    } else {
+                        submitBtn.innerHTML = `<i class="fa-solid fa-play"></i> Calcular Aproximación`;
+                    }
+                }
+            } else {
+                runRealtimeSimulationLoop();
+            }
+        }, delay);
+    }
+
+    function runRealtimeSimulationStep(stepSize) {
+        if (!constRealtimeState) return true;
+
+        const type = constRealtimeState.type;
+        const method = constRealtimeState.method;
+        const tol = constRealtimeState.tol;
+        const maxIter = constRealtimeState.maxIter;
+        const refVal = constRealtimeState.refVal;
+        const vars = constRealtimeState.vars;
+
+        let finished = false;
+        let lastApprox = 0;
+        let currentIt = constRealtimeState.currentIter;
+
+        for (let step = 0; step < stepSize; step++) {
+            if (type === "e") {
+                if (method === "taylor") {
+                    if (currentIt >= maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    vars.term = vars.term / currentIt;
+                    let nextSum = vars.sum + vars.term;
+                    let diff = Math.abs(nextSum - vars.sum);
+                    let err = Math.abs(nextSum - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: nextSum,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.sum = nextSum;
+                    lastApprox = nextSum;
+                    currentIt++;
+                    
+                    if (diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "limite") {
+                    if (currentIt > maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let val = Math.pow(1.0 + 1.0 / currentIt, currentIt);
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt,
+                        approx: val,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 2 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "fraccion") {
+                    if (currentIt > Math.min(maxIter, 150)) {
+                        finished = true;
+                        break;
+                    }
+                    let val = evaluateEulerContinuedFraction(currentIt);
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: val,
+                        diff: currentIt === 0 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "newton") {
+                    if (currentIt > maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let fx = Math.log(vars.x) - 1.0;
+                    let dfx = 1.0 / vars.x;
+                    let nextX = vars.x - (fx / dfx);
+                    let diff = Math.abs(nextX - vars.x);
+                    let err = Math.abs(nextX - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: nextX,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.x = nextX;
+                    lastApprox = nextX;
+                    currentIt++;
+                    
+                    if (diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                }
+            } else { // type === "pi"
+                if (method === "leibniz") {
+                    if (currentIt >= maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let term = (currentIt % 2 === 0 ? 1.0 : -1.0) / (2 * currentIt + 1);
+                    vars.sum += term;
+                    let val = 4.0 * vars.sum;
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    if (currentIt === 0 || currentIt === maxIter - 1 || currentIt % Math.ceil(maxIter / 500) === 0 || diff < tol) {
+                        constRealtimeState.iterations.push({
+                            iter: currentIt + 1,
+                            approx: val,
+                            diff: diff,
+                            error: err
+                        });
+                    }
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "nilakantha") {
+                    if (currentIt > maxIter) {
+                        finished = true;
+                        break;
+                    }
+                    let term = 4.0 / (vars.n * (vars.n + 1) * (vars.n + 2));
+                    vars.val += vars.signo * term;
+                    let diff = Math.abs(vars.val - vars.lastVal);
+                    let err = Math.abs(vars.val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: vars.val,
+                        diff: diff,
+                        error: err
+                    });
+                    vars.lastVal = vars.val;
+                    lastApprox = vars.val;
+                    vars.signo *= -1.0;
+                    vars.n += 2;
+                    currentIt++;
+                    
+                    if (diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "archimedes") {
+                    if (currentIt > Math.min(maxIter, 30)) {
+                        finished = true;
+                        break;
+                    }
+                    let val = vars.val;
+                    if (currentIt > 1) {
+                        vars.s = Math.sqrt(2.0 - Math.sqrt(4.0 - vars.s * vars.s));
+                        vars.lados *= 2;
+                        val = (vars.lados / 2) * vars.s;
+                        vars.val = val;
+                    }
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt,
+                        approx: val,
+                        diff: currentIt === 1 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 2 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "ramanujan") {
+                    if (currentIt > Math.min(maxIter, 8)) {
+                        finished = true;
+                        break;
+                    }
+                    let termNum = fact(4 * currentIt) * (1103 + 26390 * currentIt);
+                    let termDen = Math.pow(fact(currentIt), 4) * Math.pow(396, 4 * currentIt);
+                    vars.sum += termNum / termDen;
+                    let invPi = (2.0 * Math.sqrt(2.0) / 9801.0) * vars.sum;
+                    let val = 1.0 / invPi;
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: val,
+                        diff: currentIt === 0 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                } else if (method === "chudnovsky") {
+                    if (currentIt > Math.min(maxIter, 6)) {
+                        finished = true;
+                        break;
+                    }
+                    let termNum = (currentIt % 2 === 0 ? 1.0 : -1.0) * fact(6 * currentIt) * (13591409 + 545140134 * currentIt);
+                    let termDen = fact(3 * currentIt) * Math.pow(fact(currentIt), 3) * Math.pow(640320, 3 * currentIt);
+                    vars.sum += termNum / termDen;
+                    let val = vars.constante / vars.sum;
+                    let diff = Math.abs(val - vars.lastVal);
+                    let err = Math.abs(val - refVal);
+                    
+                    constRealtimeState.iterations.push({
+                        iter: currentIt + 1,
+                        approx: val,
+                        diff: currentIt === 0 ? "-" : diff,
+                        error: err
+                    });
+                    vars.lastVal = val;
+                    lastApprox = val;
+                    currentIt++;
+                    
+                    if (currentIt > 1 && diff < tol) {
+                        finished = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        constRealtimeState.currentIter = currentIt;
+        constRealtimeState.lastApprox = lastApprox;
+        const elapsed = ((performance.now() - constRealtimeState.startTime) / 1000).toFixed(6);
+
+        // Actualizar UI de métricas en tiempo real con el progreso actual
+        constMetricIter.textContent = currentIt;
+        constMetricValue.textContent = lastApprox.toFixed(15);
+        constMetricError.textContent = Math.abs(lastApprox - refVal).toExponential(4);
+        constMetricTime.textContent = elapsed;
+
+        const currentIterations = constRealtimeState.iterations;
+        if (currentIterations.length > 0) {
+            constTableBody.innerHTML = "";
+            currentIterations.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="text-align: center; font-weight: 600;">${row.iter}</td>
+                    <td style="font-family: 'Fira Code', monospace;">${row.approx.toFixed(14)}</td>
+                    <td style="font-family: 'Fira Code', monospace;">${typeof row.diff === 'number' ? row.diff.toExponential(2) : row.diff}</td>
+                    <td style="font-family: 'Fira Code', monospace; color: var(--accent);">${row.error.toExponential(2)}</td>
+                `;
+                constTableBody.appendChild(tr);
+            });
+            
+            const tableParent = constTableBody.parentElement.parentElement;
+            if (tableParent) {
+                tableParent.scrollTop = tableParent.scrollHeight;
+            }
+
+            plotConstantConvergence(currentIterations);
+        }
+
+        return finished;
+    }
+
+    function calculateSingleMethod(type, method, tol, maxIter) {
+        const refVal = type === "e" ? Math.E : Math.PI;
+        const startTime = performance.now();
+        let iterations = [];
+        let approx = 0;
+
+        if (type === "e") {
+            if (method === "taylor") {
+                let sum = 1.0;
+                let term = 1.0;
+                iterations.push({ iter: 1, error: Math.abs(sum - refVal) });
+                for (let k = 1; k <= maxIter; k++) {
+                    term = term / k;
+                    let nextSum = sum + term;
+                    let diff = Math.abs(nextSum - sum);
+                    let err = Math.abs(nextSum - refVal);
+                    iterations.push({ iter: k + 1, error: err });
+                    sum = nextSum;
+                    if (diff < tol) break;
+                }
+                approx = sum;
+            } else if (method === "limite") {
+                let lastVal = 0.0;
+                for (let n = 1; n <= maxIter; n++) {
+                    let val = Math.pow(1.0 + 1.0 / n, n);
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: n, error: err });
+                    lastVal = val;
+                    if (n > 1 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "fraccion") {
+                let lastVal = 2.0;
+                for (let depth = 0; depth <= Math.min(maxIter, 150); depth++) {
+                    let val = evaluateEulerContinuedFraction(depth);
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: depth + 1, error: err });
+                    lastVal = val;
+                    if (depth > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "newton") {
+                let x = 2.5; 
+                let lastVal = x;
+                iterations.push({ iter: 1, error: Math.abs(x - refVal) });
+                for (let i = 1; i <= maxIter; i++) {
+                    let fx = Math.log(x) - 1.0;
+                    let dfx = 1.0 / x;
+                    let nextX = x - (fx / dfx);
+                    let diff = Math.abs(nextX - x);
+                    let err = Math.abs(nextX - refVal);
+                    iterations.push({ iter: i + 1, error: err });
+                    x = nextX;
+                    if (diff < tol) break;
+                }
+                approx = x;
+            }
+        } else { 
+            if (method === "leibniz") {
+                let sum = 0.0;
+                let lastVal = 0.0;
+                for (let k = 0; k < maxIter; k++) {
+                    let term = (k % 2 === 0 ? 1.0 : -1.0) / (2 * k + 1);
+                    sum += term;
+                    let val = 4.0 * sum;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    if (k === 0 || k === maxIter - 1 || k % Math.ceil(maxIter / 500) === 0 || diff < tol) {
+                        iterations.push({ iter: k + 1, error: err });
+                    }
+                    lastVal = val;
+                    if (k > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "nilakantha") {
+                let val = 3.0;
+                let lastVal = val;
+                let signo = 1.0;
+                let n = 2;
+                iterations.push({ iter: 1, error: Math.abs(val - refVal) });
+                for (let i = 1; i <= maxIter; i++) {
+                    let term = 4.0 / (n * (n + 1) * (n + 2));
+                    val += signo * term;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: i + 1, error: err });
+                    lastVal = val;
+                    signo *= -1.0;
+                    n += 2;
+                    if (diff < tol) break;
+                }
+                approx = val;
+            } else if (method === "archimedes") {
+                let lados = 6;
+                let s = 1.0;
+                let lastVal = 0.0;
+                let val = 3.0;
+                for (let i = 1; i <= Math.min(maxIter, 30); i++) { 
+                    if (i > 1) {
+                        s = Math.sqrt(2.0 - Math.sqrt(4.0 - s * s));
+                        lados *= 2;
+                        val = (lados / 2) * s;
+                    }
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: i, error: err });
+                    lastVal = val;
+                    if (i > 1 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "ramanujan") {
+                let sum = 0.0;
+                let lastVal = 0.0;
+                for (let k = 0; k <= Math.min(maxIter, 8); k++) { 
+                    let termNum = fact(4 * k) * (1103 + 26390 * k);
+                    let termDen = Math.pow(fact(k), 4) * Math.pow(396, 4 * k);
+                    sum += termNum / termDen;
+                    let invPi = (2.0 * Math.sqrt(2.0) / 9801.0) * sum;
+                    let val = 1.0 / invPi;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: k + 1, error: err });
+                    lastVal = val;
+                    if (k > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            } else if (method === "chudnovsky") {
+                let sum = 0.0;
+                let lastVal = 0.0;
+                const constante = 426880 * Math.sqrt(10005);
+                for (let k = 0; k <= Math.min(maxIter, 6); k++) {
+                    let termNum = (k % 2 === 0 ? 1.0 : -1.0) * fact(6 * k) * (13591409 + 545140134 * k);
+                    let termDen = fact(3 * k) * Math.pow(fact(k), 3) * Math.pow(640320, 3 * k);
+                    sum += termNum / termDen;
+                    let val = constante / sum;
+                    let diff = Math.abs(val - lastVal);
+                    let err = Math.abs(val - refVal);
+                    iterations.push({ iter: k + 1, error: err });
+                    lastVal = val;
+                    if (k > 0 && diff < tol) break;
+                }
+                approx = lastVal;
+            }
+        }
+
+        const endTime = performance.now();
+        const elapsed = (endTime - startTime) / 1000;
+        return {
+            methodName: getMethodDisplayName(type, method),
+            approx: approx,
+            iters: iterations.length > 0 ? iterations[iterations.length - 1].iter : 0,
+            error: Math.abs(approx - refVal),
+            time: elapsed,
+            iterations: iterations
+        };
+    }
+
+    function getMethodDisplayName(type, method) {
+        const list = type === "e" ? eulerMethods : piMethods;
+        const found = list.find(m => m.value === method);
+        return found ? found.name : method;
+    }
+
+    function countCorrectDecimals(approx, refVal) {
+        const approxStr = approx.toFixed(15).split(".")[1] || "";
+        const refStr = refVal.toFixed(15).split(".")[1] || "";
+        let count = 0;
+        for (let i = 0; i < Math.min(approxStr.length, refStr.length); i++) {
+            if (approxStr[i] === refStr[i]) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count;
+    }
+
+    function plotConstantsComparison(results) {
+        const colors = ['#10b981', '#f59e0b', '#06b6d4', '#8b5cf6', '#ef4444'];
+        const traces = results.map((res, index) => {
+            return {
+                x: res.iterations.map(it => it.iter),
+                y: res.iterations.map(it => Math.max(it.error, 1e-16)),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: res.methodName,
+                line: { color: colors[index % colors.length], width: 2 },
+                marker: { size: 4 }
+            };
+        });
+
+        let layout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#94a3b8', family: 'Outfit, sans-serif' },
+            margin: { t: 30, b: 40, l: 60, r: 20 },
+            xaxis: { 
+                gridcolor: 'rgba(255, 255, 255, 0.05)',
+                title: 'Iteraciones'
+            },
+            yaxis: { 
+                gridcolor: 'rgba(255, 255, 255, 0.05)',
+                type: 'log',
+                title: 'Error Absoluto (Log)'
+            },
+            showlegend: true
+        };
+
+        Plotly.newPlot('plot-constants-compare', traces, layout, { responsive: true, displayModeBar: false });
     }
 
     function evaluateEulerContinuedFraction(depth) {
@@ -2301,7 +3462,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function plotConstantConvergence(iterations) {
         let traceError = {
             x: iterations.map(it => it.iter),
-            y: iterations.map(it => it.error + 1e-30),
+            y: iterations.map(it => Math.max(it.error, 1e-16)),
             type: 'scatter', mode: 'lines+markers',
             name: 'Error Absoluto',
             line: { color: '#06b6d4', width: 2 },
@@ -2341,14 +3502,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const type = shapeSelect.value;
         const cmap = shapeColorSelect.value;
         let traces = [];
+        const alertEl = document.getElementById("shapes-3d-alert");
+        const alertDescEl = document.getElementById("shapes-3d-alert-desc");
+
+        function showAlert(message) {
+            if (alertEl && alertDescEl) {
+                alertDescEl.textContent = message;
+                alertEl.style.display = "flex";
+            }
+        }
+
+        if (alertEl) {
+            alertEl.style.display = "none";
+        }
 
         if (type === "line") {
-            const x0 = parseFloat(document.getElementById("line-x0").value);
-            const y0 = parseFloat(document.getElementById("line-y0").value);
-            const z0 = parseFloat(document.getElementById("line-z0").value);
-            const vx = parseFloat(document.getElementById("line-vx").value);
-            const vy = parseFloat(document.getElementById("line-vy").value);
-            const vz = parseFloat(document.getElementById("line-vz").value);
+            const x0 = parseFloat(document.getElementById("line-x0").value) || 0;
+            const y0 = parseFloat(document.getElementById("line-y0").value) || 0;
+            const z0 = parseFloat(document.getElementById("line-z0").value) || 0;
+            const vx = parseFloat(document.getElementById("line-vx").value) || 0;
+            const vy = parseFloat(document.getElementById("line-vy").value) || 0;
+            const vz = parseFloat(document.getElementById("line-vz").value) || 0;
+
+            if (vx === 0 && vy === 0 && vz === 0) {
+                showAlert("El vector director V (vx, vy, vz) no puede ser nulo (0, 0, 0). Debe tener al menos una componente distinta de cero.");
+                return;
+            }
 
             let xPlot = [];
             let yPlot = [];
@@ -2368,10 +3547,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Recta 3D'
             });
         } else if (type === "sphere") {
-            const xc = parseFloat(document.getElementById("sphere-xc").value);
-            const yc = parseFloat(document.getElementById("sphere-yc").value);
-            const zc = parseFloat(document.getElementById("sphere-zc").value);
-            const r = parseFloat(document.getElementById("sphere-r").value);
+            const xc = parseFloat(document.getElementById("sphere-xc").value) || 0;
+            const yc = parseFloat(document.getElementById("sphere-yc").value) || 0;
+            const zc = parseFloat(document.getElementById("sphere-zc").value) || 0;
+            const r = parseFloat(document.getElementById("sphere-r").value) || 0;
+
+            if (r <= 0) {
+                showAlert("El radio (R) de la esfera debe ser mayor que cero.");
+                return;
+            }
 
             let theta = [];
             let phi = [];
@@ -2406,10 +3590,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Esfera'
             });
         } else if (type === "cylinder") {
-            const xc = parseFloat(document.getElementById("cyl-xc").value);
-            const yc = parseFloat(document.getElementById("cyl-yc").value);
-            const r = parseFloat(document.getElementById("cyl-r").value);
-            const h = parseFloat(document.getElementById("cyl-h").value);
+            const xc = parseFloat(document.getElementById("cyl-xc").value) || 0;
+            const yc = parseFloat(document.getElementById("cyl-yc").value) || 0;
+            const zc = parseFloat(document.getElementById("cyl-zc").value) || 0;
+            const r = parseFloat(document.getElementById("cyl-r").value) || 0;
+            const h = parseFloat(document.getElementById("cyl-h").value) || 0;
+
+            if (r <= 0 || h <= 0) {
+                showAlert("El radio (R) y la altura (H) del cilindro deben ser mayores que cero.");
+                return;
+            }
 
             let theta = [];
             for (let i = 0; i <= 30; i++) {
@@ -2421,7 +3611,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let zCyl = [];
 
             for (let i = 0; i <= 10; i++) {
-                let zVal = (i * h) / 10;
+                let zVal = zc + (i * h) / 10;
                 let xRow = [];
                 let yRow = [];
                 let zRow = [];
@@ -2443,10 +3633,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Cilindro'
             });
         } else if (type === "cone") {
-            const xc = parseFloat(document.getElementById("cone-xc").value);
-            const yc = parseFloat(document.getElementById("cone-yc").value);
-            const r = parseFloat(document.getElementById("cone-r").value);
-            const h = parseFloat(document.getElementById("cone-h").value);
+            const xc = parseFloat(document.getElementById("cone-xc").value) || 0;
+            const yc = parseFloat(document.getElementById("cone-yc").value) || 0;
+            const zc = parseFloat(document.getElementById("cone-zc").value) || 0;
+            const r = parseFloat(document.getElementById("cone-r").value) || 0;
+            const h = parseFloat(document.getElementById("cone-h").value) || 0;
+
+            if (r <= 0 || h <= 0) {
+                showAlert("El radio (R) y la altura (H) del cono deben ser mayores que cero.");
+                return;
+            }
 
             let theta = [];
             for (let i = 0; i <= 30; i++) {
@@ -2458,8 +3654,9 @@ document.addEventListener("DOMContentLoaded", () => {
             let zCone = [];
 
             for (let i = 0; i <= 10; i++) {
-                let zVal = (i * h) / 10;
-                let currentR = (1.0 - zVal / h) * r;
+                let zOffset = (i * h) / 10;
+                let zVal = zc + zOffset;
+                let currentR = (1.0 - zOffset / h) * r;
                 let xRow = [];
                 let yRow = [];
                 let zRow = [];
@@ -2481,14 +3678,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: 'Cono'
             });
         } else if (type === "paraboloid") {
-            const a = parseFloat(document.getElementById("para-a").value);
-            const b = parseFloat(document.getElementById("para-b").value);
+            const a = parseFloat(document.getElementById("para-a").value) || 0;
+            const b = parseFloat(document.getElementById("para-b").value) || 0;
+            const c = parseFloat(document.getElementById("para-c").value) || 0;
+
+            if (a === 0 || b === 0) {
+                showAlert("Los coeficientes 'a' y 'b' del paraboloide deben ser distintos de cero (a ≠ 0, b ≠ 0) para evitar división por cero.");
+                return;
+            }
 
             let xVal = [];
             let yVal = [];
             for (let i = -15; i <= 15; i++) {
-                xVal.push(i * 2.0 / 15.0);
-                yVal.push(i * 2.0 / 15.0);
+                xVal.push(i * Math.abs(a) / 15.0);
+                yVal.push(i * Math.abs(b) / 15.0);
             }
 
             let xPara = [];
@@ -2502,7 +3705,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 for (let j = 0; j < yVal.length; j++) {
                     xRow.push(xVal[i]);
                     yRow.push(yVal[j]);
-                    zRow.push(Math.pow(xVal[i], 2) / Math.pow(a, 2) + Math.pow(yVal[j], 2) / Math.pow(b, 2));
+                    zRow.push(c * (Math.pow(xVal[i], 2) / Math.pow(a, 2) + Math.pow(yVal[j], 2) / Math.pow(b, 2)));
                 }
                 xPara.push(xRow);
                 yPara.push(yRow);

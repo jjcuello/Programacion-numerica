@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Script de Bloqueo Inmediato (Control de Acceso) -->
+    <script>
+        (function() {
+            const sessionStr = localStorage.getItem("user_session");
+            if (!sessionStr) {
+                window.location.href = "../index.html";
+                return;
+            }
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.role !== "admin") {
+                    window.location.href = "../index.html";
+                }
+            } catch(e) {
+                localStorage.removeItem("user_session");
+                window.location.href = "../index.html";
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Módulo Administrativo - Métodos Numéricos</title>
@@ -44,11 +63,7 @@
             <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
             <span class="logo-text">Métodos Numéricos</span>
         </a>
-        <nav class="main-nav">
-            <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
-            <a href="estudiante.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
-            <a href="profesor.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
-        </nav>
+        <nav class="main-nav"></nav>
     </header>
 
     <!-- Contenido Principal -->
@@ -92,15 +107,6 @@
                         </div>
                     </div>
 
-                    <!-- Modo de ejecución del backend -->
-                    <div class="form-group">
-                        <label class="form-label">Modo de Ejecución del Backend</label>
-                        <select class="form-control">
-                            <option>Producción (Motor Python Desacoplado)</option>
-                            <option>Desarrollo (Logs de Depuración Activos)</option>
-                            <option selected>Modo Híbrido (Mock / API Auto-detect)</option>
-                        </select>
-                    </div>
 
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
                         <i class="fa-solid fa-floppy-disk"></i> Guardar Configuración
@@ -161,5 +167,7 @@
         <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Métodos Numéricos</p>
     </footer>
 
+    <!-- Script de Autenticación -->
+    <script src="../assets/js/auth-ui.js"></script>
 </body>
 </html>

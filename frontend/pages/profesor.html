@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Script de Bloqueo Inmediato (Control de Acceso) -->
+    <script>
+        (function() {
+            const sessionStr = localStorage.getItem("user_session");
+            if (!sessionStr) {
+                window.location.href = "../index.html";
+                return;
+            }
+            try {
+                const session = JSON.parse(sessionStr);
+                if (session.role !== "profesor") {
+                    window.location.href = "../index.html";
+                }
+            } catch(e) {
+                localStorage.removeItem("user_session");
+                window.location.href = "../index.html";
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Módulo del Profesor - Métodos Numéricos</title>
@@ -122,11 +141,7 @@
             <span class="logo-icon"><i class="fa-solid fa-calculator"></i></span>
             <span class="logo-text">Métodos Numéricos</span>
         </a>
-        <nav class="main-nav">
-            <a href="../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Inicio</a>
-            <a href="estudiante.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Estudiante</a>
-            <a href="profesor.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> Profesor</a>
-        </nav>
+        <nav class="main-nav"></nav>
     </header>
 
     <!-- Contenido Principal -->
@@ -330,11 +345,8 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-                    <button type="button" id="btn-export-exam" class="btn btn-secondary" style="flex: 1;">
-                        <i class="fa-solid fa-file-export"></i> Exportar JSON
-                    </button>
-                    <button type="button" id="btn-generate-key" class="btn btn-primary" style="flex: 1;">
+                <div style="margin-top: 1rem;">
+                    <button type="button" id="btn-generate-key" class="btn btn-primary" style="width: 100%;">
                         <i class="fa-solid fa-key"></i> Generar Código de Clase
                     </button>
                 </div>
@@ -343,6 +355,63 @@
                 <div id="class-code-output" style="display: none; background-color: var(--success-bg); border: 1px dashed var(--success); color: var(--success); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center; font-weight: 600; font-family: 'Fira Code', monospace; font-size: 1.1rem; margin-top: 0.5rem;">
                     CODIGO-CLASE: NUM-2026-X8
                 </div>
+            </div>
+        </div>
+
+        <!-- Sección de Analíticas Generales (Dashboard) -->
+        <div id="dashboard-general" style="margin-top: 3rem; margin-bottom: 2rem; border-top: 1px solid var(--border-color); padding-top: 2.5rem;">
+            <h2><i class="fa-solid fa-table-columns" style="color: var(--primary);"></i> Panel de Analíticas Generales</h2>
+            <p class="text-secondary" style="font-size: 0.95rem; margin-bottom: 2rem;">Resumen consolidado de uso institucional y estadísticas de convergencia global.</p>
+        </div>
+
+        <!-- Fila de Estadísticas Rápidas -->
+        <div class="stats-grid">
+            <!-- Card 1 -->
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <h4>Usuarios Activos</h4>
+                    <p>42</p>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--accent);"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="stat-info">
+                    <h4>Simulaciones</h4>
+                    <p>284</p>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--success);"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <h4>Tasa de Éxito</h4>
+                    <p>89.3%</p>
+                </div>
+            </div>
+            <!-- Card 4 -->
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--warning);"><i class="fa-solid fa-clock"></i></div>
+                <div class="stat-info">
+                    <h4>Exámenes Listos</h4>
+                    <p>14</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Gráficos -->
+        <div class="grid-2" style="margin-bottom: 2rem;">
+            <!-- Gráfica de Línea de Uso -->
+            <div class="card">
+                <h3><i class="fa-solid fa-chart-area"></i> Actividad del Sistema (Últimos 7 días)</h3>
+                <div id="chart-activity" style="width: 100%; height: 300px; margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Gráfica de Distribución de Métodos -->
+            <div class="card">
+                <h3><i class="fa-solid fa-chart-pie"></i> Distribución de Métodos Consultados</h3>
+                <div id="chart-distribution" style="width: 100%; height: 300px; margin-top: 1rem;"></div>
             </div>
         </div>
     </main>
@@ -358,6 +427,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <!-- Script Principal Profesor -->
     <script src="../assets/js/profesor.js"></script>
-
+    <!-- Script de Autenticación -->
+    <script src="../assets/js/auth-ui.js"></script>
 </body>
 </html>
