@@ -97,7 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     examTemplate.addEventListener("change", updateExamTemplateUI);
     btnGenerateKey.addEventListener("click", generateClassCode);
-    btnExportExam.addEventListener("click", exportExamConfiguration);
+    if (btnExportExam) {
+        btnExportExam.addEventListener("click", exportExamConfiguration);
+    }
 
     // Sliders Proporcionales
     [sliderEasyProf, sliderMediumProf, sliderHardProf].forEach(slider => {
