@@ -1,52 +1,65 @@
 # Resumen ejecutivo para profesor
 
-Fecha de emision: 2026-06-16
+Fecha de emision: 2026-06-19
 Fase: 02_Analisis
-Proposito: presentar de forma breve el enfoque de entrevistas a docentes, los ajustes realizados al instrumento y el valor esperado para la siguiente fase del proyecto.
+Proposito: presentar de manera formal los hallazgos derivados de las entrevistas a docentes, su traduccion a decisiones de producto y las condiciones recomendadas para avanzar a la fase de diseno.
 
-## 1. Que se ajusto
+## 1. Sintesis ejecutiva
 
-Se simplifico el instrumento de levantamiento para hacerlo mas viable en esta fase de la materia.
+Durante la fase `02_Analisis` se realizaron 3 entrevistas a docentes vinculados a la ensenanza de matematicas y areas afines. La evidencia recogida confirma que existe una necesidad real de una herramienta de apoyo para metodos numericos, siempre que esta no se limite a producir resultados finales, sino que permita mostrar proceso, trazabilidad, error y seguimiento del aprendizaje.
 
-Cambios principales:
-- El guion paso de una version extensa a una version de 12 preguntas.
-- Se elimino el bloque inicial de contexto amplio por aportar poco a la toma de decisiones.
-- Se priorizaron preguntas sobre dolor docente, evidencia faltante, adopcion y funcionalidades minimas.
-- La plantilla de campo y la matriz de consolidacion fueron alineadas con ese mismo enfoque.
+La conclusion principal es que el valor pedagogico esperado por los docentes no depende solo de la capacidad de calculo, sino de la posibilidad de convertir la ejecucion numerica en evidencia interpretable para ensenanza, evaluacion y acompanamiento del estudiante.
 
-## 2. Como queda la entrevista
+## 2. Hallazgos principales
 
-Duracion sugerida: 20 a 25 minutos.
+De la consolidacion de entrevistas se desprenden los siguientes patrones:
 
-Estructura:
-- Bloque A. Problema docente actual.
-- Bloque B. Validacion de la solucion.
-- Bloque C. Adopcion y prioridad.
+- Los estudiantes presentan dificultades recurrentes para interpretar problemas, comprender procesos y justificar resultados.
+- Los docentes necesitan mayor trazabilidad del trabajo del estudiante, no solo del resultado final.
+- Existe demanda de reportes y salidas exportables que apoyen correccion, revision y seguimiento individual o grupal.
+- La explicacion de convergencia, error, procedimiento y comportamiento grafico sigue siendo un punto critico en clase.
+- Las visualizaciones y el paso a paso son percibidos como recursos de alto valor didactico.
 
-Resultados esperados por entrevista:
-- Un dolor principal claramente identificado.
-- Una evidencia que hoy falta para evaluar mejor al estudiante.
-- Un escenario de uso inmediato en clase.
-- Tres prioridades para un piloto.
-- Una barrera de adopcion a mitigar.
+## 3. Condiciones de adopcion docente
 
-## 3. Para que sirve esta fase
+Las entrevistas indican que la adopcion de la herramienta dependera de varias condiciones minimas:
 
-El objetivo no es levantar opiniones generales, sino producir insumos concretos para la fase de diseno.
+- La interfaz debe ser clara, intuitiva y facil de utilizar en contextos reales de clase.
+- Los resultados deben transmitir confianza tecnica y permitir su validacion por parte del docente.
+- La inteligencia artificial, en caso de emplearse, debe apoyar el analisis y la organizacion, pero no sustituir el razonamiento del estudiante.
+- La herramienta debe adaptarse a distintos momentos de uso pedagogico: introduccion, acompanamiento del proceso o cierre de clase.
 
-Con esta version resumida se busca:
-- Reducir tiempo de aplicacion.
-- Mejorar la calidad de las respuestas.
-- Facilitar la comparacion entre entrevistas.
-- Convertir hallazgos en backlog priorizado con mayor rapidez.
+## 4. Prioridades recomendadas para el piloto
 
-## 4. Artefactos resultantes
+Con base en la frecuencia y el impacto de los hallazgos, se recomienda priorizar para el piloto institucional las siguientes capacidades:
 
-Los tres documentos de trabajo quedan organizados asi:
-- Propuesta de entrevistas: define enfoque, guion y criterios de conduccion.
-- Plantilla operativa: sirve para aplicar la entrevista en campo.
-- Matriz de analisis: consolida hallazgos y los conecta con decisiones tecnicas.
+Prioridad inmediata:
+- Historial de sesiones y seguimiento por estudiante.
+- Reportes exportables para evaluacion individual y grupal.
+- Alertas de convergencia, oscilacion y parametros invalidos.
 
-## 5. Cierre
+Prioridad de corto plazo:
+- Comparador de metodos con salida paso a paso.
+- Graficas 2D/3D orientadas a explicacion docente.
 
-La recomendacion para esta fase es trabajar con un instrumento breve, directo y comparable. Esto mejora la trazabilidad del analisis y deja una base mas clara para justificar prioridades funcionales en la siguiente fase del proyecto.
+Elementos que no se recomiendan como foco inicial:
+- Automatizacion total de resolucion o redaccion mediante IA.
+- Integraciones institucionales complejas en esta etapa.
+
+## 5. Documentos cerrados y documentos de referencia
+
+Como resultado de esta fase, los documentos que deben considerarse formalmente completados con evidencia son:
+
+- La matriz de analisis de respuestas docentes, por ser el artefacto central de consolidacion, priorizacion y traduccion tecnica.
+- El presente resumen ejecutivo, por su funcion de comunicacion academica y de cierre parcial de fase.
+
+En cambio, los siguientes documentos deben mantenerse como instrumentos metodologicos y no como entregables de resultados:
+
+- La propuesta de entrevistas a docentes, porque define el enfoque general de la fase.
+- La plantilla operativa de entrevista, porque sirve para futuras aplicaciones o ampliacion de muestra.
+
+## 6. Recomendacion de cierre de fase
+
+La evidencia obtenida permite avanzar a `03_Diseño` con una base suficientemente clara para definir backlog tecnico, criterios de aceptacion y prioridades de implementacion. No obstante, se recomienda validar esta lectura con al menos un docente adicional o con la coordinacion academica antes de declarar el cierre total de la fase.
+
+En terminos de producto, la recomendacion es concentrar el siguiente esfuerzo en seguimiento, reportabilidad, explicacion del proceso numerico y confiabilidad de resultados. Estas capacidades representan el nucleo minimo con mayor probabilidad de adopcion y utilidad real en el entorno docente.

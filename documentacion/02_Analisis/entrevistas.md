@@ -47,7 +47,7 @@
 
 ### Perfil
 
-- Nombre: xxxxxxxxxxx.
+- Nombre: Profe 2.
 - Rol: profesor de la carrera de arquitectura.
 
 ### Problemas y contenido observados
@@ -98,7 +98,7 @@
 
 ### Perfil
 
-- Nombre: xxxxxxxxxxx.
+- Nombre: Yuwer Lugo.
 - Rol: profesor de matemáticas.
 
 ### Dificultades detectadas en el aprendizaje
