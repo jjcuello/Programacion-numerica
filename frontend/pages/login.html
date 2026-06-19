@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        (function() {
+            const activeSession = localStorage.getItem("user_session");
+            if (activeSession) {
+                try {
+                    const sessionObj = JSON.parse(activeSession);
+                    if (sessionObj.role === "estudiante") window.location.href = "estudiante.html";
+                    else if (sessionObj.role === "profesor") window.location.href = "profesor.html";
+                    else if (sessionObj.role === "admin") window.location.href = "admin.html";
+                } catch(e) {
+                    localStorage.removeItem("user_session");
+                }
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Métodos Numéricos</title>
@@ -80,18 +95,6 @@
             const errorAlert = document.getElementById("login-error-alert");
             const errorText = document.getElementById("login-error-text");
 
-            // Redirigir si ya tiene sesión iniciada
-            const activeSession = localStorage.getItem("user_session");
-            if (activeSession) {
-                try {
-                    const sessionObj = JSON.parse(activeSession);
-                    if (sessionObj.role === "estudiante") window.location.href = "estudiante.html";
-                    else if (sessionObj.role === "profesor") window.location.href = "profesor.html";
-                    else if (sessionObj.role === "admin") window.location.href = "admin.html";
-                } catch(e) {
-                    localStorage.removeItem("user_session");
-                }
-            }
 
             // Credenciales precargadas en local (Mock de base de datos)
             const mockUsers = {

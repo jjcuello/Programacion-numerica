@@ -205,6 +205,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function evaluateFunction(expr, x) {
         let formatted = expr.toLowerCase()
             .replace(/\s+/g, "")
+            // Multiplicación implícita
+            .replace(/(\d)(x)/g, "$1*$2")
+            .replace(/(\d)(\bpi\b|\be\b)/g, "$1*$2")
+            .replace(/(\d)\(/g, "$1*(")
+            .replace(/(x)\(/g, "$1*(")
+            .replace(/\)(x)/g, ")*$1")
+            .replace(/\)\(/g, ")*(")
             .replace(/sin\(/g, "Math.sin(")
             .replace(/cos\(/g, "Math.cos(")
             .replace(/tan\(/g, "Math.tan(")
@@ -914,10 +921,13 @@ document.addEventListener("DOMContentLoaded", () => {
             showlegend: true
         };
 
-        Plotly.newPlot('plot-container-prof', traces, layout, { responsive: true, displayModeBar: false });
+        if (document.getElementById('plot-container-prof')) {
+            Plotly.newPlot('plot-container-prof', traces, layout, { responsive: true, displayModeBar: false });
+        }
     }
 
     function renderEmptyPlot() {
+        if (!document.getElementById('plot-container-prof')) return;
         let trace = {
             x: [-5, 5], y: [-5, 5],
             type: 'scatter', mode: 'lines',
@@ -934,6 +944,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Gráfico de Radar: Desempeño General del Grupo (Muestra Analítica Docente)
     function renderRadarChartClass() {
+        if (!document.getElementById('radar-chart-prof')) return;
         let data = [{
             type: 'scatterpolar',
             r: [82, 75, 58, 67, 89],

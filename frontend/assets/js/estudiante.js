@@ -823,6 +823,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Sanitizar y parsear términos habituales
         let formatted = expr.toLowerCase()
             .replace(/\s+/g, "")
+            // Multiplicación implícita
+            .replace(/(\d)(x)/g, "$1*$2")
+            .replace(/(\d)(\bpi\b|\be\b)/g, "$1*$2")
+            .replace(/(\d)\(/g, "$1*(")
+            .replace(/(x)\(/g, "$1*(")
+            .replace(/\)(x)/g, ")*$1")
+            .replace(/\)\(/g, ")*(")
             .replace(/sin\(/g, "Math.sin(")
             .replace(/cos\(/g, "Math.cos(")
             .replace(/tan\(/g, "Math.tan(")
