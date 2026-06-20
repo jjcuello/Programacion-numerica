@@ -14,15 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const homeUrl = isPagesDir ? "../index.html" : "index.html";
 
     // Leer la sesión activa
-    const activeSessionStr = localStorage.getItem("user_session");
-    let session = null;
-    if (activeSessionStr) {
-        try {
-            session = JSON.parse(activeSessionStr);
-        } catch(e) {
-            localStorage.removeItem("user_session");
-        }
-    }
+    const session = window.PlatformApi ? window.PlatformApi.getSession() : null;
 
     // Ajustar enlaces del CTA en la página principal según el estado de la sesión
     if (!isPagesDir) {
@@ -104,7 +96,11 @@ document.addEventListener("DOMContentLoaded", () => {
             logoutBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                localStorage.removeItem("user_session");
+                if (window.PlatformApi) {
+                    window.PlatformApi.clearSession();
+                } else {
+                    localStorage.removeItem("user_session");
+                }
                 window.location.href = homeUrl;
             });
         }

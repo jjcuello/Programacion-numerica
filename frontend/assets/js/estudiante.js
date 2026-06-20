@@ -5,6 +5,11 @@
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+    const ROOTS_API_BASE_URL = window.PlatformApi ? window.PlatformApi.getApiBaseUrl() : "http://127.0.0.1:8000";
+    const activeSession = window.PlatformApi ? window.PlatformApi.getSession() : null;
+    const studentToken = activeSession ? activeSession.token : null;
+    let activeAssignmentContext = JSON.parse(localStorage.getItem("active_assignment_context") || "null");
+
     // --- ESTADO GLOBAL DEL SIMULADOR Y TUTOR ---
     let history = JSON.parse(localStorage.getItem("simulations_history")) || [];
     let currentQuizQuestions = [];
@@ -384,8 +389,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cargar examen por código de clase
     if (loadClassCodeBtn && classCodeInput && classCodeAlert) {
-        loadClassCodeBtn.addEventListener("click", () => {
-            const code = classCodeInput.value.trim().toUpperCase();
+        loadClassCodeBtn.addEventListener("click", async () => {
+            const code = classCodeInput.value.trim();
             classCodeAlert.style.display = "none";
             classCodeAlert.className = ""; // Limpiar clases previas
             
@@ -398,92 +403,61 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             
-            const match = code.match(/^NUM-2026-E(\d+)(T|P|M)-M(\d+)(T|P|M)-D(\d+)(T|P|M)$/);
+            const match = code.match(/^CLS:([a-f0-9\-]+):([a-f0-9\-]+)$/i);
             if (!match) {
-                classCodeAlert.textContent = "Código inválido. Formato correcto: NUM-2026-E[F][Modo]-M[M][Modo]-D[D][Modo] (Ej: NUM-2026-E4T-M4P-D2T).";
+                classCodeAlert.textContent = "Código inválido. Formato esperado: CLS:<section_id>:<assignment_id>.";
                 classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
                 classCodeAlert.style.color = "#ef4444";
                 classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
                 classCodeAlert.style.display = "block";
                 return;
             }
-            
-            const nEasy = parseInt(match[1]);
-            const modeEasyChar = match[2];
-            const nMed = parseInt(match[3]);
-            const modeMedChar = match[4];
-            const nHard = parseInt(match[5]);
-            const modeHardChar = match[6];
-            
-            const totalQuestions = nEasy + nMed + nHard;
-            if (totalQuestions === 0) {
-                classCodeAlert.textContent = "El código de clase especifica 0 preguntas en total.";
+
+            if (!window.PlatformApi || !studentToken) {
+                classCodeAlert.textContent = "Debes iniciar sesión como estudiante para cargar una clase.";
                 classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
                 classCodeAlert.style.color = "#ef4444";
                 classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
                 classCodeAlert.style.display = "block";
                 return;
             }
-            
-            if (totalQuestions < 3 || totalQuestions > 30) {
-                classCodeAlert.textContent = `El total de preguntas del código (${totalQuestions}) debe estar entre 3 y 30.`;
+
+            try {
+                const sectionId = match[1];
+                const assignmentId = match[2];
+                await window.PlatformApi.enroll({ section_id: sectionId }, studentToken);
+                const detail = await window.PlatformApi.getAssignment(assignmentId, studentToken);
+                const assignment = detail.assignment;
+
+                activeAssignmentContext = {
+                    sectionId,
+                    assignmentId,
+                    title: assignment.title,
+                    definition: assignment.definition
+                };
+                localStorage.setItem("active_assignment_context", JSON.stringify(activeAssignmentContext));
+
+                if (assignment.definition && assignment.definition.expression) {
+                    expressionInput.value = assignment.definition.expression;
+                    renderMathPreview();
+                }
+                if (Array.isArray(assignment.definition.allowed_methods) && assignment.definition.allowed_methods.length > 0) {
+                    methodSelect.value = assignment.definition.allowed_methods[0];
+                    methodSelect.dispatchEvent(new Event("change"));
+                }
+
+                classCodeAlert.textContent = `¡Clase cargada! Asignación activa: ${assignment.title}. Tus resoluciones quedarán registradas.`;
+                classCodeAlert.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+                classCodeAlert.style.color = "#10b981";
+                classCodeAlert.style.border = "1px solid rgba(16, 185, 129, 0.2)";
+                classCodeAlert.style.display = "block";
+            } catch (error) {
+                classCodeAlert.textContent = error instanceof Error ? error.message : "No se pudo cargar el código de clase.";
                 classCodeAlert.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
                 classCodeAlert.style.color = "#ef4444";
                 classCodeAlert.style.border = "1px solid rgba(239, 68, 68, 0.2)";
                 classCodeAlert.style.display = "block";
-                return;
             }
-            
-            // Configurar total de preguntas
-            quizTotalQuestionsInput.value = totalQuestions;
-            
-            // Configurar sliders de dificultad en porcentajes
-            easySlider.value = Math.round((nEasy / totalQuestions) * 100);
-            mediumSlider.value = Math.round((nMed / totalQuestions) * 100);
-            hardSlider.value = 100 - (parseInt(easySlider.value) + parseInt(mediumSlider.value));
-            
-            // Configurar modos
-            const modeMap = {
-                'T': 'theoretical',
-                'P': 'practical',
-                'M': 'mixed'
-            };
-            
-            const configModes = {
-                easy: modeMap[modeEasyChar],
-                medium: modeMap[modeMedChar],
-                hard: modeMap[modeHardChar]
-            };
-            
-            // Aplicar estados de botones
-            const difficulties = ['easy', 'medium', 'hard'];
-            difficulties.forEach(diff => {
-                const targetMode = configModes[diff];
-                quizModes[diff] = targetMode;
-                
-                // Actualizar interfaz visual para el modo seleccionado
-                document.querySelectorAll(`.mode-btn[data-difficulty="${diff}"]`).forEach(btn => {
-                    const btnMode = btn.getAttribute("data-mode");
-                    if (targetMode === 'mixed') {
-                        // En modo mixto, activamos ambos botones
-                        btn.classList.add("active");
-                    } else if (btnMode === targetMode) {
-                        btn.classList.add("active");
-                    } else {
-                        btn.classList.remove("active");
-                    }
-                });
-            });
-            
-            // Actualizar etiquetas visuales de los sliders
-            updateSliderLabels();
-            
-            // Mostrar éxito
-            classCodeAlert.textContent = `¡Código cargado con éxito! Total de preguntas: ${totalQuestions} (${nEasy} fáciles, ${nMed} medias, ${nHard} difíciles).`;
-            classCodeAlert.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
-            classCodeAlert.style.color = "#10b981";
-            classCodeAlert.style.border = "1px solid rgba(16, 185, 129, 0.2)";
-            classCodeAlert.style.display = "block";
         });
     }
 
@@ -872,7 +846,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 4. Correr Simulación Numérica
-    function runSimulation() {
+    async function postRootsJson(path, payload) {
+        if (window.PlatformApi) {
+            return window.PlatformApi.request(path, { method: "POST", body: payload, token: studentToken });
+        }
+
+        const response = await fetch(`${ROOTS_API_BASE_URL}${path}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = null;
+        }
+
+        if (!response.ok) {
+            const message = data && typeof data.error === "string"
+                ? data.error
+                : "No se pudo procesar la solicitud numérica.";
+            throw new Error(message);
+        }
+
+        return data;
+    }
+
+    async function solveRootsWithBackend({ method, expression, tolerance, maxIterations, interval, x0, x1, gExpression, assignmentId }) {
+        const payload = {
+            method,
+            expression,
+            tolerance,
+            max_iterations: maxIterations
+        };
+
+        if (Array.isArray(interval)) {
+            payload.interval = interval;
+        }
+        if (typeof x0 === "number" && !Number.isNaN(x0)) {
+            payload.x0 = x0;
+        }
+        if (typeof x1 === "number" && !Number.isNaN(x1)) {
+            payload.x1 = x1;
+        }
+        if (typeof gExpression === "string" && gExpression.trim()) {
+            payload.g_expression = gExpression.trim();
+        }
+        if (typeof assignmentId === "string" && assignmentId.trim()) {
+            payload.assignment_id = assignmentId.trim();
+        }
+
+        const data = await postRootsJson("/api/roots/solve", payload);
+        return data.result;
+    }
+
+    async function runSimulation() {
         const expression = expressionInput.value.trim();
         const method = methodSelect.value;
         const tol = parseFloat(toleranceInput.value);
@@ -882,21 +914,45 @@ document.addEventListener("DOMContentLoaded", () => {
         metricStatus.textContent = "Ejecutando...";
         metricStatus.className = "metric-card-value";
 
-        const startTime = performance.now();
         let result = null;
 
         try {
+            const assignmentId = activeAssignmentContext && activeAssignmentContext.assignmentId
+                ? activeAssignmentContext.assignmentId
+                : null;
             if (method === "bisection") {
                 const a = parseFloat(aInput.value);
                 const b = parseFloat(bInput.value);
-                result = runBisectionLocal(expression, a, b, tol, maxIter);
+                result = await solveRootsWithBackend({
+                    method,
+                    expression,
+                    tolerance: tol,
+                    maxIterations: maxIter,
+                    interval: [a, b],
+                    assignmentId
+                });
             } else if (method === "secant") {
                 const x0 = parseFloat(aInput.value);
                 const x1 = parseFloat(bInput.value);
-                result = runSecantLocal(expression, x0, x1, tol, maxIter);
+                result = await solveRootsWithBackend({
+                    method,
+                    expression,
+                    tolerance: tol,
+                    maxIterations: maxIter,
+                    x0,
+                    x1,
+                    assignmentId
+                });
             } else if (method === "newton") {
                 const x0 = parseFloat(x0Input.value);
-                result = runNewtonLocal(expression, x0, tol, maxIter);
+                result = await solveRootsWithBackend({
+                    method,
+                    expression,
+                    tolerance: tol,
+                    maxIterations: maxIter,
+                    x0,
+                    assignmentId
+                });
             } else if (method === "fixedpoint") {
                 const x0 = parseFloat(x0Input.value);
                 const exprG = document.getElementById("g-expression-input").value.trim();
@@ -922,10 +978,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Ignorar fallas de validación
                 }
 
-                result = runFixedPointLocal(exprG, expression, x0, tol, maxIter);
+                result = await solveRootsWithBackend({
+                    method,
+                    expression,
+                    tolerance: tol,
+                    maxIterations: maxIter,
+                    x0,
+                    gExpression: exprG,
+                    assignmentId
+                });
             }
-            const endTime = performance.now();
-            const elapsed = ((endTime - startTime) / 1000).toFixed(6);
 
             // Mostrar resultados
             if (result.status === "success") {
@@ -947,7 +1009,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             metricRoot.textContent = (result.root !== null && !isNaN(result.root)) ? result.root.toFixed(8) : "N/A";
             metricIter.textContent = result.iterations.length;
-            metricTime.textContent = elapsed;
+            metricTime.textContent = result.time || "0.000000";
 
             // Llenar tabla
             populateIterationsTable(result.iterations, method);
@@ -997,12 +1059,11 @@ document.addEventListener("DOMContentLoaded", () => {
             saveToHistory(expression, method, result.root, result.iterations.length, result.status);
 
         } catch (err) {
-            const endTime = performance.now();
             metricStatus.textContent = "error";
             metricStatus.className = "metric-card-value badge-danger";
             metricRoot.textContent = "N/A";
             metricIter.textContent = "-";
-            metricTime.textContent = ((endTime - startTime) / 1000).toFixed(6);
+            metricTime.textContent = "0.000000";
             
             // Limpiar tabla
             tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Ocurrió un error al evaluar la función.</td></tr>`;
@@ -1015,7 +1076,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alertIconSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>`;
             }
             alertTitle.textContent = "Error en la Simulación";
-            alertDescription.textContent = "Hubo un problema al evaluar la función. Asegúrate de ingresar una expresión matemática válida (ej. x^3 - 3*x o sin(x)).";
+            alertDescription.textContent = err instanceof Error ? err.message : "Hubo un problema al evaluar la función. Asegúrate de ingresar una expresión matemática válida (ej. x^3 - 3*x o sin(x)).";
             alertRecommendation.textContent = "Sugerencia: Revisa la sintaxis de la función y los valores de entrada.";
             didacticAlert.style.display = "flex";
             

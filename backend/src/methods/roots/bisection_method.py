@@ -46,6 +46,31 @@ class BisectionMethod(NumericalMethod):
                 status=ExecutionStatus.FAILED,
                 elapsed_seconds=time.perf_counter() - started_at,
                 message=f"No se pudo evaluar el intervalo inicial: {error}",
+                metadata={"ui_status": "singularidad"},
+            )
+
+        if abs(f_left) < problem.tolerance:
+            return MethodResult(
+                method_name=self.name,
+                problem_kind=problem.kind,
+                status=ExecutionStatus.SUCCESS,
+                solution=left,
+                residual=f_left,
+                elapsed_seconds=time.perf_counter() - started_at,
+                message="El extremo izquierdo ya es una raiz aproximada.",
+                metadata={"interval": (left, right), "ui_status": "success_endpoint_root"},
+            )
+
+        if abs(f_right) < problem.tolerance:
+            return MethodResult(
+                method_name=self.name,
+                problem_kind=problem.kind,
+                status=ExecutionStatus.SUCCESS,
+                solution=right,
+                residual=f_right,
+                elapsed_seconds=time.perf_counter() - started_at,
+                message="El extremo derecho ya es una raiz aproximada.",
+                metadata={"interval": (left, right), "ui_status": "success_endpoint_root"},
             )
 
         if f_left * f_right >= 0:
@@ -55,7 +80,12 @@ class BisectionMethod(NumericalMethod):
                 status=ExecutionStatus.FAILED,
                 elapsed_seconds=time.perf_counter() - started_at,
                 message="El intervalo [a, b] no presenta cambio de signo.",
-                metadata={"interval": (left, right), "f(a)": f_left, "f(b)": f_right},
+                metadata={
+                    "interval": (left, right),
+                    "f(a)": f_left,
+                    "f(b)": f_right,
+                    "ui_status": "bolzano_violation",
+                },
             )
 
         records: list[IterationRecord] = []
@@ -89,7 +119,7 @@ class BisectionMethod(NumericalMethod):
                     elapsed_seconds=time.perf_counter() - started_at,
                     records=records,
                     message="Metodo de biseccion convergio correctamente.",
-                    metadata={"interval": (problem.interval or (left, right))},
+                    metadata={"interval": (problem.interval or (left, right)), "ui_status": "success"},
                 )
 
             if f_left * residual < 0:
@@ -110,6 +140,7 @@ class BisectionMethod(NumericalMethod):
                     elapsed_seconds=time.perf_counter() - started_at,
                     records=records,
                     message="Se encontro un valor no finito durante la iteracion.",
+                    metadata={"ui_status": "singularidad"},
                 )
 
         return MethodResult(
@@ -122,4 +153,5 @@ class BisectionMethod(NumericalMethod):
             elapsed_seconds=time.perf_counter() - started_at,
             records=records,
             message="Se alcanzo el maximo de iteraciones sin converger.",
+            metadata={"ui_status": "max_iter"},
         )

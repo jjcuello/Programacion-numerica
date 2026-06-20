@@ -86,7 +86,7 @@
     <!-- Lógica de visualización del perfil -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const session = JSON.parse(localStorage.getItem("user_session"));
+            const session = window.PlatformApi ? window.PlatformApi.getSession() : JSON.parse(localStorage.getItem("user_session"));
             if (!session) {
                 window.location.href = "../index.html";
                 return;
@@ -136,11 +136,17 @@
 
             // Botón cerrar sesión
             logoutBtn.addEventListener("click", () => {
-                localStorage.removeItem("user_session");
+                if (window.PlatformApi) {
+                    window.PlatformApi.clearSession();
+                } else {
+                    localStorage.removeItem("user_session");
+                }
                 window.location.href = "../index.html";
             });
         });
     </script>
+    <script src="../assets/js/platform-config.js"></script>
+    <script src="../assets/js/platform-api.js"></script>
     <!-- Script de Autenticación Compartido -->
     <script src="../assets/js/auth-ui.js"></script>
 </body>

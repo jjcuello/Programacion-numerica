@@ -1,0 +1,1 @@
+window.NUMERICAL_API_BASE_URL = "https://programacionnumerica.fastapicloud.dev";

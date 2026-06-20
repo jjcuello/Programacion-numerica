@@ -3,23 +3,24 @@ from __future__ import annotations
 import math
 import time
 
-from src.core.expressions.parser import build_scalar_function_with_derivative
+from src.core.expressions.parser import build_scalar_function
 from src.core.models.problem import ProblemDefinition, ProblemKind
 from src.core.results.iteration import IterationRecord
 from src.core.results.method_result import ExecutionStatus, MethodResult
 from src.methods.base import NumericalMethod
 
 
-class NewtonMethod(NumericalMethod):
+class FixedPointMethod(NumericalMethod):
     @property
     def name(self) -> str:
-        return "newton_raphson"
+        return "fixedpoint"
 
     def supports(self, problem: ProblemDefinition) -> bool:
         return (
             problem.kind == ProblemKind.SCALAR_ROOT
-            and problem.expression is not None
             and len(problem.initial_guess) >= 1
+            and isinstance(problem.metadata.get("g_expression"), str)
+            and problem.metadata.get("g_expression", "").strip() != ""
         )
 
     def solve(self, problem: ProblemDefinition) -> MethodResult:
@@ -31,19 +32,22 @@ class NewtonMethod(NumericalMethod):
                 problem_kind=problem.kind,
                 status=ExecutionStatus.UNSUPPORTED,
                 elapsed_seconds=time.perf_counter() - started_at,
-                message="Newton-Raphson requiere una expresion escalar y un valor inicial x0.",
+                message="Punto fijo requiere x0 y una expresion g(x).",
                 metadata={"ui_status": "unsupported"},
             )
 
+        g_expression = str(problem.metadata.get("g_expression", "")).strip()
+
         try:
-            function, derivative = build_scalar_function_with_derivative(problem.expression or "")
+            function_g = build_scalar_function(g_expression)
+            function_f = build_scalar_function(problem.expression or "") if problem.expression else None
         except Exception as error:
             return MethodResult(
                 method_name=self.name,
                 problem_kind=problem.kind,
                 status=ExecutionStatus.FAILED,
                 elapsed_seconds=time.perf_counter() - started_at,
-                message=f"No se pudo construir la funcion derivable: {error}",
+                message=f"No se pudo construir la funcion de punto fijo: {error}",
                 metadata={"ui_status": "singularidad"},
             )
 
@@ -53,8 +57,8 @@ class NewtonMethod(NumericalMethod):
 
         for iteration in range(1, problem.max_iterations + 1):
             try:
-                fx = function(current)
-                dfx = derivative(current)
+                next_value = function_g(current)
+                residual = function_f(current) if function_f is not None else current - next_value
             except Exception as error:
                 return MethodResult(
                     method_name=self.name,
@@ -65,78 +69,64 @@ class NewtonMethod(NumericalMethod):
                     iteration_count=iteration - 1,
                     elapsed_seconds=time.perf_counter() - started_at,
                     records=records,
-                    message=f"No se pudo evaluar la funcion en la iteracion {iteration}: {error}",
+                    message=f"No se pudo evaluar la iteracion de punto fijo: {error}",
                     metadata={"ui_status": "singularidad"},
                 )
 
-            if not math.isfinite(fx) or not math.isfinite(dfx):
+            if not math.isfinite(next_value) or not math.isfinite(residual):
                 return MethodResult(
                     method_name=self.name,
                     problem_kind=problem.kind,
                     status=ExecutionStatus.FAILED,
                     solution=current,
-                    residual=fx,
+                    residual=residual,
                     iteration_count=iteration - 1,
                     elapsed_seconds=time.perf_counter() - started_at,
                     records=records,
-                    message="Se obtuvieron valores no finitos durante la iteracion.",
+                    message="Se obtuvo un valor no finito durante la iteracion.",
                     metadata={"ui_status": "singularidad"},
                 )
 
-            if dfx == 0:
-                return MethodResult(
-                    method_name=self.name,
-                    problem_kind=problem.kind,
-                    status=ExecutionStatus.FAILED,
-                    solution=current,
-                    residual=fx,
-                    iteration_count=iteration - 1,
-                    elapsed_seconds=time.perf_counter() - started_at,
-                    records=records,
-                    message="La derivada es cero en el punto actual.",
-                    metadata={"ui_status": "singularidad"},
-                )
-
-            next_value = current - (fx / dfx)
             delta = abs(next_value - current)
-            residual = fx
+            relative_error = delta / abs(next_value) if next_value != 0 else 0.0
             records.append(
                 IterationRecord(
                     iteration=iteration,
                     estimate=next_value,
-                    residual=fx,
-                    absolute_error=abs(fx),
+                    residual=residual,
+                    absolute_error=abs(residual),
+                    relative_error=relative_error,
                     delta=delta,
-                    metadata={"x(i)": current, "f'(x)": dfx},
+                    metadata={"x(i)": current},
                 )
             )
 
-            if abs(fx) < problem.tolerance or delta < problem.tolerance:
+            if delta < problem.tolerance or abs(residual) < problem.tolerance:
+                final_residual = function_f(next_value) if function_f is not None else next_value - function_g(next_value)
                 return MethodResult(
                     method_name=self.name,
                     problem_kind=problem.kind,
                     status=ExecutionStatus.SUCCESS,
                     solution=next_value,
-                    residual=function(next_value),
+                    residual=final_residual,
                     iteration_count=iteration,
                     elapsed_seconds=time.perf_counter() - started_at,
                     records=records,
-                    message="Metodo de Newton-Raphson convergio correctamente.",
-                    metadata={"initial_guess": current, "ui_status": "success"},
+                    message="Metodo de punto fijo convergio correctamente.",
+                    metadata={"ui_status": "success", "g_expression": g_expression},
                 )
 
             current = next_value
 
-        final_residual = function(current)
         return MethodResult(
             method_name=self.name,
             problem_kind=problem.kind,
             status=ExecutionStatus.DID_NOT_CONVERGE,
             solution=current,
-            residual=final_residual,
+            residual=residual,
             iteration_count=problem.max_iterations,
             elapsed_seconds=time.perf_counter() - started_at,
             records=records,
             message="Se alcanzo el maximo de iteraciones sin converger.",
-            metadata={"ui_status": "max_iter"},
+            metadata={"ui_status": "max_iter", "g_expression": g_expression},
         )

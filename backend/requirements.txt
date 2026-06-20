@@ -2,3 +2,10 @@ matplotlib
 numpy
 scipy
 sympy
+fastapi[standard]
+uvicorn
+httpx
+sqlalchemy
+alembic
+psycopg[binary]
+PyJWT

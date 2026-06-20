@@ -5,7 +5,9 @@ from src.core.models.problem import ProblemDefinition, ProblemKind
 from src.core.results.method_result import ExecutionStatus, MethodResult
 from src.methods.base import NumericalMethod
 from src.methods.roots.bisection_method import BisectionMethod
+from src.methods.roots.fixed_point_method import FixedPointMethod
 from src.methods.roots.newton_method import NewtonMethod
+from src.methods.roots.secant_method import SecantMethod
 
 
 class SupportedMethod(NumericalMethod):
@@ -142,6 +144,43 @@ class MethodComparatorTests(unittest.TestCase):
 
         self.assertEqual(result.status, ExecutionStatus.FAILED)
         self.assertIn("derivada es cero", result.message)
+
+    def test_secant_method_solves_scalar_root_problem(self):
+        problem = ProblemDefinition(
+            name="ecuacion cubica",
+            kind=ProblemKind.SCALAR_ROOT,
+            expression="x**3 - x - 2",
+            initial_guess=(1.0, 2.0),
+            tolerance=1e-6,
+            max_iterations=100,
+        )
+
+        result = SecantMethod().solve(problem)
+
+        self.assertEqual(result.status, ExecutionStatus.SUCCESS)
+        self.assertIsNotNone(result.solution)
+        assert result.solution is not None
+        self.assertAlmostEqual(result.solution, 1.52138, places=4)
+        self.assertGreater(len(result.records), 0)
+
+    def test_fixed_point_method_solves_scalar_root_problem(self):
+        problem = ProblemDefinition(
+            name="ecuacion cubica",
+            kind=ProblemKind.SCALAR_ROOT,
+            expression="x**3 - x - 2",
+            initial_guess=(1.5,),
+            tolerance=1e-6,
+            max_iterations=100,
+            metadata={"g_expression": "(x + 2)**(1/3)"},
+        )
+
+        result = FixedPointMethod().solve(problem)
+
+        self.assertEqual(result.status, ExecutionStatus.SUCCESS)
+        self.assertIsNotNone(result.solution)
+        assert result.solution is not None
+        self.assertAlmostEqual(result.solution, 1.52138, places=4)
+        self.assertGreater(len(result.records), 0)
 
 
 if __name__ == "__main__":

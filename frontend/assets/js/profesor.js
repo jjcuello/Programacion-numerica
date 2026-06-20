@@ -5,6 +5,10 @@
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+    const ROOTS_API_BASE_URL = window.PlatformApi ? window.PlatformApi.getApiBaseUrl() : "http://127.0.0.1:8000";
+    const activeSession = window.PlatformApi ? window.PlatformApi.getSession() : null;
+    const teacherToken = activeSession ? activeSession.token : null;
+
     // --- ELEMENTOS DEL DOM ---
     const exprInputProf = document.getElementById("expr-input-prof");
     const mathPreviewProf = document.getElementById("math-preview-prof");
@@ -96,7 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     examTemplate.addEventListener("change", updateExamTemplateUI);
-    btnGenerateKey.addEventListener("click", generateClassCode);
+    btnGenerateKey.addEventListener("click", () => {
+        void generateClassCode();
+    });
     if (btnExportExam) {
         btnExportExam.addEventListener("click", exportExamConfiguration);
     }
@@ -254,7 +260,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3. Comparación de Algoritmos (Bisección vs Newton vs Secante vs Punto Fijo)
-    function compareAlgorithms() {
+    async function postRootsJson(path, payload) {
+        if (window.PlatformApi) {
+            return window.PlatformApi.request(path, { method: "POST", body: payload, token: teacherToken });
+        }
+
+        const response = await fetch(`${ROOTS_API_BASE_URL}${path}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = null;
+        }
+
+        if (!response.ok) {
+            const message = data && typeof data.error === "string"
+                ? data.error
+                : "No se pudo procesar la comparación numérica.";
+            throw new Error(message);
+        }
+
+        return data;
+    }
+
+    async function compareAlgorithms() {
         const expr = exprInputProf.value.trim();
         const a = parseFloat(aInputProf.value);
         const b = parseFloat(bInputProf.value);
@@ -275,16 +311,53 @@ document.addEventListener("DOMContentLoaded", () => {
         let alertMessage = "";
         let alertRec = "";
 
+        const selectedMethods = [];
+        if (compareBisection.checked) selectedMethods.push("bisection");
+        if (compareSecant.checked) selectedMethods.push("secant");
+        if (compareNewton.checked) selectedMethods.push("newton");
+        if (compareFixedPoint.checked) selectedMethods.push("fixedpoint");
+
+        selectedCount = selectedMethods.length;
+
+        if (selectedCount === 0) {
+            comparisonTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="color: var(--text-muted);">Por favor selecciona al menos un algoritmo para comparar.</td>
+                </tr>
+            `;
+            renderEmptyPlot();
+            didacticAlert.style.display = "none";
+            return;
+        }
+
+        let responseResults = null;
+
+        try {
+            const response = await postRootsJson("/api/roots/compare", {
+                methods: selectedMethods,
+                expression: expr,
+                interval: [a, b],
+                x0,
+                x1: b,
+                g_expression: gExpr,
+                tolerance: tol,
+                max_iterations: maxIter
+            });
+            responseResults = response.results || {};
+        } catch (error) {
+            comparisonTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="color: var(--danger);">${error instanceof Error ? error.message : "No se pudo consultar el backend numérico."}</td>
+                </tr>
+            `;
+            renderEmptyPlot();
+            didacticAlert.style.display = "none";
+            return;
+        }
+
         // 1. Bisección
         if (compareBisection.checked) {
-            selectedCount++;
-            let start = performance.now();
-            try {
-                bisResult = runBisectionLocal(expr, a, b, tol, maxIter);
-                bisResult.time = ((performance.now() - start) / 1000).toFixed(6);
-            } catch (e) {
-                bisResult = { root: null, iterations: [], status: "error", time: "0.000000" };
-            }
+            bisResult = responseResults.bisection || { root: null, iterations: [], status: "error", time: "0.000000" };
             renderComparisonTableRow("Bisección", bisResult, "#10b981");
             
             if (bisResult.status === "bolzano_violation") {
@@ -300,14 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 2. Secante
         if (compareSecant.checked) {
-            selectedCount++;
-            let start = performance.now();
-            try {
-                secResult = runSecantLocal(expr, a, b, tol, maxIter);
-                secResult.time = ((performance.now() - start) / 1000).toFixed(6);
-            } catch (e) {
-                secResult = { root: null, iterations: [], status: "error", time: "0.000000" };
-            }
+            secResult = responseResults.secant || { root: null, iterations: [], status: "error", time: "0.000000" };
             renderComparisonTableRow("Secante", secResult, "#06b6d4");
             
             if (secResult.status === "singularidad" && !alertTriggered) {
@@ -319,14 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3. Newton-Raphson
         if (compareNewton.checked) {
-            selectedCount++;
-            let start = performance.now();
-            try {
-                newtResult = runNewtonLocal(expr, x0, tol, maxIter);
-                newtResult.time = ((performance.now() - start) / 1000).toFixed(6);
-            } catch (e) {
-                newtResult = { root: null, iterations: [], status: "error", time: "0.000000" };
-            }
+            newtResult = responseResults.newton || { root: null, iterations: [], status: "error", time: "0.000000" };
             renderComparisonTableRow("Newton-Raphson", newtResult, "#f59e0b");
             
             if (newtResult.status === "singularidad" && !alertTriggered) {
@@ -338,9 +397,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 4. Punto Fijo
         if (compareFixedPoint.checked) {
-            selectedCount++;
-            let start = performance.now();
-
             // Verificar compatibilidad didáctica de g(x)
             try {
                 const compResult = checkGExpressionCompatibility(expr, gExpr, x0);
@@ -355,12 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Ignorar
             }
 
-            try {
-                fpResult = runFixedPointLocal(gExpr, expr, x0, tol, maxIter);
-                fpResult.time = ((performance.now() - start) / 1000).toFixed(6);
-            } catch (e) {
-                fpResult = { root: null, iterations: [], status: "error", time: "0.000000" };
-            }
+            fpResult = responseResults.fixedpoint || { root: null, iterations: [], status: "error", time: "0.000000" };
             renderComparisonTableRow("Punto Fijo", fpResult, "#a855f7");
             
             if (fpResult.status === "singularidad" && !alertTriggered) {
@@ -372,17 +423,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 alertMessage = "El método de Punto Fijo no convergió en el límite de iteraciones.";
                 alertRec = "Es probable que g(x) sea divergente en la región de búsqueda. Prueba modificando la formulación de g(x) o el punto de partida x₀.";
             }
-        }
-
-        if (selectedCount === 0) {
-            comparisonTableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" style="color: var(--text-muted);">Por favor selecciona al menos un algoritmo para comparar.</td>
-                </tr>
-            `;
-            renderEmptyPlot();
-            didacticAlert.style.display = "none";
-            return;
         }
 
         // Mostrar / Ocultar Alerta Didáctica
@@ -1075,32 +1115,57 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 7. Generador de código de clase interactivo
-    function generateClassCode() {
-        const total = parseInt(quizTotalQuestionsProf.value) || 10;
-        const easyVal = parseInt(sliderEasyProf.value) || 0;
-        const medVal = parseInt(sliderMediumProf.value) || 0;
-        
-        const nEasy = Math.round((easyVal / 100) * total);
-        const nMed = Math.round((medVal / 100) * total);
-        const nHard = Math.max(0, total - nEasy - nMed);
+    async function generateClassCode() {
+        if (!window.PlatformApi || !teacherToken) {
+            classCodeOutput.textContent = "Debes iniciar sesión como profesor para generar códigos reales.";
+            classCodeOutput.style.display = "block";
+            return;
+        }
 
-        const modeMap = {
-            "theoretical": "T",
-            "practical": "P",
-            "mixed": "M"
-        };
+        try {
+            const now = new Date();
+            const year = now.getUTCFullYear();
+            const month = now.getUTCMonth() + 1;
+            const termLabel = month <= 6 ? `${year}-I` : `${year}-II`;
+            const termStart = month <= 6 ? `${year}-01-10` : `${year}-07-01`;
+            const termEnd = month <= 6 ? `${year}-06-30` : `${year}-12-01`;
+            const sectionName = `SEC-${Date.now().toString().slice(-4)}`;
 
-        const eMode = modeMap[quizModesProf.easy] || "T";
-        const mMode = modeMap[quizModesProf.medium] || "P";
-        const hMode = modeMap[quizModesProf.hard] || "M";
+            const sectionResponse = await window.PlatformApi.createSection({
+                course_code: "PN-101",
+                course_name: "Programación Numérica",
+                term_name: termLabel,
+                term_starts_on: termStart,
+                term_ends_on: termEnd,
+                section_name: sectionName
+            }, teacherToken);
 
-        const code = `NUM-2026-E${nEasy}${eMode}-M${nMed}${mMode}-D${nHard}${hMode}`;
-        
-        classCodeOutput.textContent = `CÓDIGO DE CLASE: ${code}`;
-        classCodeOutput.style.display = "block";
-        
-        classCodeOutput.style.boxShadow = "0 0 15px var(--success)";
-        setTimeout(() => classCodeOutput.style.boxShadow = "none", 1500);
+            const selectedMethods = [];
+            if (compareBisection.checked) selectedMethods.push("bisection");
+            if (compareSecant.checked) selectedMethods.push("secant");
+            if (compareNewton.checked) selectedMethods.push("newton");
+            if (compareFixedPoint.checked) selectedMethods.push("fixedpoint");
+
+            const assignmentResponse = await window.PlatformApi.createAssignment({
+                section_id: sectionResponse.section.id,
+                title: `Guía docente ${new Date().toLocaleString("es-VE")}`,
+                instructions: `Resolver la expresión ${exprInputProf.value.trim()} y analizar el comportamiento de convergencia.`,
+                expression: exprInputProf.value.trim(),
+                allowed_methods: selectedMethods.length > 0 ? selectedMethods : ["bisection", "newton"],
+                topic_name: "Raices",
+                unit_title: "Laboratorio de comparación docente"
+            }, teacherToken);
+
+            const code = `CLS:${sectionResponse.section.id}:${assignmentResponse.assignment.id}`;
+            classCodeOutput.textContent = `CÓDIGO DE CLASE: ${code}`;
+            classCodeOutput.style.display = "block";
+            classCodeOutput.style.boxShadow = "0 0 15px var(--success)";
+            setTimeout(() => classCodeOutput.style.boxShadow = "none", 1500);
+        } catch (error) {
+            classCodeOutput.textContent = error instanceof Error ? error.message : "No se pudo generar el código de clase.";
+            classCodeOutput.style.display = "block";
+            classCodeOutput.style.boxShadow = "none";
+        }
     }
 
     // 8. Exportador JSON del parcial configurado

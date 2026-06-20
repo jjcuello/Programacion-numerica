@@ -86,6 +86,8 @@
         <p>© 2026 Instituto Universitario Politécnico "Santiago Mariño" | Métodos Numéricos</p>
     </footer>
 
+    <script src="../assets/js/platform-config.js"></script>
+    <script src="../assets/js/platform-api.js"></script>
     <!-- Lógica de Autenticación del Frontend -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -95,44 +97,53 @@
             const errorAlert = document.getElementById("login-error-alert");
             const errorText = document.getElementById("login-error-text");
 
-
-            // Credenciales precargadas en local (Mock de base de datos)
-            const mockUsers = {
-                "estudiante": { password: "estudiante123", role: "estudiante", name: "Estudiante de Prueba" },
-                "profesor": { password: "profesor123", role: "profesor", name: "Prof. Leonardo González" },
-                "admin": { password: "admin123", role: "admin", name: "Administrador del Sistema" }
+            const bootstrapUsers = {
+                "estudiante": { password: "estudiante123", role: "student", fullName: "Estudiante de Prueba" },
+                "profesor": { password: "profesor123", role: "teacher", fullName: "Prof. Leonardo González" },
+                "admin": { password: "admin123", role: "admin", fullName: "Administrador del Sistema" }
             };
 
-            loginForm.addEventListener("submit", (e) => {
+            loginForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 errorAlert.style.display = "none";
 
                 const userVal = usernameInput.value.trim().toLowerCase();
                 const passVal = passwordInput.value;
 
-                if (mockUsers[userVal] && mockUsers[userVal].password === passVal) {
-                    // Guardar sesión en local storage
-                    const userData = {
-                        username: userVal,
-                        role: mockUsers[userVal].role,
-                        name: mockUsers[userVal].name,
-                        email: `${userVal}@universidad.edu`,
-                        joined: "Junio 2026",
-                        status: "Activo"
-                    };
-                    localStorage.setItem("user_session", JSON.stringify(userData));
+                try {
+                    const email = userVal.includes("@") ? userVal : `${userVal}@numerica.local`;
+                    let loginResponse = null;
+                    try {
+                        loginResponse = await window.PlatformApi.login(email, passVal);
+                    } catch (loginError) {
+                        const bootstrap = bootstrapUsers[userVal];
+                        if (!bootstrap || bootstrap.password !== passVal) {
+                            throw loginError;
+                        }
 
-                    // Redirección de rol
-                    if (userData.role === "estudiante") {
-                        window.location.href = "estudiante.html";
-                    } else if (userData.role === "profesor") {
-                        window.location.href = "profesor.html";
-                    } else if (userData.role === "admin") {
-                        window.location.href = "admin.html";
+                        await window.PlatformApi.register({
+                            email,
+                            password: passVal,
+                            fullName: bootstrap.fullName,
+                            roles: [bootstrap.role]
+                        });
+                        loginResponse = await window.PlatformApi.login(email, passVal);
                     }
-                } else {
-                    // Mostrar error de credenciales
-                    errorText.textContent = "Usuario o contraseña incorrectos. Revisa las cuentas de prueba abajo.";
+
+                    const session = window.PlatformApi.buildFrontendSession(loginResponse);
+                    window.PlatformApi.saveSession(session);
+
+                    if (session.role === "estudiante") {
+                        window.location.href = "estudiante.html";
+                    } else if (session.role === "profesor") {
+                        window.location.href = "profesor.html";
+                    } else if (session.role === "admin") {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "../index.html";
+                    }
+                } catch (error) {
+                    errorText.textContent = error instanceof Error ? error.message : "No se pudo iniciar sesión contra el backend.";
                     errorAlert.style.display = "flex";
                 }
             });

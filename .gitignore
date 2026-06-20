@@ -11,3 +11,6 @@ __pycache__/
 htmlcov/
 .ipynb_checkpoints/
 reportes_errores/
+.env
+backend/.env
+backend/data/
