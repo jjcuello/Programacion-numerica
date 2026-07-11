@@ -532,6 +532,13 @@ Esquema MVP inicial sugerido: `documentacion/03_Diseño/esquema_postgresql_mvp_v
 DDL base de referencia: `documentacion/03_Diseño/esquema_postgresql_mvp_v0_2.sql`.
 Registro de implementacion backend: `documentacion/03_Diseño/implementacion_persistencia_relacional_v0_2.md`.
 
+Runbook operativo para habilitar Supabase en MVP web:
+
+- `documentacion/06_Implementacion/runbook_supabase_mvp_backend_2026-06-28.md`
+- `documentacion/05_Pruebas/plan_validacion_supabase_mvp_2026-06-28.md`
+- `backend/scripts/sql/supabase_seed_mvp.sql`
+- `backend/scripts/sql/supabase_smoke_checks.sql`
+
 ### Que significa priorizar un MVP de base de datos
 
 Priorizar un MVP de base de datos significa no modelar todo el ecosistema institucional en la primera iteracion. En lugar de construir desde ya reportes avanzados, alertas predictivas, gamificacion y auditoria completa, se modela primero el minimo conjunto que ya genera valor academico real.
